@@ -1,11 +1,21 @@
-import { useState } from 'react'
-import './App.css'
+import { Outlet } from "react-router"
+import Header from "./Components/Header/Header"
+import { useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [scrolled, setScrolled] = useState(false);
 
-  return (
-    <h1>My React App</h1>
+    window.onscroll = () => {
+        setScrolled(window.scrollY > 5);
+    }
+
+    return (
+        <div className="inset-0 absolute pd-0">
+            <nav>
+                <Header flipped={scrolled}/>
+            </nav>
+            <Outlet />
+        </div>
   )
 }
 
