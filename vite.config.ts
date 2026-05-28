@@ -12,4 +12,12 @@ export default defineConfig({
     tailwindcss(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
+  }
 })
+
+/// <reference types="vite/client" />
+/// <reference types="vite-plugin-svgr/client" />

@@ -6,6 +6,8 @@ import HotelImage2 from "../../../../assets/roomImg2.png";
 import HotelImage3 from "../../../../assets/roomImg3.png";
 import HotelImage4 from "../../../../assets/roomImg4.png"
 
+import GenericButton from '@/Components/GenericButton/GenericButton';
+
 const FeaturedDestination = () => {
     const description = "Discover our handpicked selection of exceptional properties around the world, offering unparalleled luxury and unforgettable experiences.";
     const hotels = [
@@ -58,6 +60,9 @@ const FeaturedDestination = () => {
             </div>
             <div className={styles.cardContainer}>
                 {hotelCards}
+            </div>
+            <div className="font-medium text-[#6B7280]">
+                <GenericButton text="View All Hotels" />
             </div>
         </div>
     )
