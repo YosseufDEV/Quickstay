@@ -22,6 +22,7 @@ const Footer = () => {
                         <LinkedInIcon />
                     </div>
                 </div>
+
                 <div className="flex flex-col gap-4">
                     <h3 className="text-xl font-[Playfair] text-black">COMPANY</h3>
                     <ul className="flex flex-col gap-2 text-sm font-[Inter] text-[#6B7280]">
@@ -32,6 +33,7 @@ const Footer = () => {
                         <li>Partners</li>
                     </ul>
                 </div>
+
                 <div className="flex flex-col gap-4">
                     <h3 className="text-xl font-[Playfair] text-black">SUPPORT</h3>
                     <ul className="flex flex-col gap-2 text-sm font-[Inter] text-[#6B7280]">
@@ -42,6 +44,7 @@ const Footer = () => {
                         <li>Accessibility</li>
                     </ul>
                 </div>
+
                 <div className="flex flex-col gap-4">
                     <h1 className="font-[Playfair] text-xl text-black">STAY UPDATED</h1>
                     <p className="max-w-90 text-sm text-gray-500">Subscribe to our newsletter for travel inspiration and special offers.</p>
@@ -52,8 +55,11 @@ const Footer = () => {
                         </button>
                     </form>
                 </div>
+
             </div>
+
             <hr className="border-gray-500"/>
+
             <div className="py-5 flex justify-between w-full font-[Outfit] text-gray-500">
                 <p>© 2026 QuickStay. All rights reserved.</p>
                 <ul className="flex gap-4">
@@ -67,4 +73,3 @@ const Footer = () => {
 }
 
 export default Footer;
-

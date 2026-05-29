@@ -1,17 +1,16 @@
 import ArrowIcon from "@/assets/arrowIcon.svg?react"
 import { useGSAP } from "@gsap/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
 interface AnimatedArrowProps {
-    text: string,
     size?: number,
     color?: string,
+    hovered: boolean,
 }
 
-const AnimatedArrow = ({ text="", size=25, color="#fff" }: AnimatedArrowProps) => {
+const AnimatedArrow = ({ hovered=false, size=25, color="#fff" }: AnimatedArrowProps) => {
     const currentRef = useRef(null);
-    const [hovered, setHovered] = useState(false);
 
     useGSAP(() =>{
         gsap.to(".arrow path", { stroke: color, width: `${size}px`, height: `${size}px`, duration: 0 }) 
@@ -21,8 +20,7 @@ const AnimatedArrow = ({ text="", size=25, color="#fff" }: AnimatedArrowProps) =
     }, { scope: currentRef, dependencies: [hovered] })
 
     return (
-        <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} ref={currentRef} className="flex items-center gap-2 cursor-pointer h-fit">
-            { text }
+        <div ref={currentRef} className="flex items-center gap-2 cursor-pointer h-fit">
             <ArrowIcon  className="arrow stroke-white relative"/>
         </div>
     )

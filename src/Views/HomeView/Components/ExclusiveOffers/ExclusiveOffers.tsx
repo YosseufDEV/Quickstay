@@ -3,6 +3,8 @@ import OfferImage1 from "@/assets/exclusiveOfferCardImg1.png"
 import OfferImage2 from "@/assets/exclusiveOfferCardImg2.png"
 import OfferImage3 from "@/assets/exclusiveOfferCardImg3.png"
 import AnimatedArrow from "@/Components/AnimatedArrow/AnimatedArrow"
+import { useHover } from "@/hooks/customHooks"
+import { useRef } from "react"
 
 const ExclusiveOffers = () => {
     const offers = [
@@ -39,13 +41,19 @@ const ExclusiveOffers = () => {
             imgSrc={offer.src}
         />)
 
+    const arrowParentRef = useRef(null);
+    const hovered = useHover(arrowParentRef);
+
     return (
-        <div className="content-container w-full min-h-[50vh] flex flex-col gap-8">
+        <div className="content-container w-full min-h-[50vh] flex flex-col gap-8 py-25!">
             <div>
-                <p className="text-[36px]">Exclusive Offers</p>
+                <p className="text-[36px] font-[Playright]">Exclusive Offers</p>
                 <div className="flex justify-between">
                     <p className="text-gray-500">Take advantage of our limited-time offers and special packages to enhance your stay and create unforgettable memories.</p>
-                    <AnimatedArrow text={"View All Offers"} color={"black"}/>
+                    <div className="font-semibold flex items-center gap-1 cursor-pointer" ref={arrowParentRef}>
+                        <p>View All Offers</p>
+                        <AnimatedArrow color={"black"} hovered={hovered}/>
+                    </div>
                 </div>
             </div>
             <div className="flex w-full justify-between gap-4">
