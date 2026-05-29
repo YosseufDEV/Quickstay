@@ -18,7 +18,7 @@ const HotelCard = (props: HotelProps) => {
             <div className="h-48 relative">
                 <img src={props.imageSrc} alt="Hotel Room" className="w-full h-full" /> 
                 { props.isBestSeller &&
-                <div className="absolute top-3 left-3 text-sm font-[Outfit] text-gray-700 py-0.5 px-1 bg-white rounded-4xl">
+                <div className="absolute top-3 left-3 text-sm font-[Outfit] text-gray-700 py-0.5 px-2 bg-white rounded-4xl">
                     Best Seller
                 </div> }
             </div>

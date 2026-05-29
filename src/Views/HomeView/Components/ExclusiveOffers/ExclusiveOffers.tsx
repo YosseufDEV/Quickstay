@@ -45,7 +45,7 @@ const ExclusiveOffers = () => {
     const hovered = useHover(arrowParentRef);
 
     return (
-        <div className="content-container w-full min-h-[50vh] flex flex-col gap-8 py-25!">
+        <div className="bg-white content-container w-full min-h-[50vh] flex flex-col gap-8 py-25!">
             <div>
                 <p className="text-[36px] font-[Playright]">Exclusive Offers</p>
                 <div className="flex justify-between">
