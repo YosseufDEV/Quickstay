@@ -43,7 +43,7 @@ const Footer = () => {
                     </ul>
                 </div>
                 <div className="flex flex-col gap-4">
-                    <p className="text-lg text-gray-800">STAY UPDATED</p>
+                    <h1 className="font-[Playfair] text-xl text-black">STAY UPDATED</h1>
                     <p className="max-w-90 text-sm text-gray-500">Subscribe to our newsletter for travel inspiration and special offers.</p>
                     <form className="flex items-center justify-start">
                         <input className={styles.submitInput} placeholder="Your email"/>
