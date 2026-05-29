@@ -4,7 +4,7 @@ const Hero = () => {
     const description = "Unparalleled luxury and comfort await at the world's most exclusive hotels and resorts. Start your journey today.";
 
     return (
-        <div className={`${styles.hero} content-container`}>
+        <div className={`${styles.hero} h-min-full content-container`}>
             <div className={styles.tag}>
                 <p>The Ultimate Hotel Experience</p>
             </div>

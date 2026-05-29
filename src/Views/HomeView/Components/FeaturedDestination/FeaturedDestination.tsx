@@ -17,6 +17,7 @@ const FeaturedDestination = () => {
             pricePerNight: 1200,
             rating: 4.8,
             imageSrc: HotelImage1,
+            isBestSeller: true,
         },
         {
             location: "Maldives",
@@ -24,6 +25,7 @@ const FeaturedDestination = () => {
             pricePerNight: 2500,
             rating: 4.9,
             imageSrc: HotelImage2,
+            isBestSeller: false,
         },
         {
             location: "Kyoto, Japan",
@@ -31,6 +33,7 @@ const FeaturedDestination = () => {
             pricePerNight: 900,
             rating: 4.7,
             imageSrc: HotelImage3,
+            isBestSeller: true,
         },
         {
             location: "New York, USA",
@@ -38,6 +41,7 @@ const FeaturedDestination = () => {
             pricePerNight: 1500,
             rating: 4.6,
             imageSrc: HotelImage4,
+            isBestSeller: false,
         },
     ]
 
@@ -49,6 +53,7 @@ const FeaturedDestination = () => {
             pricePerNight={hotel.pricePerNight}
             rating={hotel.rating}
             imageSrc={hotel.imageSrc}
+            isBestSeller={hotel.isBestSeller}
         />
     ));
 

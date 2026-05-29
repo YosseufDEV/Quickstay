@@ -2,9 +2,9 @@ import styles from './LoginButton.module.css';
 
 const LoginButton = () => {
     return (
-        <div className={styles.button}>
+        <button className={styles.button}>
             <p>Login</p>
-        </div>
+        </button>
     );
 }
 

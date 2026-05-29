@@ -9,13 +9,18 @@ interface HotelProps {
     name: string,
     pricePerNight: number,
     rating: number,
+    isBestSeller?: boolean,
 }
 
 const HotelCard = (props: HotelProps) => {
     return (
         <div className={styles.hotelCard}>
-            <div className="h-48">
-                <img src={props.imageSrc} alt="Hotel Room" className="w-full h-full" />
+            <div className="h-48 relative">
+                <img src={props.imageSrc} alt="Hotel Room" className="w-full h-full" /> 
+                { props.isBestSeller &&
+                <div className="absolute top-3 left-3 text-sm font-[Outfit] text-gray-700 py-0.5 px-1 bg-white rounded-4xl">
+                    Best Seller
+                </div> }
             </div>
             <div className="px-5 py-4 w-full flex flex-col gap-4 justify-start align-start">
                 <div className={`${styles.title} text-xl flex-row`}>

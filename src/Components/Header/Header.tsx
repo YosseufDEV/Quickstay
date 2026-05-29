@@ -27,10 +27,10 @@ const Header = ({ flipped=false }) => {
                 <Logo />
             </div>
             <div className="nav-buttons flex flex-row gap-7.5 m-auto" style={{ color: "red!" }}>
-                <HeaderNavigationButton  to="/about" text="Home" />
-                <HeaderNavigationButton to="/contact" text="Hotels" />
-                <HeaderNavigationButton to="/about" text="Experience" />
-                <HeaderNavigationButton to="/contact" text="About" />
+                <HeaderNavigationButton  to="/" text="Home" />
+                <HeaderNavigationButton to="/" text="Hotels" />
+                <HeaderNavigationButton to="/" text="Experience" />
+                <HeaderNavigationButton to="/" text="About" />
             </div>
             <div className="flex flex-row gap-7.5 h-max items-center justify-center">
                 <div className="header-icons">
