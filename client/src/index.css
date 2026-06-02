@@ -2,6 +2,7 @@
 
 html {
     background-color: #f8fafc;
+    scrollbar-gutter: stable-both-edges;
 }
 
 .content-container {
@@ -14,4 +15,11 @@ a {
     text-decoration: underline;
     text-underline-offset: 4px;
     cursor: pointer;
+}
+
+select, select::picker-icon {
+    appearance: none;
+}
+select::picker-icon {
+    display: none;
 }

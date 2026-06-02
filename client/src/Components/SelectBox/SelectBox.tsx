@@ -1,14 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import SelectBoxItem from "./SelectBoxItem";
 import Chevron from "@/assets/chevron-down.svg?react";
 import CloseIcon from "@/assets/closeIcon.svg?react";
 import SearchIcon from "@/assets/searchIcon.svg?react";
 
+
 interface SelectBoxProps {
-    text?: string,
+    label?: string,
     placeholder?: string,
-    valueRef?: any,
-    defaultValue?: string,
+    reactFormChange?: any,
+    value?: string,
     title?: string,
     items: string[],
 }
@@ -17,23 +18,21 @@ interface SelectBoxProps {
 const SelectBox = (props: SelectBoxProps) => {
 
     const [visible, setVisible] = useState(false);
-    const [value, setValue] = useState(props.defaultValue || props.items[0]);
     const [height, setHeight] = useState(0);
-    const [ result, setResult ] = useState(props.items);
+    const [ result, setResult ] = useState<string[]>(props.items);
 
     const selectMenuRef = useRef<HTMLDivElement>(null);
+    const id = useId();
 
     const handleSearch = (e: any) => {
-        console.log("fuckthisshit");
         const value = (e.target.value).toLowerCase().trim();
         const filteredResults = props.items.filter((item) => item.toLowerCase().trim().includes(value));
         setResult(value=="" ? props.items : filteredResults);
     }
 
     const handleSelect = (item: string) => {
-        setValue(item);
+        props.reactFormChange(item);
         setVisible(false);
-        if(props.valueRef) props.valueRef.current = item;
     }
 
     useEffect(() => {
@@ -67,7 +66,9 @@ const SelectBox = (props: SelectBoxProps) => {
                     </div>
                     <hr className="border-gray-200"/>
                     <div className="max-h-[30vh] p-2 overflow-y-scroll flex flex-col ">
-                        { result.map((item) => <SelectBoxItem onClick={() => handleSelect(item)} value={item} label={item} />) }
+                        { result.map((item: string) => 
+                            <SelectBoxItem selected onClick={() => handleSelect(item)} value={item} label={item} />) 
+                        }
                         { result.length === 0 &&
                             <div className="py-3 flex items-center justify-center h-full">
                                 <p className="text-gray-500 text-[14px]">No results found</p>
@@ -77,11 +78,11 @@ const SelectBox = (props: SelectBoxProps) => {
                 </div>
             }
             <div className="h-fit my-1">
-                { props.text &&
-                    <p className="mb-3 text-[14px] font-medium text-gray-700">{props.text}</p>
+                { props.label &&
+                    <label htmlFor={id} className="inline-block mb-4 text-[14px] font-medium text-gray-700">{props.label}</label>
                 }
                 <div onClick={(_) => setVisible(true)} className="relative flex items-center z-500">
-                    <input readOnly value={value} className="bg-white user-select-none! text-sm cursor-pointer caret-transparent relative z-20 w-full text-gray-500 border-[1.5px] border-gray-300 rounded-md px-5 py-2 mb-0!" placeholder={props.text} />
+                    <input id={id} readOnly value={props.value} className="bg-white user-select-none! text-sm cursor-pointer caret-transparent relative z-20 w-full text-gray-500 border-[1.5px] border-gray-300 rounded-md px-5 py-2 mb-0!" placeholder={props.text} />
                     <Chevron className="w-4 h-4 absolute font-black mr-5 top-auto right-0 z-51 fill-gray-800 stroke-gray-800 stroke-[0.5px]" />
                 </div>
             </div>

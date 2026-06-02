@@ -30,7 +30,7 @@ const AuthenticationForm = ({ visible=false }) => {
     const containerRef = useRef(null);
     const moduleRef = useRef(null);
     const moduleDispatch = useContext(AuthenticationFormContext).dispatch;
-    const [state, dispatch] = useReducer(formReducer, { page: "signup" });
+    const [state, dispatch] = useReducer(formReducer, { page: "login" });
 
     const hideForm = (e: any) => {
         document.body.style.overflowY = "scroll";
@@ -43,14 +43,14 @@ const AuthenticationForm = ({ visible=false }) => {
             animateBackdrop();
             showFormAnimation(moduleRef);
         }
-    }, { scope: containerRef, dependencies: [visible] })
+    }, { dependencies: [visible] })
 
     if(visible) {
         return (
             <div ref={containerRef} onClick={(e) => { if(e.target==containerRef.current) hideForm(e); }} className="backdrop opacity-100 bg-[rgba(0,0,0,0.7)] z-100 fixed inset-0 flex items-center justify-center">
-                <div ref={moduleRef} className="w-122 min-h-[70vh] max-h-fit py-[5vh] px-[2vw] shadow-md bg-white rounded-lg flex flex-col items-center justify-start">
+                <div ref={moduleRef} className="w-122 min-h-[70vh] max-h-fit py-[5vh] pb-[20vh] px-[2vw] shadow-md bg-white rounded-lg flex flex-col items-center justify-start">
                     <ModuleViewContext.Provider value={{ dispatch: dispatch }}>
-                        { state.page === "login" ? null : <SignUpView /> }
+                        { state.page === "login" ? <LoginView /> : <SignUpView /> }
                     </ModuleViewContext.Provider>
                 </div>
             </div>
