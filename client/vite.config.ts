@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, optimizeDeps } from 'vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr'
 import babel from '@rolldown/plugin-babel'

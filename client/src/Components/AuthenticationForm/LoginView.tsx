@@ -70,7 +70,7 @@ const LoginView = () => {
 
     return (
         <>
-            <p className="flex flex-col text-center font-bold text-xl">Welcome Back! <span className="text-sm font-medium text-gray-600">Please log in to continue</span></p>
+            <p className="mb-10 flex flex-col text-center font-bold text-xl">Welcome Back! <span className="text-sm font-medium text-gray-600">Please log in to continue</span></p>
 
             { errors.authentication &&
                 <div className="font-[Outfit] px-6 py-5 rounded-md w-full bg-red-50 border border-red-500 flex items-center justify-center gap-2">
@@ -79,25 +79,28 @@ const LoginView = () => {
                 </div>
             }
 
-            <form className="flex flex-col gap-5 w-full">
+
+            <div className="w-full mb-7">
+                <GenericButton className="w-full shadow-sm h-[10%]! text-gray-600 flex items-center justify-center gap-2" onClick={(e) => e.preventDefault()}>
+                    <GoogleLogo className="w-5 h-5 mr-2" />
+                    <p className="text-[15px] font-semibold!">Continue with Google</p>
+                </GenericButton>
+
+                <div className="flex mt-4 justify-center w-full items-center">
+                    <div className="h-px w-full  bg-gray-300"/>
+                    <p className="mx-2">or</p>
+                    <div className="h-px w-full bg-gray-300"/>
+                </div>
+            </div>
+
+            <form className="flex flex-col gap-3 w-full">
 
                 <Input ref={emailInputRef} onInput={(e) => handleInput(e, setEmail)} error={ errors.email } type="email" placeholder="Enter your email address" text="Email address"/>
 
                 {/* TODO: Implement password for this*/}
                 <Input ref={passwordInputRef} onInput={(e) => handleInput(e, setPassword)}  error={ errors.password } type="text" placeholder="Enter your password" text="Password"/>
                 {/* <Checkbox /> */}
-                <GenericButton text="Login" className="shadow-sm h-[10%] bg-black! mt-3 font-semibold! text-white border-none text-[15px]!" onClick={handleLogin} />
-
-                <div className="flex justify-center w-full items-center">
-                    <div className="h-px w-full  bg-gray-300"/>
-                    <p className="mx-2">or</p>
-                    <div className="h-px w-full bg-gray-300"/>
-                </div>
-
-                <GenericButton className="shadow-sm h-[10%]! text-gray-600 flex items-center justify-center gap-2" onClick={(e) => e.preventDefault()}>
-                    <GoogleLogo className="w-5 h-5 mr-2" />
-                    <p className="text-[15px] font-semibold!">Continue with Google</p>
-                </GenericButton>
+                <GenericButton text="Login" className="shadow-sm h-[10%] bg-black! mt-5 mb-5 font-semibold! text-white border-none text-[15px]!" onClick={handleLogin} />
 
             </form>
             <p className="select-none font-[Outfit] text-[15px] text-gray-700">Don't have an account? <span onClick={handleSignupRedirect} className="font-semibold cursor-pointer text-gray-900">Sign up</span></p>

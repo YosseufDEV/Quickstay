@@ -7,6 +7,8 @@ import SearchIcon from "@/assets/searchIcon.svg?react";
 interface SelectBoxProps {
     text?: string,
     placeholder?: string,
+    valueRef?: any,
+    defaultValue?: string,
     title?: string,
     items: string[],
 }
@@ -14,8 +16,8 @@ interface SelectBoxProps {
 // TODO: Implement keyboard navigation for this component
 const SelectBox = (props: SelectBoxProps) => {
 
-    const [visible, setVisible] = useState(true);
-    const [value, setValue] = useState(props.items[0]);
+    const [visible, setVisible] = useState(false);
+    const [value, setValue] = useState(props.defaultValue || props.items[0]);
     const [height, setHeight] = useState(0);
     const [ result, setResult ] = useState(props.items);
 
@@ -26,6 +28,12 @@ const SelectBox = (props: SelectBoxProps) => {
         const value = (e.target.value).toLowerCase().trim();
         const filteredResults = props.items.filter((item) => item.toLowerCase().trim().includes(value));
         setResult(value=="" ? props.items : filteredResults);
+    }
+
+    const handleSelect = (item: string) => {
+        setValue(item);
+        setVisible(false);
+        if(props.valueRef) props.valueRef.current = item;
     }
 
     useEffect(() => {
@@ -59,7 +67,7 @@ const SelectBox = (props: SelectBoxProps) => {
                     </div>
                     <hr className="border-gray-200"/>
                     <div className="max-h-[30vh] p-2 overflow-y-scroll flex flex-col ">
-                        { result.map((item) => <SelectBoxItem onClick={ (_) => setValue(item) }value={item} label={item} />) }
+                        { result.map((item) => <SelectBoxItem onClick={() => handleSelect(item)} value={item} label={item} />) }
                         { result.length === 0 &&
                             <div className="py-3 flex items-center justify-center h-full">
                                 <p className="text-gray-500 text-[14px]">No results found</p>

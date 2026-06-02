@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 
 import { useGSAP } from "@gsap/react";
 
@@ -7,43 +7,41 @@ import CheckIcon from "@/assets/check-circle-fill.svg?react";
 
 import { inputStatusChangeAnimation } from "@/animations/InputAnimations";
 
-interface InputProps {
-    type: string;
-    placeholder: string;
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     text?: string;
-    ref?: any;
+    required?: boolean;
     validity?: { showValid: boolean, message: string };
-    onInput?: (value: any) => void;
     error: string;
 }
 
-const Input = (props: InputProps) => {
+const Input = ({ text, required, validity, error, ...props }: InputProps) => {
     const selfRef = useRef<HTMLDivElement>(null);
     const [tl, setTl] = useState<gsap.core.Timeline>();
-    const validty = props.validity ?? { showValid: false, message: "" };
+    const validty = validity ?? { showValid: false, message: "" };
+    const id = useId();
 
     useGSAP(() => {
-        if(props.error) setTl(inputStatusChangeAnimation("#fb2c36"));
-        else if(validty.showValid && !props.error) setTl(inputStatusChangeAnimation("#00c950"));
+        if(error) setTl(inputStatusChangeAnimation("#fb2c36"));
+        else if(validty.showValid && !error) setTl(inputStatusChangeAnimation("#00c950"));
         else if(tl) tl.reverse();
-    }, { scope: selfRef, dependencies: [props.error, validty?.message] })
+    }, { scope: selfRef, dependencies: [error, validty?.message] })
 
     return (
-        <div onChange={props.onInput} ref={selfRef} className="font-[Inter]! text-black">
+        <div ref={selfRef} className="font-[Inter]! text-black">
             <div className="h-fit relative my-1">
-                { props.text &&
-                    <p className="mb-3 text-[14px] font-medium text-gray-700">{props.text}</p>
+                { text &&
+                    <label htmlFor={id} className="mb-3 text-[14px] font-medium flex items-center gap-1 text-gray-700">{text}{required && <span className="text-red-500">*</span>}</label>
                 }
-                <input ref={props.ref} className="bg-white text-sm input relative z-20 w-full text-gray-500 border-[1.5px] border-gray-300 rounded-md px-5 py-2 mb-0!" type={props.type} placeholder={props.placeholder} />
+                <input id={id} {...props} className="bg-white text-sm input relative z-20 w-full text-gray-500 border-[1.5px] border-gray-300 rounded-md px-5 py-2 mb-0!" />
 
-                { props.error &&
+                { error &&
                     <div className="font-medium z-10 status-message flex gap-1 items-center w-fit text-[13px] text-red-500">
                         <ErrorIcon className="w-4 h-4 fill-red-500!"/>
-                        <p>{ props.error }</p>
+                        <p>{ error }</p>
                     </div>
                 }
 
-                { !props.error && validty.message &&
+                { !error && validty.message &&
                     <div className="font-medium z-10 status-message flex gap-1 items-center w-fit text-[13px] text-green-500">
                         <CheckIcon className="w-4 h-4 fill-green-500!"/>
                         <p>{ validty.message }</p>
