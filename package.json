@@ -1,0 +1,13 @@
+{
+  "name": "quickstay",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/*",
+    "client",
+    "server"
+  ],
+  "peerDependencies": {
+    "zod": "^4.4.3"
+  }
+}

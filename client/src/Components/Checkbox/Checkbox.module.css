@@ -1,0 +1,14 @@
+.checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    background: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid gray;
+}
+
+.checkbox:checked {
+    background: black;
+}
