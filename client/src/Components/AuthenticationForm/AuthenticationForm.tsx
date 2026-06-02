@@ -45,8 +45,8 @@ const AuthenticationForm = ({ visible=false }) => {
 
     if(visible) {
         return (
-            <div ref={containerRef} onClick={(e) => { if(e.target==containerRef.current) hideForm(e); }} className="backdrop opacity-100 bg-[rgba(0,0,0,0.7)] z-100 fixed inset-0 flex items-start pt-[10vh] justify-center">
-                <div ref={moduleRef} className="w-122 max-h-full min-h-[50vh] py-20 px-10 shadow-md bg-white rounded-lg flex flex-col gap-10 items-center justify-center">
+            <div ref={containerRef} onClick={(e) => { if(e.target==containerRef.current) hideForm(e); }} className="backdrop opacity-100 bg-[rgba(0,0,0,0.7)] z-100 fixed inset-0 flex items-center justify-center">
+                <div ref={moduleRef} className="w-122 min-h-[80%] max-h-fit py-[5vh] px-[2vw] shadow-md bg-white rounded-lg flex flex-col gap-10 items-center justify-center">
                     <ModuleViewContext.Provider value={{ dispatch: dispatch }}>
                         { state.page === "login" ? <LoginView /> : <SignUpView /> }
                     </ModuleViewContext.Provider>
