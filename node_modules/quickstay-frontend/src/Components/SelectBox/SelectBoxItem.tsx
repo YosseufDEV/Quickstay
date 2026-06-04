@@ -1,6 +1,7 @@
 interface SelectBoxItemProps {
     value: string;
     label: string;
+    selected?: boolean;
     onClick: (e: any) => void;
 }
 

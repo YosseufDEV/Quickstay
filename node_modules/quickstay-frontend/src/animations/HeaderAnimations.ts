@@ -11,7 +11,6 @@ export const animateHeaderTransition = (headerRef: ReactRef, flipped: boolean) =
 
 const animateHeaderCollapse = (headerRef: ReactRef) => {
     const timeline = gsap.timeline({ defaults: { duration: HEADER_EXPANSION_DURATION } });
-    console.log("that's real real bad");
 
     timeline.to(headerRef.current, {
         backgroundColor: "rgba(255, 255, 255, 0)",
