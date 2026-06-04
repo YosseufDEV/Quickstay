@@ -56,33 +56,33 @@ const SignUpView = () => {
 
     return (
         <>
-            <p className="mb-5 flex flex-col text-center font-bold text-xl">Create ccount<span className="text-sm font-medium text-gray-600">Please sign up to continue</span></p>
+            <p className="mb-5 flex flex-col text-center font-bold text-xl">Create Account<span className="text-sm font-medium text-gray-600">Please sign up to continue</span></p>
 
             {/* { errors.authentication && */}
             {/*     <div className="px-6 py-2 rounded-md w-full bg-red-50 border border-red-500 flex items-center justify-center gap-2"> */}
             {/*         <DangerIcon className="w-5 h-5 fill-red-400 ml-2" /> */}
-            {/*         <p className="text-red-700 text-[14px] font-medium">{errors.authentication}</p> */}
+            {/*         <p flassName="text-red-700 text-[14px] font-medium">{errors.authentication}</p> */}
             {/*     </div> */}
             {/* } */}
 
-            <form onSubmit={handleSubmit(handleSignUp)} className="flex flex-col gap-3 w-full">
+            <form onSubmit={handleSubmit(handleSignUp)} className="flex flex-col gap-3 md:gap-1 w-full">
                 <GenericButton className="shadow-sm h-[10%]! text-gray-600 flex items-center justify-center gap-2" onClick={(e) => e.preventDefault()}>
                     <GoogleLogo className="w-5 h-5 mr-2" />
                     <p className="text-[15px] font-semibold!">Continue with Google</p>
                 </GenericButton>
 
-                <div className="flex justify-center w-full items-center">
+                <div className="flex justify-center w-full items-center mb-5 mt-2">
                     <div className="h-px w-full  bg-gray-300"/>
                     <p className="mx-2">or</p>
                     <div className="h-px w-full bg-gray-300"/>
                 </div>
 
 
-                <Input {...register("email")} error={ errors.email?.message } required type="text" placeholder="Email address" label="Email address"/>
+                <Input {...register("email")} validity={ { isValid: !!(errors.email?.message), message: errors.email?.message } } required type="text" placeholder="Email address" label="Email address"/>
 
                 <div className="flex gap-5">
-                    <Input {...register("firstName")} required error={errors.firstName?.message } type="text" placeholder={"First Name"} label="First Name"/>
-                    <Input {...register("lastName")} required error={errors.lastName?.message } type="text" placeholder="Last Name" label="Last Name"/>
+                    <Input {...register("firstName")} required validity={ { isValid: !!(errors.firstName?.message), message: errors.firstName?.message } } type="text" placeholder={"First Name"} label="First Name"/>
+                    <Input {...register("lastName")} required validity={ { isValid: !!(errors.lastName?.message), message: errors.lastName?.message } }  type="text" placeholder="Last Name" label="Last Name"/>
                 </div>
 
                 <Controller 
@@ -92,10 +92,11 @@ const SignUpView = () => {
                 />
 
                 {/* Todo: Implement password for this*/}
-                <Input {...register("password")} required error={ errors.password?.message } type="text" placeholder="Password" label="Password"/>
+                <Input {...register("password")} required validity={ { isValid: !!(errors.password?.message), message: errors.password?.message } } type="text" placeholder="Password" label="Password"/>
+
                 <div className="flex flex-col gap-3">
                     <GenericButton text="Sign up" className="shadow-sm h-[10%] bg-black! mt-5 font-semibold! text-white border-none text-[15px]!"  />
-                    <p className="text-gray-600 text-[13px] text-center">By creating an account, you agree to Quickstay <a>Terms of Services</a> for more information please visit our <a>Privacy Policy</a> </p>
+                    <p className="text-gray-600 text-[13px] text-center">By creating an account, you agree to Quickstay <a>Terms of Services</a>, for more information please visit our <a>Privacy Policy</a> </p>
                 </div>
 
 

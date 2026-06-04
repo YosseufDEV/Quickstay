@@ -46,13 +46,13 @@ const LoginView = () => {
             {/* } */}
 
 
-            <div className="w-full mb-7">
+            <div className="w-full mb-5">
                 <GenericButton className="w-full shadow-sm h-[10%]! text-gray-600 flex items-center justify-center gap-2" onClick={(e) => e.preventDefault()}>
                     <GoogleLogo className="w-5 h-5 mr-2" />
                     <p className="text-[15px] font-semibold!">Continue with Google</p>
                 </GenericButton>
 
-                <div className="flex mt-4 justify-center w-full items-center">
+                <div className="flex mt-2 justify-center w-full items-center">
                     <div className="h-px w-full  bg-gray-300"/>
                     <p className="mx-2">or</p>
                     <div className="h-px w-full bg-gray-300"/>
@@ -61,10 +61,10 @@ const LoginView = () => {
 
             <form onSubmit={handleSubmit(handleLogin)} className="flex flex-col gap-3 w-full">
 
-                <Input {...register("email")} error={errors.email?.message} type="email" placeholder="Enter your email address" label="Email address"/>
+                <Input {...register("email")} validity={ { message: errors.email?.message, isValid: !!(errors.email) } } type="email" placeholder="Enter your email address" label="Email address"/>
 
                 {/* TODO: Implement password for this*/}
-                <Input {...register("password")} error={ errors.password?.message } type="text" placeholder="Enter your password" label="Password"/>
+                <Input {...register("password")} validity={ { message: errors.password?.message, isValid: !!(errors.password) } } type="text" placeholder="Enter your password" label="Password"/>
 
                 {/* <Checkbox /> */}
 

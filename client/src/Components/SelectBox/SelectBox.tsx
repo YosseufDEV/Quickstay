@@ -3,6 +3,7 @@ import SelectBoxItem from "./SelectBoxItem";
 import Chevron from "@/assets/chevron-down.svg?react";
 import CloseIcon from "@/assets/closeIcon.svg?react";
 import SearchIcon from "@/assets/searchIcon.svg?react";
+import Input from "../Input/Input";
 
 
 interface SelectBoxProps {
@@ -53,14 +54,14 @@ const SelectBox = (props: SelectBoxProps) => {
     return (
         <div className="cursor-pointer font-[Inter]! text-black relative">
             { visible &&
-                <div ref={selectMenuRef} className="min-w-90 overflow-hidden absolute shadow-lg rounded-xl bg-white z-50" style={ { top: `-${height-30}px` } }>
+                <div ref={selectMenuRef} className="min-w-90 overflow-hidden absolute shadow-lg rounded-xl bg-white z-200" style={ { top: `-${height-20}px` } }>
                     <div className="h-full p-3 grid grid-cols-[1fr_auto] items-center gap-3 w-full">
                         <h1 className="font-semibold text-[14px] w-full text-gray-700">{props.title}</h1>
                         <div className="p-2 hover:bg-gray-100 w-fit opacity-85 rounded-md transition-all">
                             <CloseIcon className="w-3 h-3 stroke-gray-500! stroke-2!"/>
                         </div>
                         <div className="relative flex items-center w-full col-span-2">
-                            <input autoFocus onChange={handleSearch} placeholder="Search" className="pl-7 bg-white text-sm relative z-20 w-full text-gray-500 border-[1.5px] border-gray-300 rounded-md px-5 py-1 mb-0!" />
+                            <input autoFocus onChange={handleSearch} placeholder="Search" className="pl-7 bg-white text-sm relative w-full text-gray-500 border-[1.5px] border-gray-300 rounded-md px-5 py-1 mb-0!" />
                             <SearchIcon className="w-7 h-7 stroke-gray-500 absolute top-auto z-50" />
                         </div>
                     </div>
@@ -78,12 +79,10 @@ const SelectBox = (props: SelectBoxProps) => {
                 </div>
             }
             <div className="h-fit my-1">
-                { props.label &&
-                    <label htmlFor={id} className="inline-block mb-4 text-[14px] font-medium text-gray-700">{props.label}</label>
-                }
-                <div onClick={(_) => setVisible(true)} className="relative flex items-center z-500">
-                    <input id={id} readOnly value={props.value} className="bg-white user-select-none! text-sm cursor-pointer caret-transparent relative z-20 w-full text-gray-500 border-[1.5px] border-gray-300 rounded-md px-5 py-2 mb-0!" placeholder={props.text} />
-                    <Chevron className="w-4 h-4 absolute font-black mr-5 top-auto right-0 z-51 fill-gray-800 stroke-gray-800 stroke-[0.5px]" />
+                <div onClick={(_) => setVisible(true)} className="flex items-center z-500">
+                    <Input id={id} label={props.label} readOnly validity={ { showValidity: false } } value={props.value} className="caret-transparent user-select-none! text-sm cursor-pointer!">
+                        <Chevron className="sm:w-3 sm:h-3 lg:w-4 lg:h-4 absolute right-0 mr-3 top-auto font-black z-51 fill-gray-800 stroke-gray-800 stroke-[0.5px]" />
+                    </Input>
                 </div>
             </div>
         </div>
