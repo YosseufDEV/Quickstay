@@ -35,7 +35,7 @@ const LoginView = () => {
     }
 
     return (
-        <>
+        <div className="w-full hmd:py-[7vh] flex flex-col items-center justify-start">
             <p className="mb-10 flex flex-col text-center font-bold text-xl">Welcome Back! <span className="text-sm font-medium text-gray-600">Please log in to continue</span></p>
 
             {/* { errors.authentication && */}
@@ -72,7 +72,7 @@ const LoginView = () => {
 
             </form>
             <p className="select-none font-[Outfit] text-[15px] text-gray-700">Don't have an account? <span onClick={handleSignupRedirect} className="font-semibold cursor-pointer text-gray-900">Sign up</span></p>
-        </>
+        </div>
     )
 }
 
