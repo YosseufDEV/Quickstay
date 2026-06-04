@@ -2,31 +2,24 @@ import express from 'express';
 
 import { config } from 'dotenv';
 import { prisma } from './db/prisma';
+import redis from "./db/redis";
+
+import cookieParser from 'cookie-parser';
+
+import AuthRoutes from "./routes/authRoutes.ts"
 
 config();
 
 const app = express();
+
 app.use(express.json());
+app.use(cookieParser());
 
-app.post('/register', async (req, res) => {
-    const { username, email } = req.body;
-    try {
-        const user = await prisma.users.create({
-            data: {
-                name: username,
-                email,
-            }
-        });
-        res.json({ status: "success", data: user });
-    } catch (error: any) {
-        console.log(error);
-        res.status(500).json({ status: "error", message: error });
-    }
-
-});
+app.use("/auth", AuthRoutes);
 
 const PORT = process.env.PORT || 5050;
 
 await prisma.$connect().then(() => console.log('Connected to the database')).catch((error) => console.error('Database connection error:', error));
+await redis.connect().then(() => console.log('Connected to Redis')).catch((error) => console.error('Redis connection error:', error));
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
