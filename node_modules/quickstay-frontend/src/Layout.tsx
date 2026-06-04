@@ -1,4 +1,4 @@
-import { createContext, useReducer, useState } from "react";
+import { useState } from "react";
 
 import { Outlet } from "react-router"
 
@@ -6,39 +6,22 @@ import Header from "./Components/Header/Header"
 import Footer from "./Components/Footer/Footer";
 import AuthenticationForm  from "./Components/AuthenticationForm/AuthenticationForm";
 
-type Action = "showModule" | "hideModule";
-
-function authenticationFormReducer(state: any, action: Action) {
-    switch(action) {
-        case "showModule": 
-            return { visible: true };
-        case "hideModule":
-            return { visible: false };
-        default:
-            return state;
-    }
-}
-
-export const AuthenticationFormContext = createContext({ dispatch: (action: Action) => {} });
-
 function Layout() {
     const [scrolled, setScrolled] = useState(false);
-
-    const [state, dispatch] = useReducer(authenticationFormReducer, { visible: true });
 
     window.onscroll = () => {
         setScrolled(window.scrollY > 5);
     }
 
     return (
-        <AuthenticationFormContext.Provider value={{ dispatch }}>
-            <AuthenticationForm visible={state.visible} />
+        <>
+            <AuthenticationForm />
             <Header flipped={scrolled}/>
             <main>
                 <Outlet/>
             </main>
             <Footer />
-        </AuthenticationFormContext.Provider>
+        </>
   )
 }
 

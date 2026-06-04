@@ -1,8 +1,7 @@
-import { createContext, useContext, useRef } from 'react';
+import { useRef } from 'react';
 import { useGSAP } from "@gsap/react";
 
 import SearchIcon from '../../assets/searchIcon.svg?react';
-import ProfileIcon from '../../assets/userIcon.svg?react';
 
 import Logo from '../Logo/Logo';
 import HeaderNavigationButton from '../HeaderNavigationButton/HeaderNavigationButton';
@@ -11,16 +10,14 @@ import GenericButton from '../GenericButton/GenericButton';
 import { animateHeaderTransition } from '../../animations/HeaderAnimations';
 
 import styles from './Header.module.css';
-import { AuthenticationFormContext } from '@/Layout';
-
-export const HeaderContext = createContext({ flipped: false });
+import useAuthModalStore from '@/stores/authModalStore';
 
 const Header = ({ flipped=false }) => {
     const ref = useRef(null);
-    const dispatchLoginForm = useContext(AuthenticationFormContext).dispatch;
+    const openModal = useAuthModalStore(state => state.openModal);
 
     const handleLoginButtonClick = () => {
-        dispatchLoginForm("showModule");
+        openModal();
     }
 
     useGSAP(() => {

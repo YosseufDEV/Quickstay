@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import { useForm } from "react-hook-form";
 
 import GenericButton from "../GenericButton/GenericButton";
@@ -9,7 +8,7 @@ import { loginSchema } from "@quickstay/validators/src/userValidators";
 
 import GoogleLogo from "@/assets/GoogleIcon.svg?react";
 import DangerIcon from "@/assets/exclamation-triangle-fill.svg?react";
-import { ModuleViewContext } from "./AuthenticationForm";
+import useAuthModalStore from "@/stores/authModalStore";
 
 interface LoginFormData {
     email: string;
@@ -17,21 +16,17 @@ interface LoginFormData {
 }
 
 const LoginView = () => {
-    const form = useForm({
+    const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(loginSchema),
     });
-
-    const { register, handleSubmit, formState: { errors } } = form;
-
-    const viewDispatch = useContext(ModuleViewContext).dispatch;
-
+    const switchView = useAuthModalStore(state => state.setModalPage);
 
     const handleLogin = (data: LoginFormData) => {
         console.log(data);
     }
 
     const handleSignupRedirect = (e: any) => {
-        viewDispatch("signup");
+        switchView("signup");
     }
 
     return (
