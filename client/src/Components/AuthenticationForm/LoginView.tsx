@@ -26,7 +26,7 @@ const LoginView = () => {
     }
 
     const handleSignupRedirect = (e: any) => {
-        switchView("signup");
+        useAuthModalStore.getState().setModalPage("signup");
     }
 
     return (

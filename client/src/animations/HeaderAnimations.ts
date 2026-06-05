@@ -23,7 +23,7 @@ const animateHeaderCollapse = (headerRef: ReactRef) => {
 export const flipHeaderColors = (flipped: boolean) => {
     const timeline = gsap.timeline({ defaults: { duration: HEADER_EXPANSION_DURATION-0.05 } });
     timeline
-        .to('.header-icons path', {
+        .to('.header-icon path', {
             stroke: flipped ? black : "white",
         }, "<")
         .to(".logo path", {

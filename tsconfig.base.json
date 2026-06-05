@@ -1,8 +1,0 @@
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@validators": ["./packages/validators/src/*"]
-    }
-  }
-}

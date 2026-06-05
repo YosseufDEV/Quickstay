@@ -7,16 +7,10 @@ import Footer from "./Components/Footer/Footer";
 import AuthenticationForm  from "./Components/AuthenticationForm/AuthenticationForm";
 
 function Layout() {
-    const [scrolled, setScrolled] = useState(false);
-
-    window.onscroll = () => {
-        setScrolled(window.scrollY > 5);
-    }
-
     return (
         <>
             <AuthenticationForm />
-            <Header flipped={scrolled}/>
+            <Header/>
             <main>
                 <Outlet/>
             </main>

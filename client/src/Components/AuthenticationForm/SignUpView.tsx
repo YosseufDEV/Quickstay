@@ -35,10 +35,9 @@ const SignUpView = () => {
             country: "Egypt",
         }
     });
-    const switchView = useAuthModalStore(state => state.setModalPage);
 
     const handleLoginRedirect = (e: any) => {
-        switchView("login");
+        useAuthModalStore.getState().setModalPage("login");
     }
 
     const handleSignUp = (data: SignUpFormData) => {

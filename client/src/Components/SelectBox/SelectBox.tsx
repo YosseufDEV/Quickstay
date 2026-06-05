@@ -78,10 +78,10 @@ const SelectBox = (props: SelectBoxProps) => {
                     </div>
                 </div>
             }
-            <div className="h-fit my-1">
-                <div onClick={(_) => setVisible(true)} className="flex items-center z-500">
-                    <Input id={id} label={props.label} readOnly validity={ { showValidity: false } } value={props.value} className="caret-transparent user-select-none! text-sm cursor-pointer!">
-                        <Chevron className="sm:w-3 sm:h-3 lg:w-4 lg:h-4 absolute right-0 mr-3 top-auto font-black z-51 fill-gray-800 stroke-gray-800 stroke-[0.5px]" />
+            <div onClick={(_) => setVisible(true)} className="relative z-55 h-fit my-1">
+                <div  className="flex items-center z-500">
+                    <Input id={id} label={props.label} readOnly validity={ { showValidity: false } } value={props.value} className="caret-transparent z-50 user-select-none! text-sm cursor-pointer!">
+                        <Chevron className="sm:w-3 sm:h-3 lg:w-4 lg:h-4 absolute right-0 mr-3 top-auto z-51 font-black fill-gray-800 stroke-gray-800 stroke-[0.5px]" />
                     </Input>
                 </div>
             </div>
