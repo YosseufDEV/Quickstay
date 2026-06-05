@@ -5,10 +5,29 @@ import FacebookIcon from "@/assets/facebookIcon.svg?react";
 import TwitterIcon from "@/assets/twitterIcon.svg?react";
 import LinkedInIcon from "@/assets/linkendinIcon.svg?react";
 import styles from "./Footer.module.css"
+import { NavLink } from "react-router";
+
+
+interface FooterSectionProps {
+    items: string[];
+    title?: string;
+}
+
+const FooterSection = (props: FooterSectionProps) => {
+    return (
+        <div className="flex flex-col gap-4">
+        { props.title &&
+            <h3 className="text-xl font-[Playfair] text-black">{props.title.toUpperCase()}</h3>
+        }
+            <ul className="flex flex-col gap-2 text-sm font-[Inter] *:text-[#6B7280]! *:no-underline! *:font-normal!">
+                { props.items.map((item: string, index: number) => <NavLink to={`/${item}`}><li key={index}>{item}</li></NavLink>) }
+            </ul>
+        </div>
+    )
+}
 
 const Footer = () => {
     const description = "Discover the world's most extraordinary places to stay, from boutique hotels to luxury villas and private islands."
-
     return (
         <footer className="content-container bg-[#f6f9fc] w-full flex flex-col">
             <div className="flex justify-between  w-full py-8 pt-3">
@@ -23,27 +42,8 @@ const Footer = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-4">
-                    <h3 className="text-xl font-[Playfair] text-black">COMPANY</h3>
-                    <ul className="flex flex-col gap-2 text-sm font-[Inter] text-[#6B7280]">
-                        <li>About Us</li>
-                        <li>Careers</li>
-                        <li>Press</li>
-                        <li>Blog</li>
-                        <li>Partners</li>
-                    </ul>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                    <h3 className="text-xl font-[Playfair] text-black">SUPPORT</h3>
-                    <ul className="flex flex-col gap-2 text-sm font-[Inter] text-[#6B7280]">
-                        <li>Help Center</li>
-                        <li>Safety Information</li>
-                        <li>Cancellation Options</li>
-                        <li>Contact Us</li>
-                        <li>Accessibility</li>
-                    </ul>
-                </div>
+                <FooterSection title="Company" items={["About", "Careers", "Press", "Blog", "Partners"]} />
+                <FooterSection title="Support" items={["Help Center", "Cancellation Options", "Neighborhood Support", "Trust & Safety", "Contact Us"]} />
 
                 <div className="flex flex-col gap-4">
                     <h1 className="font-[Playfair] text-xl text-black">STAY UPDATED</h1>
@@ -62,7 +62,7 @@ const Footer = () => {
 
             <div className="py-5 flex justify-between w-full font-[Outfit] text-gray-500">
                 <p>© 2026 QuickStay. All rights reserved.</p>
-                <ul className="flex gap-4">
+                <ul className="flex flex-row gap-4">
                     <li>Privacy</li>
                     <li>Terms</li>
                     <li>Sitemap</li>

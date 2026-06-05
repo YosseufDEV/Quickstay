@@ -9,6 +9,7 @@ import { loginSchema } from "@quickstay/validators/src/userValidators";
 import GoogleLogo from "@/assets/GoogleIcon.svg?react";
 import DangerIcon from "@/assets/exclamation-triangle-fill.svg?react";
 import useAuthModalStore from "@/stores/authModalStore";
+import { login } from "@/api/auth";
 
 interface LoginFormData {
     email: string;
@@ -22,7 +23,15 @@ const LoginView = () => {
     const switchView = useAuthModalStore(state => state.setModalPage);
 
     const handleLogin = (data: LoginFormData) => {
-        console.log(data);
+        const { email, password } = data;
+        login(email, password).then(response => {
+            if(response.error) {
+                console.error("Login failed:", response.error);
+            } else {
+                console.log("Login successful:", response);
+            }
+        })
+
     }
 
     const handleSignupRedirect = (e: any) => {

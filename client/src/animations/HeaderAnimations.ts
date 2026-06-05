@@ -51,7 +51,7 @@ const animateHeaderExpansion = (headerRef: ReactRef, flipped=false) => {
             boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
             height: "67px",
         }, "<")
-        .to('.header-icons path', {
+        .to('.header-icon path', {
             stroke: flipped ? black : "white",
         }, "<")
         .to(".logo path", {

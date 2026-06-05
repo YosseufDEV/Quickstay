@@ -19,7 +19,7 @@ const refreshToken = async (req: Request, res: Response) => {
 
     console.log("Received refresh token:", refreshToken);
 
-    if(!refreshToken) return res.status(401).json({ message: "token_not_provided" });
+    if(!refreshToken) return res.status(400).json({ message: "token_not_provided" });
 
     try {
         const usedToken = jwt.verify(refreshToken, JWT_REFRESH_SECRET as string, { algorithms: ["HS256"] }) as jwt.JwtPayload;
@@ -31,7 +31,7 @@ const refreshToken = async (req: Request, res: Response) => {
         const sessionValid = await isSessionValid(payload.userId, payload.sessionId, refreshToken);
 
         if(!sessionValid.valid) {
-            return res.status(401).json({ message: sessionValid.reason});
+            return res.status(400).json({ message: sessionValid.reason});
         }
 
         console.log(newRefreshToken);
@@ -118,4 +118,20 @@ const register = async (req: Request, res: Response) => {
     }
 }
 
-export { login, register, refreshToken }
+const getCurrentUser = async (req: Request, res: Response) => {
+    const userId = req.user.id; 
+
+    try {
+        const user = await prisma.users.findUnique({ where: { id: userId }, select: { id: true, email: true, firstName: true, lastName: true, country: true } });
+        if(!user) {
+            return res.status(404).json({ message: "user_not_found" });
+        }
+        return res.status(200).json({ user });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+
+}
+
+export { login, register, refreshToken, getCurrentUser }
