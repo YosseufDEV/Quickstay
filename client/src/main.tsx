@@ -5,7 +5,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import HomeView from './Views/HomeView/HomeView.tsx'
 
 import './index.css'
+
 import App from './App.tsx'
+import HotelsView from './Views/HotelsView/HotelsView.tsx'
 
 const router = createBrowserRouter([ 
     {
@@ -15,6 +17,10 @@ const router = createBrowserRouter([
             {
                index: true,
                Component: HomeView
+            },
+            {
+                path: "hotels",
+                Component: HotelsView
             }
         ]
     }

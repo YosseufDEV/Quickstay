@@ -4,12 +4,12 @@ import gsap from "gsap";
 const HEADER_EXPANSION_DURATION = 0.3;
 const black = "#2a2a2a";
 
-export const animateHeaderTransition = (headerRef: ReactRef, flipped: boolean) => {
-    flipped ? animateHeaderExpansion(headerRef, flipped) : animateHeaderCollapse(headerRef);
-    flipHeaderColors(flipped);
+export const animateHeaderTransition = (headerRef: ReactRef, docked: boolean) => {
+    docked ? animateHeaderDockAnimation(headerRef) : animateHeaderScrollAnimation(headerRef);
+    flipHeaderColors(docked);
 }
 
-const animateHeaderCollapse = (headerRef: ReactRef) => {
+const animateHeaderDockAnimation = (headerRef: ReactRef) => {
     const timeline = gsap.timeline({ defaults: { duration: HEADER_EXPANSION_DURATION } });
 
     timeline.to(headerRef.current, {
@@ -20,25 +20,37 @@ const animateHeaderCollapse = (headerRef: ReactRef) => {
     })
 }
 
-export const flipHeaderColors = (flipped: boolean) => {
-    const timeline = gsap.timeline({ defaults: { duration: HEADER_EXPANSION_DURATION-0.05 } });
+const headerThemeConfig = {
+    scrolled: {
+        color: "#2a2a2a",
+    },
+    docked: {
+        color: "#fff",
+    }
+}
+
+export const flipHeaderColors = (docked: boolean) => {
+    const timeline = gsap.timeline({ defaults: { duration: HEADER_EXPANSION_DURATION } });
+
+    const color = docked ? headerThemeConfig.docked.color : headerThemeConfig.scrolled.color;
+
     timeline
         .to('.header-icon path', {
-            stroke: flipped ? black : "white",
+            stroke: color,
         }, "<")
         .to(".logo path", {
-            fill: flipped ? black : "white",
+            fill: color,
         }, "<")
         .to('.nav-buttons p', {
-            color: flipped ? black : "white",
+            color: color,
         }, "<")
         .to('.nav-buttons span', {
-            backgroundColor: flipped ? black : "white",
+            backgroundColor: color,
         }, "<")
 }
 
 
-const animateHeaderExpansion = (headerRef: ReactRef, flipped=false) => {
+const animateHeaderScrollAnimation = (headerRef: ReactRef, flipped=false) => {
     const timeline = gsap.timeline({ defaults: { duration: HEADER_EXPANSION_DURATION }});
 
     timeline
