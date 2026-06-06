@@ -1,11 +1,14 @@
+import { useRef, useEffect } from "react";
+
 import { useGSAP } from "@gsap/react";
 import { animateBackdrop, showFormAnimation } from "@/animations/AuthenticationFormAnimations";
 
+import useAuthModalStore from "@/stores/authModalStore";
+import useAuthStore from "@/stores/authStore";
+
 import LoginView from "./LoginView";
 import SignUpView from "./SignUpView";
-import useAuthModalStore from "@/stores/authModalStore";
-import { useRef } from "react";
-import useAuthStore from "@/stores/authStore";
+
 
 const AuthenticationForm = () => {
     const containerRef = useRef(null);
@@ -16,11 +19,17 @@ const AuthenticationForm = () => {
     const closeModal = useAuthModalStore(state => state.closeModal);
     const page = useAuthModalStore(state => state.modalPage);
 
-    const hideForm = (_: any) => {
+    const hideForm = (_?: any) => {
         document.body.style.overflowY = "scroll";
         closeModal();
 
     }
+
+    useEffect(() => {
+        if(signedIn && visible) {
+            hideForm();
+        }
+    }, [signedIn]);
 
     useGSAP(() => {
         if(visible) {
