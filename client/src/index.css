@@ -4,6 +4,15 @@
 @custom-variant hmd (@media (max-height: 899px));
 @custom-variant hlg (@media (min-height: 1000px));
 
+@theme {
+    --color-primaryBackground: "#ffffff";
+    --color-secondaryBackground: "#f8fafc";
+    --color-footerBackground: #f6f9fc;
+    --color-primaryText: "#222222";
+    --color-contrastText: "#ffffff";
+    --color-secondaryText: "#6B7280";
+}
+
 
 html {
     background-color: #f8fafc;

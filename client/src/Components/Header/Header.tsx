@@ -25,6 +25,8 @@ const Header = () => {
     const ref = useRef(null);
     const openModal = useAuthModalStore(state => state.openModal);
 
+    const iconColor = scrolled ? "primaryText" : "contrastText";
+
     const handleLoginButtonClick = () => {
         openModal();
     }
@@ -44,7 +46,7 @@ const Header = () => {
                 <HeaderNavigationButton to="/" text="Experience" />
                 <HeaderNavigationButton to="/" text="About" />
             </div>
-            <div className="flex flex-row gap-7.5 h-max items-center justify-center">
+            <div className={ `flex flex-row gap-7.5 h-max items-center justify-center` }>
                 <SearchIcon className="header-icon w-8 h-8 cursor-pointer"/>
                 {isAuthenticated ? <UserIcon className="header-icon w-8 h-8 cursor-pointer"/> : <GenericButton onClick={handleLoginButtonClick} text="Login" className="rounded-[35px]! w-25 bg-black! text-white! outline-none! text-[17px]!"/> }
             </div>

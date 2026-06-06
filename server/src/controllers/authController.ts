@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
 import { prisma } from "../db/prisma";
-import { insertSession, isSessionValid } from "./sessionController";
+import { insertSession, invalidateSession, isSessionValid, rotateToken } from "./sessionController";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
@@ -14,10 +14,17 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_EXPIRATION_TIME = process.env.JWT_EXPIRATION_TIME || "15m";
 const JWT_REFRESH_EXPIRATION_TIME = process.env.JWT_REFRESH_EXPIRATION_TIME || "30d";
 
+const JWT_REFRESH_EXPIRATION_TIME_MS = turnIntoTimestamp(JWT_REFRESH_EXPIRATION_TIME);
+
+interface AuthenticatedRequest extends Request {
+    user?: {
+        id: string;
+        sessionId: string;
+    }
+}
+
 const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
-
-    console.log("Received refresh token:", refreshToken);
 
     if(!refreshToken) return res.status(400).json({ message: "token_not_provided" });
 
@@ -28,17 +35,20 @@ const refreshToken = async (req: Request, res: Response) => {
         const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
         const newRefreshToken = generateToken({ ... payload, exp: usedToken.exp }, JWT_REFRESH_SECRET);
 
-        const sessionValid = await isSessionValid(payload.userId, payload.sessionId, refreshToken);
+        const sessionValid = await isSessionValid(refreshToken, payload);
 
         if(!sessionValid.valid) {
             return res.status(400).json({ message: sessionValid.reason});
         }
 
-        console.log(newRefreshToken);
+        const expirationTime = usedToken.exp ? (usedToken.exp - Date.now()/1000) : JWT_REFRESH_EXPIRATION_TIME_MS/1000;
 
-        await insertSession(newRefreshToken as string, payload);
+        await rotateToken(refreshToken, payload);
+        await insertSession(newRefreshToken as string, payload, expirationTime);
 
-        res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: true, maxAge: turnIntoTimestamp(JWT_REFRESH_EXPIRATION_TIME) });
+        res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS });
+        
+        console.log("New refresh token issued for user ", payload.userId, " with session ", payload.sessionId);
 
         return res.status(200).json({ accessToken });
 
@@ -75,7 +85,8 @@ const login = async (req: Request, res: Response) => {
 
         const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
         const refreshToken = generateToken(payload, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRATION_TIME);
-        await insertSession(refreshToken as string, payload);
+
+        await insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
 
         res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: turnIntoTimestamp(JWT_REFRESH_EXPIRATION_TIME) });
 
@@ -118,14 +129,26 @@ const register = async (req: Request, res: Response) => {
     }
 }
 
-const getCurrentUser = async (req: Request, res: Response) => {
+const logout = async (req: AuthenticatedRequest, res: Response) => {
+    if(!req.user) return res.status(401).json({ message: "Unauthorized" });
+    await invalidateSession({ userId: req.user.id, sessionId: req.user.sessionId });
+    res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: true });
+    return res.status(200).json({ message: "Logged out successfully" });
+}
+
+const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
+    if(!req.user) return res.status(401).json({ message: "Unauthorized" });
+
+
     const userId = req.user.id; 
 
     try {
         const user = await prisma.users.findUnique({ where: { id: userId }, select: { id: true, email: true, firstName: true, lastName: true, country: true } });
+
         if(!user) {
             return res.status(404).json({ message: "user_not_found" });
         }
+
         return res.status(200).json({ user });
     } catch (error) {
         console.log(error);
@@ -134,4 +157,4 @@ const getCurrentUser = async (req: Request, res: Response) => {
 
 }
 
-export { login, register, refreshToken, getCurrentUser }
+export { login, register, refreshToken, getCurrentUser, logout }

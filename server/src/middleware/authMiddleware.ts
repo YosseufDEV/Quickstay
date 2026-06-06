@@ -9,6 +9,8 @@ const checkAuthentication = (req: any, res: any, next: any) => {
 
     const token = authHeader.split(" ")[1];
 
+    console.log(token);
+
     try {
         const decodedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string) as jwt.JwtPayload;
         req.user = { id: decodedToken.userId, sessionId: decodedToken.sessionId };
@@ -16,6 +18,7 @@ const checkAuthentication = (req: any, res: any, next: any) => {
         next();
     } catch (error) {
         console.log("user is not authenticated:");
+        console.log(error);
         if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
             switch (error.name) {
                 case "TokenExpiredError":

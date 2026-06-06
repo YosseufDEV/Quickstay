@@ -67,8 +67,8 @@ const SelectBox = (props: SelectBoxProps) => {
                     </div>
                     <hr className="border-gray-200"/>
                     <div className="max-h-[30vh] p-2 overflow-y-scroll flex flex-col ">
-                        { result.map((item: string) => 
-                            <SelectBoxItem selected onClick={() => handleSelect(item)} value={item} label={item} />) 
+                        { result.map((item: string, index) => 
+                            <SelectBoxItem key={index} selected onClick={() => handleSelect(item)} value={item} label={item} />) 
                         }
                         { result.length === 0 &&
                             <div className="py-3 flex items-center justify-center h-full">

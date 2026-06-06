@@ -20,7 +20,7 @@ const FooterSection = (props: FooterSectionProps) => {
             <h3 className="text-xl font-[Playfair] text-black">{props.title.toUpperCase()}</h3>
         }
             <ul className="flex flex-col gap-2 text-sm font-[Inter] *:text-[#6B7280]! *:no-underline! *:font-normal!">
-                { props.items.map((item: string, index: number) => <NavLink to={`/${item}`}><li key={index}>{item}</li></NavLink>) }
+                { props.items.map((item: string, index: number) => <NavLink key={index} to={`/${item}`}><li>{item}</li></NavLink>) }
             </ul>
         </div>
     )
@@ -29,7 +29,7 @@ const FooterSection = (props: FooterSectionProps) => {
 const Footer = () => {
     const description = "Discover the world's most extraordinary places to stay, from boutique hotels to luxury villas and private islands."
     return (
-        <footer className="content-container bg-[#f6f9fc] w-full flex flex-col">
+        <footer className="content-container bg-footerBackground w-full flex flex-col">
             <div className="flex justify-between  w-full py-8 pt-3">
                 <div className={styles.siteInfo}>
                     <Logo className="fill-black"/>
@@ -43,6 +43,7 @@ const Footer = () => {
                 </div>
 
                 <FooterSection title="Company" items={["About", "Careers", "Press", "Blog", "Partners"]} />
+
                 <FooterSection title="Support" items={["Help Center", "Cancellation Options", "Neighborhood Support", "Trust & Safety", "Contact Us"]} />
 
                 <div className="flex flex-col gap-4">
