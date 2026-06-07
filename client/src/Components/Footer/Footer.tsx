@@ -17,7 +17,7 @@ const FooterSection = (props: FooterSectionProps) => {
     return (
         <div className="flex flex-col gap-4">
         { props.title &&
-            <h3 className="text-xl font-[Playfair] text-black">{props.title.toUpperCase()}</h3>
+            <h3 className="text-xl font-Playfair text-black">{props.title.toUpperCase()}</h3>
         }
             <ul className="flex flex-col gap-2 text-sm font-[Inter] *:text-[#6B7280]! *:no-underline! *:font-normal!">
                 { props.items.map((item: string, index: number) => <NavLink key={index} to={`/${item}`}><li>{item}</li></NavLink>) }
@@ -47,7 +47,7 @@ const Footer = () => {
                 <FooterSection title="Support" items={["Help Center", "Cancellation Options", "Neighborhood Support", "Trust & Safety", "Contact Us"]} />
 
                 <div className="flex flex-col gap-4">
-                    <h1 className="font-[Playfair] text-xl text-black">STAY UPDATED</h1>
+                    <h1 className="font-Playfair text-xl text-black">STAY UPDATED</h1>
                     <p className="max-w-90 text-sm text-gray-500">Subscribe to our newsletter for travel inspiration and special offers.</p>
                     <form className="flex items-center justify-start">
                         <input className={styles.submitInput} placeholder="Your email"/>

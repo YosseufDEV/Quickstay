@@ -20,7 +20,7 @@ const OfferCard = (props: OfferProps) => {
                 <p>{props.discount}% OFF</p>
             </div>
             <div className="flex flex-col justify-center items-start gap-1">
-                <p className="text-white text-2xl">{props.title}</p>
+                <p className="text-white text-2xl font-Playfair font-medium">{props.title}</p>
                 <p>{props.description}</p>
                 <p className="text-gray-300 text-sm">Expires {props.expiry}</p>
             </div>

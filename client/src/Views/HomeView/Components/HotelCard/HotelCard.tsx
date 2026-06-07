@@ -23,7 +23,7 @@ const HotelCard = (props: HotelProps) => {
                 </div> }
             </div>
             <div className="px-5 py-4 w-full flex flex-col gap-4 justify-start align-start">
-                <div className={`${styles.title} text-xl flex-row`}>
+                <div className={`${styles.title} font-normal! text-xl flex-row`}>
                     <p>{props.name}</p>
                     <div className="flex flex-row-reverse gap-1 content-center items-center">
                         <p className="text-sm font-[Inter]">{props.rating}</p>

@@ -19,17 +19,12 @@
 }
 
 .title {
-    font-family: Playfair;
+    font-family: Playfair Display;
     color: white;
     font-weight: bolder;
     font-size: 56px;
     max-width: 600px;
     line-height: 60px;
-}
-
-.description {
-    color: white;
-    max-width: 500px;
 }
 
 .tag p {

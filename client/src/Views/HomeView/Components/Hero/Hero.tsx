@@ -1,7 +1,7 @@
 import styles from './Hero.module.css';
 
 const Hero = () => {
-    const description = "Unparalleled luxury and comfort await at the world's most exclusive hotels and resorts. Start your journey today.";
+    const description = <p className="text-white">Unparalleled luxury and comfort await at the world's most exclusive <br /> hotels and resorts. Start your journey today.</p>
 
     return (
         <div className={`${styles.hero} h-min-full content-container`}>
@@ -10,7 +10,7 @@ const Hero = () => {
             </div>
             <div className={styles.infoContainer}>
                 <p className={styles.title}>Discover Your Perfect Gateway Destination</p>
-                <p className={styles.description}>{description}</p>
+                {description}
             </div>
         </div>
     )

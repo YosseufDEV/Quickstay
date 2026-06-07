@@ -15,11 +15,12 @@ const router = createBrowserRouter([
         Component: App,
         children: [
             {
-               index: true,
-               Component: HomeView
+                path: "/",
+                Component: HomeView
             },
             {
-                path: "hotels",
+                index: true,
+                path: "/hotels",
                 Component: HotelsView
             }
         ]
