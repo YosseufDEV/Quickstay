@@ -19,7 +19,9 @@ const insertSession = async (token: string, payload: payload, exp: number=JWT_RE
 
     try {
         await redis.set(`rt:${payload.userId}:${payload.sessionId}:${hashedToken}`, payload.sessionId);
+        await redis.sAdd(`rt:${payload.userId}:${payload.sessionId}`, hashedToken);
         await redis.expire(`rt:${payload.userId}:${payload.sessionId}:${hashedToken}`, Math.trunc(exp), "NX"); 
+
     } catch(error) {
         console.error("Error inserting session into Redis: ", error);
     }
@@ -38,7 +40,9 @@ const rotateToken = async (token: string, payload: payload) => {
 
 const invalidateAllSessions = async (userId: string) => {
     try {
-        const { keys } = await redis.scan(`rt:${userId}:*`);
+        const keys = await redis.sMembers(`rt:${userId}:*`)
+
+        console.log(keys);
 
         if(keys.length > 0) {
             await redis.del(keys);
@@ -51,7 +55,7 @@ const invalidateAllSessions = async (userId: string) => {
 const invalidateSession = async (payload: payload) => {
     const { userId, sessionId } = payload;
     try {
-        const { keys } = await redis.scan(`rt:${userId}:${sessionId}:*`);
+        const keys = await redis.sMembers(`rt:${userId}:${sessionId}`);
         await redis.del(keys);
     } catch(error) {
         console.error("Error invalidating session in Redis: ", error);

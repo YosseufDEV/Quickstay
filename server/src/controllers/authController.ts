@@ -3,10 +3,12 @@ import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
+import { prisma } from "../db/prisma";
+
+import type { AuthenticatedRequest } from "../types/auth";
+import { insertSession, invalidateSession, isSessionValid, rotateToken } from "./sessionController";
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
-import { prisma } from "../db/prisma";
-import { insertSession, invalidateSession, isSessionValid, rotateToken } from "./sessionController";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
@@ -15,13 +17,6 @@ const JWT_EXPIRATION_TIME = process.env.JWT_EXPIRATION_TIME || "15m";
 const JWT_REFRESH_EXPIRATION_TIME = process.env.JWT_REFRESH_EXPIRATION_TIME || "30d";
 
 const JWT_REFRESH_EXPIRATION_TIME_MS = turnIntoTimestamp(JWT_REFRESH_EXPIRATION_TIME);
-
-interface AuthenticatedRequest extends Request {
-    user?: {
-        id: string;
-        sessionId: string;
-    }
-}
 
 const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
@@ -71,33 +66,6 @@ const refreshToken = async (req: Request, res: Response) => {
     }
 }
 
-const login = async (req: Request, res: Response) => {    
-    const { email, password } = req.body;
-
-    try {
-        const user = await prisma.users.findUnique({ where: { email } });
-
-        if(!user) return res.status(404).json({ message: "user_not_found" });
-        
-        if(!await bcrypt.compare(password, user.password)) return res.status(401).json({ message: "invalid_email_password" });
-        
-        const payload = { userId: user.id, sessionId: crypto.randomUUID() };
-
-        const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
-        const refreshToken = generateToken(payload, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRATION_TIME);
-
-        await insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
-
-        res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: turnIntoTimestamp(JWT_REFRESH_EXPIRATION_TIME) });
-
-        return res.status(200).json({ accessToken, user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, country: user.country } });
-    }
-    catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-}
-
 const register = async (req: Request, res: Response) => {
     const { email, firstName, lastName, password, country } = req.body;
 
@@ -109,7 +77,7 @@ const register = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, await salt);
 
         if(existingUser) {
-            return res.status(400).json({ status: "error", message: "Email already in use" });
+            return res.status(400).json({ message: "Email already in use" });
         }
 
         const user = await prisma.users.create({
@@ -122,10 +90,38 @@ const register = async (req: Request, res: Response) => {
             },
         });
 
-        res.status(201).json({ status: "success", data: user });
+        res.status(201).json({ data: user });
     } catch(error) {
         console.log(error);
-        res.status(500).json({ status: "error", message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+
+const login = async (req: Request, res: Response) => {    
+    const { email, password } = req.body;
+
+    try {
+        const user = await prisma.users.findUnique({ where: { email } });
+
+        if(!user) return res.status(404).json({ message: "user_not_found" });
+        
+        if(!await bcrypt.compare(password, user.password)) return res.status(401).json({ message: "invalid_email_password" });
+        
+        const payload = { userId: user.id, sessionId: crypto.randomUUID(), role: user.role };
+
+        const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
+        const refreshToken = generateToken(payload, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRATION_TIME);
+
+        await insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
+
+        res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: turnIntoTimestamp(JWT_REFRESH_EXPIRATION_TIME) });
+
+        return res.status(200).json({ accessToken, user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, country: user.country, role: user.role } });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 

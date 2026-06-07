@@ -1,19 +1,21 @@
 import jwt from "jsonwebtoken";
+import type { Request, Response } from "express";
+import type { AuthenticatedRequest } from "../types/auth";
 
-const checkAuthentication = (req: any, res: any, next: any) => {
+const checkAuthentication = (req: Request, res: Response, next: any) => {
     const authHeader = req.headers.authorization;
 
-    if(!authHeader || !authHeader.startsWith("Bearer ")) {
+    const token = authHeader?.split(" ")[1];
+
+    console.log("I'm in the authentication middleware");
+
+    if(!token || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ message: "token_not_provided" });
     }
 
-    const token = authHeader.split(" ")[1];
-
-    console.log(token);
-
     try {
         const decodedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string) as jwt.JwtPayload;
-        req.user = { id: decodedToken.userId, sessionId: decodedToken.sessionId };
+        req.user = { id: decodedToken.userId, sessionId: decodedToken.sessionId, role: decodedToken.role };
         console.log("user is authenticated with id: ", req.user.id);
         next();
     } catch (error) {
