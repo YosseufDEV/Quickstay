@@ -100,8 +100,8 @@ const HotelsView = () => {
                 <p className="section-title">Hotel Rooms</p>
                 <p className="section-description mb-10">Take advantage of our limited-time offers and special packages to enhance <br/> your stay and create unforgettable memories.</p>
                 {/* <SkeletonHotelCard /> */}
-                <Skeleton width={360} height={240} className="bg-red" containerClassName="flex-1" />
-                {/* { mappedHotels } */}
+                {/* <Skeleton width={360} height={240} className="bg-red" containerClassName="flex-1" /> */}
+                { mappedHotels }
             </div>
             <div className="flex items-start justify-center">
                 <FilterHotels />

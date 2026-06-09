@@ -65,10 +65,10 @@ const LoginView = () => {
 
             <form onSubmit={handleSubmit(handleLogin)} className="flex flex-col gap-3 w-full">
 
-                <Input {...register("email")} validity={ { message: errors.email?.message, isValid: !!(errors.email) } } type="email" placeholder="Enter your email address" label="Email address"/>
+                <Input {...register("email")} validity={ { message: errors.email?.message, isValid: !(errors.email) } } type="email" placeholder="Enter your email address" label="Email address"/>
 
                 {/* TODO: Implement password for this*/}
-                <Input {...register("password")} validity={ { message: errors.password?.message, isValid: !!(errors.password) } } type="text" placeholder="Enter your password" label="Password"/>
+                <Input {...register("password")} validity={ { message: errors.password?.message, isValid: !(errors.password) } } type="text" placeholder="Enter your password" label="Password"/>
 
                 {/* <Checkbox /> */}
 

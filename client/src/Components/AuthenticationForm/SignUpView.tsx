@@ -68,11 +68,11 @@ const SignUpView = () => {
                 </div>
 
 
-                <Input {...register("email")} validity={ { isValid: !!(errors.email?.message), message: errors.email?.message } } required type="text" placeholder="Email address" label="Email address"/>
+                <Input {...register("email")} validity={ { isValid: !(errors.email?.message), message: errors.email?.message } } required type="text" placeholder="Email address" label="Email address"/>
 
                 <div className="flex gap-5">
-                    <Input {...register("firstName")} required validity={ { isValid: !!(errors.firstName?.message), message: errors.firstName?.message } } type="text" placeholder={"First Name"} label="First Name"/>
-                    <Input {...register("lastName")} required validity={ { isValid: !!(errors.lastName?.message), message: errors.lastName?.message } }  type="text" placeholder="Last Name" label="Last Name"/>
+                    <Input {...register("firstName")} required validity={ { isValid: !(errors.firstName?.message), message: errors.firstName?.message } } type="text" placeholder={"First Name"} label="First Name"/>
+                    <Input {...register("lastName")} required validity={ { isValid: !(errors.lastName?.message), message: errors.lastName?.message } }  type="text" placeholder="Last Name" label="Last Name"/>
                 </div>
 
                 <Controller 
@@ -82,7 +82,7 @@ const SignUpView = () => {
                 />
 
                 {/* Todo: Implement password for this*/}
-                <Input {...register("password")} required validity={ { isValid: !!(errors.password?.message), message: errors.password?.message } } type="text" placeholder="Password" label="Password"/>
+                <Input {...register("password")} required validity={ { isValid: !(errors.password?.message), message: errors.password?.message } } type="text" placeholder="Password" label="Password"/>
 
                 <div className="flex flex-col gap-3">
                     <GenericButton text="Sign up" className="shadow-sm h-[10%] bg-black! mt-5 font-semibold! text-white border-none text-[15px]!"  />
