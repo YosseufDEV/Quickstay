@@ -8,6 +8,10 @@ import FreeWifiIcon from "@/assets/freeWifiIcon.svg?react";
 import FreeBreakfastIcon from "@/assets/freeBreakfastIcon.svg?react";
 import MountainIcon from "@/assets/mountainIcon.svg?react";
 import RoomServiceIcon from "@/assets/roomServiceIcon.svg?react";
+import PoolAccessIcon from "@/assets/poolIcon.svg?react";
+import FilterHotels from "../FilterHotels/FilterHotels";
+import SkeletonHotelCard from "./Components/SkeletonHotelCard/SkeletonHotelCard";
+import Skeleton from "react-loading-skeleton";
 
 const tags = {
     freeWifi: {
@@ -28,6 +32,10 @@ const tags = {
         text: "Room Service",
         icon: RoomServiceIcon,
     },
+    poolAccess: {
+        text: "Pool Access",
+        icon: PoolAccessIcon,
+    },
 }
 
 const data = [
@@ -36,7 +44,7 @@ const data = [
         name: "The Grand Resort",
         pricePerNight: 200,
         rating: 4.5,
-        tags: [tags.freeWifi, tags.freeBreakfast, tags.mountainView],
+        tags: [tags.freeWifi, tags.poolAccess, tags.mountainView],
         locationHotel: "Skyline Boulevard, CA, USA",
         location: "Los Angelos, California, USA",
         imageSrc: RoomImage1,
@@ -78,23 +86,25 @@ const data = [
         rating: 4.6,
         location: "Orlando, Florida, USA",
         locationHotel: "International Drive, FL, USA",
-        tags: [tags.freeWifi, tags.freeBreakfast, tags.roomService],
+        tags: [tags.freeWifi, tags.freeBreakfast, tags.poolAccess],
         imageSrc: RoomImage1,
     },
 ]
 
 const HotelsView = () => {
-    const mappedHotels = data.map((hotel, i) => <><HotelCard key={hotel.id} { ...hotel } /> { (i!=data.length-1) && <hr className="w-[50%] margin-auto my-15 border-gray-500"/> }</>);
+    const mappedHotels = data.map((hotel, i) => <><HotelCard key={hotel.id} { ...hotel } /> { (i!=data.length-1) && <hr className="my-15 border-gray-500"/> }</>);
 
     return (
-        <div className="w-full bg-white content-container pt-30! grid grid-cols-[3fr_1fr]">
+        <div className="w-full bg-white content-container pt-30! grid grid-cols-[auto_1fr]">
             <div>
                 <p className="section-title">Hotel Rooms</p>
                 <p className="section-description mb-10">Take advantage of our limited-time offers and special packages to enhance <br/> your stay and create unforgettable memories.</p>
-                { mappedHotels }
+                {/* <SkeletonHotelCard /> */}
+                <Skeleton width={360} height={240} className="bg-red" containerClassName="flex-1" />
+                {/* { mappedHotels } */}
             </div>
-            <div>
-                Search Options
+            <div className="flex items-start justify-center">
+                <FilterHotels />
             </div>
         </div>
     )
