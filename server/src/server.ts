@@ -8,7 +8,8 @@ import { prisma } from './db/prisma';
 import redis from "./db/redis";
 
 
-import AuthRoutes from "./routes/authRoutes.ts"
+import AuthRouter from "./routes/authRoutes.ts"
+import UserRouter from "./routes/userRoutes.ts"
 
 config();
 
@@ -18,7 +19,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CLIENT_URL, methods: "GET,POST,PUT,DELETE", credentials: true }));
 
-app.use("/auth", AuthRoutes);
+app.use("/auth", AuthRouter);
+app.use("/users", UserRouter);
 
 const PORT = process.env.PORT || 5050;
 
