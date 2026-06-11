@@ -47,9 +47,9 @@ const ExclusiveOffers = () => {
     return (
         <div className="bg-white content-container w-full min-h-[50vh] flex flex-col gap-8 py-25!">
             <div>
-                <p className="text-[36px] font-[Playright]">Exclusive Offers</p>
+                <p className="section-title">Exclusive Offers</p>
                 <div className="flex justify-between">
-                    <p className="text-gray-500">Take advantage of our limited-time offers and special packages to enhance your stay and create unforgettable memories.</p>
+                    <p className="section-description">Take advantage of our limited-time offers and special packages to enhance your stay and create unforgettable memories.</p>
                     <div className="font-semibold flex items-center gap-1 cursor-pointer" ref={arrowParentRef}>
                         <p>View All Offers</p>
                         <AnimatedArrow color={"black"} hovered={hovered}/>

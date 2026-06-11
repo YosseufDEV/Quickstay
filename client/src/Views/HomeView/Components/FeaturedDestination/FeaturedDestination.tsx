@@ -9,7 +9,7 @@ import HotelImage4 from "../../../../assets/roomImg4.png"
 import GenericButton from '@/Components/GenericButton/GenericButton';
 
 const FeaturedDestination = () => {
-    const description = "Discover our handpicked selection of exceptional properties around the world, offering unparalleled luxury and unforgettable experiences.";
+    const description = <p className="section-description text-center">Discover our handpicked selection of exceptional properties around the world, offering<br/>unparalleled luxury and unforgettable experiences.</p>;
     const hotels = [
         {
             location: "Paris, France",
@@ -60,8 +60,8 @@ const FeaturedDestination = () => {
     return (
         <div className={styles.featuredDestination}>
             <div className={`${styles.info} content-container`}>
-                <p className={styles.title}>Featured Destination</p>
-                <p className={styles.description}>{description}</p>
+                <p className="section-title">Featured Destination</p>
+                {description}
             </div>
             <div className={styles.cardContainer}>
                 {hotelCards}

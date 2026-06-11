@@ -33,7 +33,7 @@ const Status = {
     },
     valid: {
         Icon: CheckIcon,
-        color:"#fb2c36",
+        color:"#34c759",
     }
 }
 

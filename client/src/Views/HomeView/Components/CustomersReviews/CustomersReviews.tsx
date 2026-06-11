@@ -30,8 +30,8 @@ const CustomersReviews = () => {
     return (
         <div className="font-[Outfit] w-full flex flex-col items-center gap-25 py-30 pt-20 px-50">
             <div className="w-full flex flex-col justify-between items-center">
-                <p className="font-[Playright] text-[36px]">What Our Guests Say</p>
-                <p className="text-gray-500 max-w-200 text-center">Discover why discerning travelers consistently choose QuickStay for their exclusive and luxurious accommodations around the world.</p>
+                <p className="section-title">What Our Guests Say</p>
+                <p className="section-description text-center">Discover why discerning travelers consistently choose QuickStay for their exclusive and luxurious<br/> accommodations around the world.</p>
             </div>
             <div className="w-full flex flex-row items-center justify-center gap-6">
                 {reviewCards}
