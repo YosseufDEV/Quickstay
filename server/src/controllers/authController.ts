@@ -32,16 +32,16 @@ const refreshToken = async (req: Request, res: Response) => {
         const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
         const newRefreshToken = generateToken({ ... payload, exp: usedToken.exp }, JWT_REFRESH_SECRET);
 
-        const sessionValid = await isSessionValid(refreshToken, payload);
-
-        if(!sessionValid.valid) {
-            return sendResponse(res, StatusCode.BAD_REQUEST, sessionValid.reason || "invalid_session");
-        }
+        // const sessionValid = await isSessionValid(refreshToken, payload);
+        //
+        // if(!sessionValid.valid) {
+        //     return sendResponse(res, StatusCode.BAD_REQUEST, sessionValid.reason || "invalid_session");
+        // }
 
         const expirationTime = usedToken.exp ? (usedToken.exp - Date.now()/1000) : JWT_REFRESH_EXPIRATION_TIME_MS/1000;
 
-        await rotateToken(refreshToken, payload);
-        await insertSession(newRefreshToken as string, payload, expirationTime);
+        // await rotateToken(refreshToken, payload);
+        // await insertSession(newRefreshToken as string, payload, expirationTime);
 
         res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS });
         
@@ -155,10 +155,10 @@ const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
         const user = await prisma.users.findUnique({ where: { id: userId }, select: { id: true, email: true, firstName: true, lastName: true, country: true } });
 
         if(!user) {
-            return res.status(404).json({ message: "user_not_found" });
+            return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");
         }
 
-        return res.status(200).json({ user });
+        return sendResponse(res, StatusCode.OK, "", { user });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal server error" });

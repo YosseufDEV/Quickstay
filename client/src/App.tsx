@@ -6,18 +6,13 @@ import useAuthStore from "./stores/authStore";
 
 const App = () => {
     useEffect(() => {
-        getCurrentUser().then((res) => {
-            if(res.status == 400 || res.status == 401) {
-                console.log(res.message); 
-            }
 
-            const { payload } = res;
-            if(payload.user) {
-                useAuthStore.getState().setUser(payload.user);
-            }
-        }).catch((error) => {
-            console.error("Failed to fetch current user:", error);
-        });
+        getCurrentUser().then((res) => {
+            if(res.success) {
+                useAuthStore.getState().setUser(res.payload.user);
+            } 
+        })
+
     }, []);
 
     return (

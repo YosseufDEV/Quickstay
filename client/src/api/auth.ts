@@ -1,27 +1,41 @@
-import { AxiosError } from "axios";
+import { AxiosError, type AxiosResponse } from "axios";
 import api from "./client";
 import useAuthStore from "@/stores/authStore";
 
+type Response = {
+    success: true;
+    payload?: any;
+    message?: never;
+} | {
+    success: false;
+    payload?: never;
+    message?: string;
+}
+
 const login = async (email: string, password: string) => {
-    try {
-        const { data } = await api.post("/auth/login", { email, password });
-        useAuthStore.getState().setAuthentication(data.user, data.accessToken);
-        return data;
-    } catch (error) {
-        if(error instanceof AxiosError) {
-            return error.response;
+    return await api.post("/auth/login", { email, password }).then(res => {
+        const { payload } = res.data;
+
+        useAuthStore.getState().setAuthentication(payload.user, payload.accessToken);
+
+        return { success: true, payload };
+    }).catch((error: AxiosError) => {
+        const res = error.response as AxiosResponse;
+
+        if(res.status !== 200) {
+            return { success: false, message: res.data.message || "Login failed" };
         }
-        return { error: "An unexpected error occurred" };
-    }
+    })
 }
 
 const refreshSession = async () => {
     const authState = useAuthStore.getState();
     try {
-        authState.setAuthToken((await api.post("/auth/refresh")).data.accessToken);
+        const { payload } = (await api.post("/auth/refresh") ).data;
+        authState.setAuthToken(payload.accessToken);
+
         const userData = (await api.get("/auth/me")).data;
         authState.setUser(userData);
-        console.log(authState);
 
         return { user: userData, accessToken: authState.authToken };
     } catch (error) {
@@ -31,17 +45,23 @@ const refreshSession = async () => {
     }
 }
 
-const getCurrentUser = async () => {
+const getCurrentUser = async (): Promise<Response> => {
+    return await api.get("/auth/me").then(res => {
+        const { payload } = res.data;
+        return { success: true, payload };
+    }).catch((error: AxiosError) => {
+        const res: AxiosError & { payload: any, message: string } = error.response as any;
+        return { success: false, message: res?.message || "Failed to fetch user data" };
+    })
+}
+
+const logout = async () => {
     try {
-        const { data } = await api.get("/auth/me");
-        console.log(data);
-        return data;
-    } catch (error) {
+        await api.post("/auth/logout");
+        useAuthStore.getState().logout();
+    } catch(error) {
         console.log(error);
-        if(error instanceof AxiosError) {
-            return error.response;
-        }
     }
 }
 
-export { login, refreshSession, getCurrentUser }
+export { login, refreshSession, getCurrentUser, logout }

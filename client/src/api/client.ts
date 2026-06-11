@@ -33,12 +33,11 @@ api.interceptors.response.use(
     async error => {
         const originalRequest: InternalAxiosRequestConfig & { _retry: boolean } = error.config;
 
-        if (error.response.status !== 401 || (originalRequest._retry)) {
+        if (error.response.status !== 401 || (originalRequest._retry) || originalRequest.url === "/auth/login") {
             return Promise.reject(error);
         }
 
         if(refreshing) {
-            console.log("fuck this shit I got queued");
             return new Promise((resolve, reject) => {
                 requestQueue.push({ resolve, reject, config: originalRequest });
             }).then((token: string) => {
@@ -50,23 +49,23 @@ api.interceptors.response.use(
         originalRequest._retry = true;
         refreshing = true;
 
-        try {
-            const { data } = await axios.post("http://localhost:5050/auth/refresh", { withCredentials: true });
+        return await axios.post("http://localhost:5050/auth/refresh").then(res => {
+            const { payload } = res.data;
+            useAuthStore.getState().setAuthToken(payload.accessToken);
 
-            console.log("Token refreshed:", data.accessToken);
-            useAuthStore.getState().setAuthToken(data.accessToken);
-
-            processRequests({ token: data.accessToken }); 
+            processRequests({ token: payload.accessToken }); 
             return api(originalRequest);
-        } catch (refreshError) {
+        }).catch((error: AxiosError) => {
+
             useAuthStore.getState().logout();
-            if(refreshError instanceof AxiosError) {
-                processRequests({ error: refreshError.response }); 
-            }
-            return Promise.reject(refreshError);
-        } finally {
-            refreshing = false;
-        }
+
+            processRequests({ error: error.response }); 
+
+            console.log("Response:::", error.response);
+
+            return Promise.reject(error.response);
+        }).finally(() => refreshing = false)
+
     })
 
 export default api;

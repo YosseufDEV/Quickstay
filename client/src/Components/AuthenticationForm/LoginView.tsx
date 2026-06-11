@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useState } from "react"
 
 import GenericButton from "../GenericButton/GenericButton";
 import Input from "../Input/Input";
@@ -17,18 +18,30 @@ interface LoginFormData {
 }
 
 const LoginView = () => {
+    const [authenticationError, setAuthenticationError] = useState<string | null>(null);
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(loginSchema),
     });
-    const switchView = useAuthModalStore(state => state.setModalPage);
 
     const handleLogin = (data: LoginFormData) => {
         const { email, password } = data;
-        login(email, password).then(response => {
-            if(response.error) {
-                console.error("Login failed:", response.error);
-            } else {
+        login(email, password).then((response: any)=> {
+            if(response.success) {
                 console.log("Login successful:", response);
+            } else {
+                let message = "Login Failed"
+
+                switch(response.message) {
+                    case "user_not_found":
+                        message = "No account found with that email address.";
+                        break;
+                    case "invalid_credentials":
+                        message = "Incorrect email or password";
+                        break;
+                }
+
+                setAuthenticationError(message || "Login failed");
+                console.error("Login failed:", response.message);
             }
         })
 
@@ -42,12 +55,12 @@ const LoginView = () => {
         <div className="w-full hmd:py-[7vh] flex flex-col items-center justify-start">
             <p className="mb-10 flex flex-col text-center font-bold text-xl">Welcome Back! <span className="text-sm font-medium text-gray-600">Please log in to continue</span></p>
 
-            {/* { errors.authentication && */}
-            {/*     <div className="font-[Outfit] px-6 py-5 rounded-md w-full bg-red-50 border border-red-500 flex items-center justify-center gap-2"> */}
-            {/*         <DangerIcon className="w-6 h-6 fill-red-400 ml-2" /> */}
-            {/*         <p className="text-red-600 text-[17px]">{errors.authentication}</p> */}
-            {/*     </div> */}
-            {/* } */}
+            { authenticationError &&
+                <div className="font-[Outfit] text-[15px] mb-5 px-6 py-4 rounded-md w-full bg-red-50 border border-red-500 flex items-center justify-center gap-2">
+                    <DangerIcon className="w-[1.15em] h-[1.15em] fill-red-400" />
+                    <p className="text-red-600">{authenticationError}</p>
+                </div>
+            }
 
 
             <div className="w-full mb-5">
