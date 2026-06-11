@@ -8,6 +8,7 @@ import './index.css'
 
 import App from './App.tsx'
 import HotelsView from './Views/HotelsView/HotelsView.tsx'
+import HotelView from './Views/HotelView/HotelView.tsx'
 
 const router = createBrowserRouter([ 
     {
@@ -15,13 +16,15 @@ const router = createBrowserRouter([
         Component: App,
         children: [
             {
-                path: "/",
+                index: true,
                 Component: HomeView
             },
             {
-                index: true,
                 path: "/hotels",
-                Component: HotelsView
+                children: [
+                    { path: "explore", Component: HotelsView },
+                    { path: ":hotelName", Component: HotelView },
+                ],
             }
         ]
     }

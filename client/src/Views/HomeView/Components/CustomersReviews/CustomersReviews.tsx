@@ -28,7 +28,7 @@ const CustomersReviews = () => {
     const reviewCards = reviews.map((review) => <CustomerReviewCard key={review.id} { ...review } />);
 
     return (
-        <div className="font-[Outfit] w-full flex flex-col items-center gap-25 py-30 pt-20 px-50">
+        <div className="bg-[#f8fafc] font-[Outfit] w-full flex flex-col items-center gap-25 py-30 pt-20 px-50">
             <div className="w-full flex flex-col justify-between items-center">
                 <p className="section-title">What Our Guests Say</p>
                 <p className="section-description text-center">Discover why discerning travelers consistently choose QuickStay for their exclusive and luxurious<br/> accommodations around the world.</p>

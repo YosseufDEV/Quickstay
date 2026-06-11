@@ -18,7 +18,22 @@ export { Prisma }
 export * as $Enums from './enums.ts'
 export * from './enums.ts';
 /**
- * Model Users
+ * Model User
  * 
  */
-export type Users = Prisma.UsersModel
+export type User = Prisma.UserModel
+/**
+ * Model Hotel
+ * 
+ */
+export type Hotel = Prisma.HotelModel
+/**
+ * Model Tag
+ * 
+ */
+export type Tag = Prisma.TagModel
+/**
+ * Model HotelTag
+ * 
+ */
+export type HotelTag = Prisma.HotelTagModel

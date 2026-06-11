@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Outlet } from "react-router"
+import { Outlet, ScrollRestoration } from "react-router"
 
 import Header from "./Components/Header/Header"
 import Footer from "./Components/Footer/Footer";
@@ -15,6 +15,7 @@ function Layout() {
                 <Outlet/>
             </main>
             <Footer />
+            <ScrollRestoration />
         </>
   )
 }

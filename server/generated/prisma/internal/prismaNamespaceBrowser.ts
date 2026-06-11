@@ -51,7 +51,10 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  Users: 'Users'
+  User: 'User',
+  Hotel: 'Hotel',
+  Tag: 'Tag',
+  HotelTag: 'HotelTag'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -70,7 +73,7 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const UsersScalarFieldEnum = {
+export const UserScalarFieldEnum = {
   id: 'id',
   firstName: 'firstName',
   lastName: 'lastName',
@@ -80,7 +83,36 @@ export const UsersScalarFieldEnum = {
   role: 'role'
 } as const
 
-export type UsersScalarFieldEnum = (typeof UsersScalarFieldEnum)[keyof typeof UsersScalarFieldEnum]
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const HotelScalarFieldEnum = {
+  id: 'id',
+  rating: 'rating',
+  name: 'name',
+  exactAddress: 'exactAddress',
+  address: 'address',
+  pricePerNight: 'pricePerNight',
+  imageUrl: 'imageUrl'
+} as const
+
+export type HotelScalarFieldEnum = (typeof HotelScalarFieldEnum)[keyof typeof HotelScalarFieldEnum]
+
+
+export const TagScalarFieldEnum = {
+  id: 'id',
+  name: 'name'
+} as const
+
+export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagScalarFieldEnum]
+
+
+export const HotelTagScalarFieldEnum = {
+  hotelId: 'hotelId',
+  tagId: 'tagId'
+} as const
+
+export type HotelTagScalarFieldEnum = (typeof HotelTagScalarFieldEnum)[keyof typeof HotelTagScalarFieldEnum]
 
 
 export const SortOrder = {

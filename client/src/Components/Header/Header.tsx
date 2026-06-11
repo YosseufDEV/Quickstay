@@ -56,7 +56,7 @@ const Header = () => {
             </div>
             <div className="nav-buttons flex flex-row gap-7.5 m-auto" style={{ color: "red!" }}>
                 <HeaderNavigationButton  to="/" text="Home" />
-                <HeaderNavigationButton to="/hotels" text="Hotels" />
+                <HeaderNavigationButton to="/hotels/explore" text="Hotels" />
                 <HeaderNavigationButton to="/" text="Experience" />
                 <HeaderNavigationButton to="/" text="About" />
             </div>

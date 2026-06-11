@@ -10,6 +10,7 @@ import redis from "./db/redis";
 
 import AuthRouter from "./routes/authRoutes.ts"
 import UserRouter from "./routes/userRoutes.ts"
+import HotelRouter from "./routes/hotelRoutes.ts"
 
 config();
 
@@ -21,6 +22,7 @@ app.use(cors({ origin: process.env.CLIENT_URL, methods: "GET,POST,PUT,DELETE", c
 
 app.use("/auth", AuthRouter);
 app.use("/users", UserRouter);
+app.use("/hotels", HotelRouter);
 
 const PORT = process.env.PORT || 5050;
 

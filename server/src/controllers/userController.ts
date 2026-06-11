@@ -9,7 +9,7 @@ const getUserById = async (req: Request, res: Response) => {
         return sendResponse(res, StatusCode.BAD_REQUEST, "Please enter a valid user Id");
     }
 
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
         where: { id },
         select: {
             id: true,
@@ -31,7 +31,7 @@ const getUserById = async (req: Request, res: Response) => {
 }
 
 const getAllUsers = async (_: Request, res: Response) => {
-    const users = await prisma.users.findMany({
+    const users = await prisma.user.findMany({
         select: {
             id: true,
             firstName: true,

@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@quickstay/validators": "^1.0.0",
     "@tailwindcss/vite": "^4.3.0",
+    "@tanstack/react-query": "^5.101.0",
     "@types/axios": "^0.9.36",
     "@types/gsap": "^1.20.2",
     "@types/react-router": "^5.1.20",

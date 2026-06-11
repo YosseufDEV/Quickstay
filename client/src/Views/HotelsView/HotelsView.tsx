@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+
 import RoomImage1 from "@/assets/roomImg1.png";
 import RoomImage2 from "@/assets/roomImg2.png";
 import RoomImage3 from "@/assets/roomImg3.png";
@@ -10,8 +12,13 @@ import MountainIcon from "@/assets/mountainIcon.svg?react";
 import RoomServiceIcon from "@/assets/roomServiceIcon.svg?react";
 import PoolAccessIcon from "@/assets/poolIcon.svg?react";
 import FilterHotels from "../FilterHotels/FilterHotels";
+
+
 import SkeletonHotelCard from "./Components/SkeletonHotelCard/SkeletonHotelCard";
 import Skeleton from "react-loading-skeleton";
+import { getHotels } from "@/api/hotel";
+import { useEffect } from "react";
+import axios from "axios";
 
 const tags = {
     freeWifi: {
@@ -92,16 +99,27 @@ const data = [
 ]
 
 const HotelsView = () => {
-    const mappedHotels = data.map((hotel, i) => <><HotelCard key={hotel.id} { ...hotel } /> { (i!=data.length-1) && <hr className="my-15 border-gray-500"/> }</>);
+
+    const { data: hotels, isPending, isLoading } = useQuery({
+        queryKey: ["hotels"],
+        queryFn: async () => await getHotels(1000)
+    });
+
+    const mappedHotels = hotels?.map((hotel, i: number) => <><HotelCard key={hotel.id} { ...hotel } imageUrl={`http://localhost:5001/${hotel.imageUrl.split("/").pop()}`} /> { (i!=data.length-1) && <hr className="my-15 border-gray-500"/> }</>);
+
+    useEffect(() => {
+        console.log(hotels);
+    }, [hotels]);
 
     return (
-        <div className="w-full bg-white content-container pt-30! grid grid-cols-[auto_1fr]">
+        <div className="w-full bg-white mb-20 content-container pt-30! grid grid-cols-[auto_1fr]">
             <div>
                 <p className="section-title">Hotel Rooms</p>
                 <p className="section-description mb-10">Take advantage of our limited-time offers and special packages to enhance <br/> your stay and create unforgettable memories.</p>
                 {/* <SkeletonHotelCard /> */}
                 {/* <Skeleton width={360} height={240} className="bg-red" containerClassName="flex-1" /> */}
                 { mappedHotels }
+                {/* { !isLoading ? hotels.map((hotel) => <img src={`http://localhost:5001/${hotel.imageUrl.split("/").pop()}`}  className="w-50" alt={hotel.name} />) : null } */}
             </div>
             <div className="flex items-start justify-center">
                 <FilterHotels />

@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.8.0",
   "engineVersion": "3c6e192761c0362d496ed980de936e2f3cebcd3a",
   "activeProvider": "postgresql",
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Get a free hosted Postgres database in seconds: `npx create-db`\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n\nmodel Users {\n  id        String @id @default(uuid())\n  firstName String\n  lastName  String\n  email     String @unique\n  country   String\n  password  String\n  role      Role   @default(USER)\n}\n",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Get a free hosted Postgres database in seconds: `npx create-db`\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n\nmodel User {\n  id        String @id @default(uuid())\n  firstName String @map(\"first_name\")\n  lastName  String @map(\"last_name\")\n  email     String @unique\n  country   String\n  password  String\n  role      Role   @default(USER)\n}\n\nmodel Hotel {\n  id            String @id @default(uuid())\n  rating        Int\n  name          String\n  exactAddress  String @map(\"exact_address\")\n  address       String\n  pricePerNight Int    @map(\"price_per_night\")\n  imageUrl      String @map(\"image_url\")\n  tags          Tag[]\n}\n\nmodel Tag {\n  id     Int     @id @default(autoincrement())\n  name   String  @unique\n  hotels Hotel[]\n}\n\nmodel HotelTag {\n  hotelId String\n  tagId   String\n\n  @@id([hotelId, tagId])\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -32,10 +32,10 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Users\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"firstName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"firstName\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"first_name\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"last_name\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"}],\"dbName\":null},\"Hotel\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rating\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"exactAddress\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"exact_address\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pricePerNight\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"price_per_night\"},{\"name\":\"imageUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"image_url\"},{\"name\":\"tags\",\"kind\":\"object\",\"type\":\"Tag\",\"relationName\":\"HotelToTag\"}],\"dbName\":null},\"Tag\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"hotels\",\"kind\":\"object\",\"type\":\"Hotel\",\"relationName\":\"HotelToTag\"}],\"dbName\":null},\"HotelTag\":{\"fields\":[{\"name\":\"hotelId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tagId\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 config.parameterizationSchema = {
-  strings: JSON.parse("[\"where\",\"Users.findUnique\",\"Users.findUniqueOrThrow\",\"orderBy\",\"cursor\",\"Users.findFirst\",\"Users.findFirstOrThrow\",\"Users.findMany\",\"data\",\"Users.createOne\",\"Users.createMany\",\"Users.createManyAndReturn\",\"Users.updateOne\",\"Users.updateMany\",\"Users.updateManyAndReturn\",\"create\",\"update\",\"Users.upsertOne\",\"Users.deleteOne\",\"Users.deleteMany\",\"having\",\"_count\",\"_min\",\"_max\",\"Users.groupBy\",\"Users.aggregate\",\"AND\",\"OR\",\"NOT\",\"id\",\"firstName\",\"lastName\",\"email\",\"country\",\"password\",\"Role\",\"role\",\"equals\",\"in\",\"notIn\",\"not\",\"lt\",\"lte\",\"gt\",\"gte\",\"contains\",\"startsWith\",\"endsWith\",\"set\"]"),
-  graph: "KQkQChoAACIAMBsAAAQAEBwAACIAMB0BAAAAAR4BACMAIR8BACMAISABAAAAASEBACMAISIBACMAISQAACQkIgEAAAABACABAAAAAQAgChoAACIAMBsAAAQAEBwAACIAMB0BACMAIR4BACMAIR8BACMAISABACMAISEBACMAISIBACMAISQAACQkIgADAAAABAAgAwAABQAwBAAAAQAgAwAAAAQAIAMAAAUAMAQAAAEAIAMAAAAEACADAAAFADAEAAABACAHHQEAAAABHgEAAAABHwEAAAABIAEAAAABIQEAAAABIgEAAAABJAAAACQCAQgAAAkAIAcdAQAAAAEeAQAAAAEfAQAAAAEgAQAAAAEhAQAAAAEiAQAAAAEkAAAAJAIBCAAACwAwAQgAAAsAMAcdAQAoACEeAQAoACEfAQAoACEgAQAoACEhAQAoACEiAQAoACEkAAApJCICAAAAAQAgCAAADgAgBx0BACgAIR4BACgAIR8BACgAISABACgAISEBACgAISIBACgAISQAACkkIgIAAAAEACAIAAAQACACAAAABAAgCAAAEAAgAwAAAAEAIA8AAAkAIBAAAA4AIAEAAAABACABAAAABAAgAxUAACUAIBYAACcAIBcAACYAIAoaAAAaADAbAAAXABAcAAAaADAdAQAbACEeAQAbACEfAQAbACEgAQAbACEhAQAbACEiAQAbACEkAAAcJCIDAAAABAAgAwAAFgAwFAAAFwAgAwAAAAQAIAMAAAUAMAQAAAEAIAoaAAAaADAbAAAXABAcAAAaADAdAQAbACEeAQAbACEfAQAbACEgAQAbACEhAQAbACEiAQAbACEkAAAcJCIOFQAAHgAgFgAAIQAgFwAAIQAgJQEAAAABJgEAAAAEJwEAAAAEKAEAIAAhKQEAAAABKgEAAAABKwEAAAABLAEAAAABLQEAAAABLgEAAAABLwEAAAABBxUAAB4AIBYAAB8AIBcAAB8AICUAAAAkAiYAAAAkCCcAAAAkCCgAAB0kIgcVAAAeACAWAAAfACAXAAAfACAlAAAAJAImAAAAJAgnAAAAJAgoAAAdJCIIJQIAAAABJgIAAAAEJwIAAAAEKAIAHgAhKQIAAAABKgIAAAABKwIAAAABLAIAAAABBCUAAAAkAiYAAAAkCCcAAAAkCCgAAB8kIg4VAAAeACAWAAAhACAXAAAhACAlAQAAAAEmAQAAAAQnAQAAAAQoAQAgACEpAQAAAAEqAQAAAAErAQAAAAEsAQAAAAEtAQAAAAEuAQAAAAEvAQAAAAELJQEAAAABJgEAAAAEJwEAAAAEKAEAIQAhKQEAAAABKgEAAAABKwEAAAABLAEAAAABLQEAAAABLgEAAAABLwEAAAABChoAACIAMBsAAAQAEBwAACIAMB0BACMAIR4BACMAIR8BACMAISABACMAISEBACMAISIBACMAISQAACQkIgslAQAAAAEmAQAAAAQnAQAAAAQoAQAhACEpAQAAAAEqAQAAAAErAQAAAAEsAQAAAAEtAQAAAAEuAQAAAAEvAQAAAAEEJQAAACQCJgAAACQIJwAAACQIKAAAHyQiAAAAATABAAAAAQEwAAAAJAIAAAAAAxUABhYABxcACAAAAAMVAAYWAAcXAAgBAgECAwEFBgEGBwEHCAEJCgEKDAILDQMMDwENEQIOEgQREwESFAETFQIYGAUZGQk"
+  strings: JSON.parse("[\"where\",\"User.findUnique\",\"User.findUniqueOrThrow\",\"orderBy\",\"cursor\",\"User.findFirst\",\"User.findFirstOrThrow\",\"User.findMany\",\"data\",\"User.createOne\",\"User.createMany\",\"User.createManyAndReturn\",\"User.updateOne\",\"User.updateMany\",\"User.updateManyAndReturn\",\"create\",\"update\",\"User.upsertOne\",\"User.deleteOne\",\"User.deleteMany\",\"having\",\"_count\",\"_min\",\"_max\",\"User.groupBy\",\"User.aggregate\",\"hotels\",\"tags\",\"Hotel.findUnique\",\"Hotel.findUniqueOrThrow\",\"Hotel.findFirst\",\"Hotel.findFirstOrThrow\",\"Hotel.findMany\",\"Hotel.createOne\",\"Hotel.createMany\",\"Hotel.createManyAndReturn\",\"Hotel.updateOne\",\"Hotel.updateMany\",\"Hotel.updateManyAndReturn\",\"Hotel.upsertOne\",\"Hotel.deleteOne\",\"Hotel.deleteMany\",\"_avg\",\"_sum\",\"Hotel.groupBy\",\"Hotel.aggregate\",\"Tag.findUnique\",\"Tag.findUniqueOrThrow\",\"Tag.findFirst\",\"Tag.findFirstOrThrow\",\"Tag.findMany\",\"Tag.createOne\",\"Tag.createMany\",\"Tag.createManyAndReturn\",\"Tag.updateOne\",\"Tag.updateMany\",\"Tag.updateManyAndReturn\",\"Tag.upsertOne\",\"Tag.deleteOne\",\"Tag.deleteMany\",\"Tag.groupBy\",\"Tag.aggregate\",\"HotelTag.findUnique\",\"HotelTag.findUniqueOrThrow\",\"HotelTag.findFirst\",\"HotelTag.findFirstOrThrow\",\"HotelTag.findMany\",\"HotelTag.createOne\",\"HotelTag.createMany\",\"HotelTag.createManyAndReturn\",\"HotelTag.updateOne\",\"HotelTag.updateMany\",\"HotelTag.updateManyAndReturn\",\"HotelTag.upsertOne\",\"HotelTag.deleteOne\",\"HotelTag.deleteMany\",\"HotelTag.groupBy\",\"HotelTag.aggregate\",\"AND\",\"OR\",\"NOT\",\"hotelId\",\"tagId\",\"equals\",\"in\",\"notIn\",\"lt\",\"lte\",\"gt\",\"gte\",\"contains\",\"startsWith\",\"endsWith\",\"not\",\"hotelId_tagId\",\"id\",\"name\",\"rating\",\"exactAddress\",\"address\",\"pricePerNight\",\"imageUrl\",\"every\",\"some\",\"none\",\"firstName\",\"lastName\",\"email\",\"country\",\"password\",\"Role\",\"role\",\"connectOrCreate\",\"upsert\",\"set\",\"disconnect\",\"delete\",\"connect\",\"updateMany\",\"deleteMany\",\"increment\",\"decrement\",\"multiply\",\"divide\"]"),
+  graph: "rwEnQApOAAB_ADBPAAAEABBQAAB_ADBfAQAAAAFpAQBvACFqAQBvACFrAQAAAAFsAQBvACFtAQBvACFvAACAAW8iAQAAAAEAIAEAAAABACAKTgAAfwAwTwAABAAQUAAAfwAwXwEAbwAhaQEAbwAhagEAbwAhawEAbwAhbAEAbwAhbQEAbwAhbwAAgAFvIgADAAAABAAgAwAABQAwBAAAAQAgAwAAAAQAIAMAAAUAMAQAAAEAIAMAAAAEACADAAAFADAEAAABACAHXwEAAAABaQEAAAABagEAAAABawEAAAABbAEAAAABbQEAAAABbwAAAG8CAQgAAAkAIAdfAQAAAAFpAQAAAAFqAQAAAAFrAQAAAAFsAQAAAAFtAQAAAAFvAAAAbwIBCAAACwAwAQgAAAsAMAdfAQCEAQAhaQEAhAEAIWoBAIQBACFrAQCEAQAhbAEAhAEAIW0BAIQBACFvAACvAW8iAgAAAAEAIAgAAA4AIAdfAQCEAQAhaQEAhAEAIWoBAIQBACFrAQCEAQAhbAEAhAEAIW0BAIQBACFvAACvAW8iAgAAAAQAIAgAABAAIAIAAAAEACAIAAAQACADAAAAAQAgDwAACQAgEAAADgAgAQAAAAEAIAEAAAAEACADFQAArAEAIBYAAK4BACAXAACtAQAgCk4AAHsAME8AABcAEFAAAHsAMF8BAGoAIWkBAGoAIWoBAGoAIWsBAGoAIWwBAGoAIW0BAGoAIW8AAHxvIgMAAAAEACADAAAWADAUAAAXACADAAAABAAgAwAABQAwBAAAAQAgCxsAAHgAIE4AAHYAME8AACAAEFAAAHYAMF8BAAAAAWABAG8AIWECAHcAIWIBAG8AIWMBAG8AIWQCAHcAIWUBAG8AIQEAAAAaACAGGgAAegAgTgAAeQAwTwAAHAAQUAAAeQAwXwIAdwAhYAEAbwAhARoAAKsBACAGGgAAegAgTgAAeQAwTwAAHAAQUAAAeQAwXwIAAAABYAEAAAABAwAAABwAIAMAAB0AMAQAAB4AIAsbAAB4ACBOAAB2ADBPAAAgABBQAAB2ADBfAQBvACFgAQBvACFhAgB3ACFiAQBvACFjAQBvACFkAgB3ACFlAQBvACEBGwAAqgEAIAMAAAAgACADAAAhADAEAAAaACABAAAAIAAgAQAAABwAIAEAAAAaACADAAAAIAAgAwAAIQAwBAAAGgAgAwAAACAAIAMAACEAMAQAABoAIAMAAAAgACADAAAhADAEAAAaACAIGwAAqQEAIF8BAAAAAWABAAAAAWECAAAAAWIBAAAAAWMBAAAAAWQCAAAAAWUBAAAAAQEIAAApACAHXwEAAAABYAEAAAABYQIAAAABYgEAAAABYwEAAAABZAIAAAABZQEAAAABAQgAACsAMAEIAAArADAIGwAAnQEAIF8BAIQBACFgAQCEAQAhYQIAigEAIWIBAIQBACFjAQCEAQAhZAIAigEAIWUBAIQBACECAAAAGgAgCAAALgAgB18BAIQBACFgAQCEAQAhYQIAigEAIWIBAIQBACFjAQCEAQAhZAIAigEAIWUBAIQBACECAAAAIAAgCAAAMAAgAgAAACAAIAgAADAAIAMAAAAaACAPAAApACAQAAAuACABAAAAGgAgAQAAACAAIAUVAACYAQAgFgAAmwEAIBcAAJoBACAqAACZAQAgKwAAnAEAIApOAAB1ADBPAAA3ABBQAAB1ADBfAQBqACFgAQBqACFhAgByACFiAQBqACFjAQBqACFkAgByACFlAQBqACEDAAAAIAAgAwAANgAwFAAANwAgAwAAACAAIAMAACEAMAQAABoAIAEAAAAeACABAAAAHgAgAwAAABwAIAMAAB0AMAQAAB4AIAMAAAAcACADAAAdADAEAAAeACADAAAAHAAgAwAAHQAwBAAAHgAgAxoAAJcBACBfAgAAAAFgAQAAAAEBCAAAPwAgAl8CAAAAAWABAAAAAQEIAABBADABCAAAQQAwAxoAAIsBACBfAgCKAQAhYAEAhAEAIQIAAAAeACAIAABEACACXwIAigEAIWABAIQBACECAAAAHAAgCAAARgAgAgAAABwAIAgAAEYAIAMAAAAeACAPAAA_ACAQAABEACABAAAAHgAgAQAAABwAIAUVAACFAQAgFgAAiAEAIBcAAIcBACAqAACGAQAgKwAAiQEAIAVOAABxADBPAABNABBQAABxADBfAgByACFgAQBqACEDAAAAHAAgAwAATAAwFAAATQAgAwAAABwAIAMAAB0AMAQAAB4AIAZOAABuADBPAABTABBQAABuADBRAQBvACFSAQBvACFeAABwACABAAAAUAAgAQAAAFAAIAVOAABuADBPAABTABBQAABuADBRAQBvACFSAQBvACEAAwAAAFMAIAMAAFQAMAQAAFAAIAMAAABTACADAABUADAEAABQACADAAAAUwAgAwAAVAAwBAAAUAAgAlEBAAAAAVIBAAAAAQEIAABYACACUQEAAAABUgEAAAABAQgAAFoAMAEIAABaADACUQEAhAEAIVIBAIQBACECAAAAUAAgCAAAXQAgAlEBAIQBACFSAQCEAQAhAgAAAFMAIAgAAF8AIAIAAABTACAIAABfACADAAAAUAAgDwAAWAAgEAAAXQAgAQAAAFAAIAEAAABTACADFQAAgQEAIBYAAIMBACAXAACCAQAgBU4AAGkAME8AAGYAEFAAAGkAMFEBAGoAIVIBAGoAIQMAAABTACADAABlADAUAABmACADAAAAUwAgAwAAVAAwBAAAUAAgBU4AAGkAME8AAGYAEFAAAGkAMFEBAGoAIVIBAGoAIQ4VAABsACAWAABtACAXAABtACBTAQAAAAFUAQAAAARVAQAAAARWAQAAAAFXAQAAAAFYAQAAAAFZAQAAAAFaAQAAAAFbAQAAAAFcAQAAAAFdAQBrACEOFQAAbAAgFgAAbQAgFwAAbQAgUwEAAAABVAEAAAAEVQEAAAAEVgEAAAABVwEAAAABWAEAAAABWQEAAAABWgEAAAABWwEAAAABXAEAAAABXQEAawAhCFMCAAAAAVQCAAAABFUCAAAABFYCAAAAAVcCAAAAAVgCAAAAAVkCAAAAAV0CAGwAIQtTAQAAAAFUAQAAAARVAQAAAARWAQAAAAFXAQAAAAFYAQAAAAFZAQAAAAFaAQAAAAFbAQAAAAFcAQAAAAFdAQBtACEFTgAAbgAwTwAAUwAQUAAAbgAwUQEAbwAhUgEAbwAhC1MBAAAAAVQBAAAABFUBAAAABFYBAAAAAVcBAAAAAVgBAAAAAVkBAAAAAVoBAAAAAVsBAAAAAVwBAAAAAV0BAG0AIQJRAQAAAAFSAQAAAAEFTgAAcQAwTwAATQAQUAAAcQAwXwIAcgAhYAEAagAhDRUAAGwAIBYAAGwAIBcAAGwAICoAAHQAICsAAGwAIFMCAAAAAVQCAAAABFUCAAAABFYCAAAAAVcCAAAAAVgCAAAAAVkCAAAAAV0CAHMAIQ0VAABsACAWAABsACAXAABsACAqAAB0ACArAABsACBTAgAAAAFUAgAAAARVAgAAAARWAgAAAAFXAgAAAAFYAgAAAAFZAgAAAAFdAgBzACEIUwgAAAABVAgAAAAEVQgAAAAEVggAAAABVwgAAAABWAgAAAABWQgAAAABXQgAdAAhCk4AAHUAME8AADcAEFAAAHUAMF8BAGoAIWABAGoAIWECAHIAIWIBAGoAIWMBAGoAIWQCAHIAIWUBAGoAIQsbAAB4ACBOAAB2ADBPAAAgABBQAAB2ADBfAQBvACFgAQBvACFhAgB3ACFiAQBvACFjAQBvACFkAgB3ACFlAQBvACEIUwIAAAABVAIAAAAEVQIAAAAEVgIAAAABVwIAAAABWAIAAAABWQIAAAABXQIAbAAhA2YAABwAIGcAABwAIGgAABwAIAYaAAB6ACBOAAB5ADBPAAAcABBQAAB5ADBfAgB3ACFgAQBvACEDZgAAIAAgZwAAIAAgaAAAIAAgCk4AAHsAME8AABcAEFAAAHsAMF8BAGoAIWkBAGoAIWoBAGoAIWsBAGoAIWwBAGoAIW0BAGoAIW8AAHxvIgcVAABsACAWAAB-ACAXAAB-ACBTAAAAbwJUAAAAbwhVAAAAbwhdAAB9byIHFQAAbAAgFgAAfgAgFwAAfgAgUwAAAG8CVAAAAG8IVQAAAG8IXQAAfW8iBFMAAABvAlQAAABvCFUAAABvCF0AAH5vIgpOAAB_ADBPAAAEABBQAAB_ADBfAQBvACFpAQBvACFqAQBvACFrAQBvACFsAQBvACFtAQBvACFvAACAAW8iBFMAAABvAlQAAABvCFUAAABvCF0AAH5vIgAAAAFyAQAAAAEAAAAAAAVyAgAAAAF4AgAAAAF5AgAAAAF6AgAAAAF7AgAAAAEKDwAAjAEAMBAAAJABADBwAACNAQAwcQAAjgEAMHIAAI8BADBzAACPAQAwdAAAjwEAMHUAAI8BADB2AACRAQAwdwAAkgEAMAdfAQAAAAFgAQAAAAFhAgAAAAFiAQAAAAFjAQAAAAFkAgAAAAFlAQAAAAECAAAAGgAgDwAAlgEAIAMAAAAaACAPAACWAQAgEAAAlQEAIAsbAAB4ACBOAAB2ADBPAAAgABBQAAB2ADBfAQAAAAFgAQBvACFhAgB3ACFiAQBvACFjAQBvACFkAgB3ACFlAQBvACECAAAAGgAgCAAAlQEAIAIAAACTAQAgCAAAlAEAIApOAACSAQAwTwAAkwEAEFAAAJIBADBfAQBvACFgAQBvACFhAgB3ACFiAQBvACFjAQBvACFkAgB3ACFlAQBvACEKTgAAkgEAME8AAJMBABBQAACSAQAwXwEAbwAhYAEAbwAhYQIAdwAhYgEAbwAhYwEAbwAhZAIAdwAhZQEAbwAhB18BAIQBACFgAQCEAQAhYQIAigEAIWIBAIQBACFjAQCEAQAhZAIAigEAIWUBAIQBACEHXwEAhAEAIWABAIQBACFhAgCKAQAhYgEAhAEAIWMBAIQBACFkAgCKAQAhZQEAhAEAIQdfAQAAAAFgAQAAAAFhAgAAAAFiAQAAAAFjAQAAAAFkAgAAAAFlAQAAAAEDDwAAjAEAMHAAAI0BADB1AACPAQAwAAAAAAAKDwAAngEAMBAAAKIBADBwAACfAQAwcQAAoAEAMHIAAKEBADBzAAChAQAwdAAAoQEAMHUAAKEBADB2AACjAQAwdwAApAEAMAJfAgAAAAFgAQAAAAECAAAAHgAgDwAAqAEAIAMAAAAeACAPAACoAQAgEAAApwEAIAYaAAB6ACBOAAB5ADBPAAAcABBQAAB5ADBfAgAAAAFgAQAAAAECAAAAHgAgCAAApwEAIAIAAAClAQAgCAAApgEAIAVOAACkAQAwTwAApQEAEFAAAKQBADBfAgB3ACFgAQBvACEFTgAApAEAME8AAKUBABBQAACkAQAwXwIAdwAhYAEAbwAhAl8CAIoBACFgAQCEAQAhAl8CAIoBACFgAQCEAQAhAl8CAAAAAWABAAAAAQMPAACeAQAwcAAAnwEAMHUAAKEBADAAAAAAAAFyAAAAbwIAAAAAAxUABhYABxcACAAAAAMVAAYWAAcXAAgCFQANGx8LAhUADBoiCgEaIwABGyQAAAAFFQARFgAUFwAVKgASKwATAAAAAAAFFQARFgAUFwAVKgASKwATAAAFFQAaFgAdFwAeKgAbKwAcAAAAAAAFFQAaFgAdFwAeKgAbKwAcAAAAAxUAJBYAJRcAJgAAAAMVACQWACUXACYBAgECAwEFBgEGBwEHCAEJCgEKDAILDQMMDwENEQIOEgQREwESFAETFQIYGAUZGQkcGwodJQoeJgofJwogKAohKgoiLAIjLQ4kLwolMQImMg8nMwooNAopNQIsOBAtORYuOgsvOwswPAsxPQsyPgszQAs0QgI1Qxc2RQs3RwI4SBg5SQs6Sgs7SwI8Thk9Tx8-USA_UiBAVSBBViBCVyBDWSBEWwJFXCFGXiBHYAJIYSJJYiBKYyBLZAJMZyNNaCc"
 }
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
@@ -71,7 +71,7 @@ export interface PrismaClientConstructor {
    *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
    * })
    * // Fetch zero or more Users
-   * const users = await prisma.users.findMany()
+   * const users = await prisma.user.findMany()
    * ```
    * 
    * Read more in our [docs](https://pris.ly/d/client).
@@ -95,7 +95,7 @@ export interface PrismaClientConstructor {
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
  * // Fetch zero or more Users
- * const users = await prisma.users.findMany()
+ * const users = await prisma.user.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -189,14 +189,44 @@ export interface PrismaClient<
   }>>
 
       /**
-   * `prisma.users`: Exposes CRUD operations for the **Users** model.
+   * `prisma.user`: Exposes CRUD operations for the **User** model.
     * Example usage:
     * ```ts
     * // Fetch zero or more Users
-    * const users = await prisma.users.findMany()
+    * const users = await prisma.user.findMany()
     * ```
     */
-  get users(): Prisma.UsersDelegate<ExtArgs, { omit: OmitOpts }>;
+  get user(): Prisma.UserDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.hotel`: Exposes CRUD operations for the **Hotel** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Hotels
+    * const hotels = await prisma.hotel.findMany()
+    * ```
+    */
+  get hotel(): Prisma.HotelDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.tag`: Exposes CRUD operations for the **Tag** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Tags
+    * const tags = await prisma.tag.findMany()
+    * ```
+    */
+  get tag(): Prisma.TagDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.hotelTag`: Exposes CRUD operations for the **HotelTag** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more HotelTags
+    * const hotelTags = await prisma.hotelTag.findMany()
+    * ```
+    */
+  get hotelTag(): Prisma.HotelTagDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {
