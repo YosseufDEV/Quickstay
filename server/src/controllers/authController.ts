@@ -9,6 +9,8 @@ import type { AuthenticatedRequest } from "../types/auth";
 import { insertSession, invalidateSession, isSessionValid, rotateToken } from "./sessionController";
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
+import { sendResponse, StatusCode } from "../utils/response";
+import { STATUS_CODES } from "node:http";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
@@ -21,7 +23,7 @@ const JWT_REFRESH_EXPIRATION_TIME_MS = turnIntoTimestamp(JWT_REFRESH_EXPIRATION_
 const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
 
-    if(!refreshToken) return res.status(400).json({ message: "token_not_provided" });
+    if(!refreshToken) return sendResponse(res, StatusCode.BAD_REQUEST, "no_token_provided");
 
     try {
         const usedToken = jwt.verify(refreshToken, JWT_REFRESH_SECRET as string, { algorithms: ["HS256"] }) as jwt.JwtPayload;
@@ -33,7 +35,7 @@ const refreshToken = async (req: Request, res: Response) => {
         const sessionValid = await isSessionValid(refreshToken, payload);
 
         if(!sessionValid.valid) {
-            return res.status(400).json({ message: sessionValid.reason});
+            return sendResponse(res, StatusCode.BAD_REQUEST, sessionValid.reason || "invalid_session");
         }
 
         const expirationTime = usedToken.exp ? (usedToken.exp - Date.now()/1000) : JWT_REFRESH_EXPIRATION_TIME_MS/1000;
@@ -45,22 +47,22 @@ const refreshToken = async (req: Request, res: Response) => {
         
         console.log("New refresh token issued for user ", payload.userId, " with session ", payload.sessionId);
 
-        return res.status(200).json({ accessToken });
+        return sendResponse(res, StatusCode.OK, "", { accessToken });
 
     } catch (error) {
         console.log(error);
          if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
             switch (error.name) {
                 case "TokenExpiredError":
-                    return res.status(401).json({ message: "token_expired" });
+                    return sendResponse(res, StatusCode.UNAUTHORIZED, "token_expired");
                 case "NotBeforeError":
-                    return res.status(401).json({ message: "token_not_active" });
-                case "SyntaxError":
-                    return res.status(401).json({ message: "token_malformed" });
+                    return sendResponse(res, StatusCode.UNAUTHORIZED, "token_not_active");
+                case "SyntaxError": 
+                    return sendResponse(res, StatusCode.UNAUTHORIZED, "token_malformed");
                 case "JsonWebTokenError":
-                    return res.status(401).json({ message: "token_invalid" });
+                    return sendResponse(res, StatusCode.UNAUTHORIZED, "token_invalid");
                 default:
-                    return res.status(401).json({ message: "unknown_token_error" });
+                    return sendResponse(res, StatusCode.UNAUTHORIZED, "unknown_token_error");
             }
         }
     }
@@ -77,7 +79,7 @@ const register = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, await salt);
 
         if(existingUser) {
-            return res.status(400).json({ message: "Email already in use" });
+            return sendResponse(res, StatusCode.BAD_REQUEST, "email_already_in_use");
         }
 
         const user = await prisma.users.create({
@@ -88,12 +90,20 @@ const register = async (req: Request, res: Response) => {
                 password: hashedPassword,
                 country
             },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                country: true,
+            }
         });
 
-        res.status(201).json({ data: user });
+        return sendResponse(res, StatusCode.CREATED, "", { user });
+
     } catch(error) {
         console.log(error);
-        res.status(500).json({ message: "Internal server error" });
+        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "Internal server error");
     }
 }
 
@@ -104,9 +114,9 @@ const login = async (req: Request, res: Response) => {
     try {
         const user = await prisma.users.findUnique({ where: { email } });
 
-        if(!user) return res.status(404).json({ message: "user_not_found" });
+        if(!user) return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");
         
-        if(!await bcrypt.compare(password, user.password)) return res.status(401).json({ message: "invalid_email_password" });
+        if(!await bcrypt.compare(password, user.password)) return sendResponse(res, StatusCode.UNAUTHORIZED, "invalid_credentials");
         
         const payload = { userId: user.id, sessionId: crypto.randomUUID(), role: user.role };
 
@@ -117,18 +127,21 @@ const login = async (req: Request, res: Response) => {
 
         res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: turnIntoTimestamp(JWT_REFRESH_EXPIRATION_TIME) });
 
-        return res.status(200).json({ accessToken, user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, country: user.country, role: user.role } });
+        return sendResponse(res, StatusCode.OK, "", { accessToken, user: { ...user, password: undefined } });
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "Internal server error");
     }
 }
 
 const logout = async (req: AuthenticatedRequest, res: Response) => {
     if(!req.user) return res.status(401).json({ message: "Unauthorized" });
+
     await invalidateSession({ userId: req.user.id, sessionId: req.user.sessionId });
+
     res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: true });
+
     return res.status(200).json({ message: "Logged out successfully" });
 }
 

@@ -6,7 +6,7 @@ const getUserById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     if(!id || typeof id !== 'string') {
-        return sendResponse(res, StatusCode.BAD_REQUEST, { message: "Please enter a valid user Id" });
+        return sendResponse(res, StatusCode.BAD_REQUEST, "Please enter a valid user Id");
     }
 
     const user = await prisma.users.findUnique({
@@ -22,15 +22,15 @@ const getUserById = async (req: Request, res: Response) => {
     });
 
     if(!user) {
-        return sendResponse(res, StatusCode.NOT_FOUND, { message: "User not found" });
+        return sendResponse(res, StatusCode.NOT_FOUND, "User not found");
     }
 
     console.log(user);
 
-    sendResponse(res, StatusCode.OK, user)
+    sendResponse(res, StatusCode.OK, "", user)
 }
 
-const getAllUsers = async (req: Request, res: Response) => {
+const getAllUsers = async (_: Request, res: Response) => {
     const users = await prisma.users.findMany({
         select: {
             id: true,
@@ -41,7 +41,7 @@ const getAllUsers = async (req: Request, res: Response) => {
             role: true,
         }
     })
-    return sendResponse(res, StatusCode.OK, users);
+    return sendResponse(res, StatusCode.OK, "", users);
 }
 
 export { getUserById, getAllUsers };
