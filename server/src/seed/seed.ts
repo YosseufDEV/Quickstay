@@ -9,7 +9,7 @@ function generateRandomHotel() {
     const name = faker.company.name() + " Hotel";
     const address = faker.location.city() + ", " + faker.location.country();
     const pricePerNight = getRandomInt(50, 500);
-    const rating = parseFloat((Math.random() * 5).toFixed(1));
+    const rating = parseFloat((Math.random() * 5).toFixed(2));
     const imageUrl = `${getRandomInt(1, 12)}.jpg`;
     const tags = []
 
@@ -42,7 +42,7 @@ try {
 
     await prisma.hotel.deleteMany({});
 
-    for(let i = 0; i < 10000; i++) {
+    for(let i = 0; i < 1000; i++) {
         const hotelData = generateRandomHotel();
         await prisma.hotel.create({
             data: {

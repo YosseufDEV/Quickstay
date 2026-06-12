@@ -230,7 +230,7 @@ export type HotelWhereInput = {
   OR?: Prisma.HotelWhereInput[]
   NOT?: Prisma.HotelWhereInput | Prisma.HotelWhereInput[]
   id?: Prisma.StringFilter<"Hotel"> | string
-  rating?: Prisma.IntFilter<"Hotel"> | number
+  rating?: Prisma.FloatFilter<"Hotel"> | number
   name?: Prisma.StringFilter<"Hotel"> | string
   exactAddress?: Prisma.StringFilter<"Hotel"> | string
   address?: Prisma.StringFilter<"Hotel"> | string
@@ -255,7 +255,7 @@ export type HotelWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.HotelWhereInput | Prisma.HotelWhereInput[]
   OR?: Prisma.HotelWhereInput[]
   NOT?: Prisma.HotelWhereInput | Prisma.HotelWhereInput[]
-  rating?: Prisma.IntFilter<"Hotel"> | number
+  rating?: Prisma.FloatFilter<"Hotel"> | number
   name?: Prisma.StringFilter<"Hotel"> | string
   exactAddress?: Prisma.StringFilter<"Hotel"> | string
   address?: Prisma.StringFilter<"Hotel"> | string
@@ -284,7 +284,7 @@ export type HotelScalarWhereWithAggregatesInput = {
   OR?: Prisma.HotelScalarWhereWithAggregatesInput[]
   NOT?: Prisma.HotelScalarWhereWithAggregatesInput | Prisma.HotelScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
-  rating?: Prisma.IntWithAggregatesFilter<"Hotel"> | number
+  rating?: Prisma.FloatWithAggregatesFilter<"Hotel"> | number
   name?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
   exactAddress?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
   address?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
@@ -316,7 +316,7 @@ export type HotelUncheckedCreateInput = {
 
 export type HotelUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  rating?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   exactAddress?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -327,7 +327,7 @@ export type HotelUpdateInput = {
 
 export type HotelUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  rating?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   exactAddress?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -348,7 +348,7 @@ export type HotelCreateManyInput = {
 
 export type HotelUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  rating?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   exactAddress?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -358,7 +358,7 @@ export type HotelUpdateManyMutationInput = {
 
 export type HotelUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  rating?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   exactAddress?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -414,6 +414,14 @@ export type HotelListRelationFilter = {
 
 export type HotelOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -508,7 +516,7 @@ export type HotelScalarWhereInput = {
   OR?: Prisma.HotelScalarWhereInput[]
   NOT?: Prisma.HotelScalarWhereInput | Prisma.HotelScalarWhereInput[]
   id?: Prisma.StringFilter<"Hotel"> | string
-  rating?: Prisma.IntFilter<"Hotel"> | number
+  rating?: Prisma.FloatFilter<"Hotel"> | number
   name?: Prisma.StringFilter<"Hotel"> | string
   exactAddress?: Prisma.StringFilter<"Hotel"> | string
   address?: Prisma.StringFilter<"Hotel"> | string
@@ -518,7 +526,7 @@ export type HotelScalarWhereInput = {
 
 export type HotelUpdateWithoutTagsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  rating?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   exactAddress?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -528,7 +536,7 @@ export type HotelUpdateWithoutTagsInput = {
 
 export type HotelUncheckedUpdateWithoutTagsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  rating?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   exactAddress?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -538,7 +546,7 @@ export type HotelUncheckedUpdateWithoutTagsInput = {
 
 export type HotelUncheckedUpdateManyWithoutTagsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  rating?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   exactAddress?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1065,7 +1073,7 @@ export interface Prisma__HotelClient<T, Null = never, ExtArgs extends runtime.Ty
  */
 export interface HotelFieldRefs {
   readonly id: Prisma.FieldRef<"Hotel", 'String'>
-  readonly rating: Prisma.FieldRef<"Hotel", 'Int'>
+  readonly rating: Prisma.FieldRef<"Hotel", 'Float'>
   readonly name: Prisma.FieldRef<"Hotel", 'String'>
   readonly exactAddress: Prisma.FieldRef<"Hotel", 'String'>
   readonly address: Prisma.FieldRef<"Hotel", 'String'>

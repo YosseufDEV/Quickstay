@@ -18,7 +18,7 @@ const HotelCard = (props: HotelCardProps) => {
     console.log(props.tags);
     return (
         <div className="font-[Inter] flex gap-10 w-fit">
-            <img className="w-90 h-fit rounded-xl" src={props.imageUrl} />
+            <img className="w-90 aspect-3/2 h-fit rounded-xl shadow-md" src={props.imageUrl} />
 
             <div className= "flex flex-col gap-3 justify-between items-start">
                 <p className="text-sm text-gray-500">{props.exactAddress}</p>
@@ -28,7 +28,7 @@ const HotelCard = (props: HotelCardProps) => {
                 </NavLink>
 
                 <div className="flex flex-row gap-3">
-                    <StarsRating rating={Math.max(props.rating)} />
+                    <StarsRating showRating categorized rating={Math.max(props.rating)} />
                     <p className="text-sm font-[Inter]">200+ reviews</p>
                 </div>
                 <div className="flex gap-2 justify-center items-center text-gray-500 text-sm">

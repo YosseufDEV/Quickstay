@@ -1,7 +1,7 @@
 import type { ReactRef } from "@gsap/react";
 import gsap from "gsap";
 
-const HEADER_EXPANSION_DURATION = 0.3;
+const AnimationDuration = 0.2;
 const black = "#2a2a2a";
 
 export const animateHeaderTransition = (headerRef: ReactRef, docked: boolean) => {
@@ -10,7 +10,7 @@ export const animateHeaderTransition = (headerRef: ReactRef, docked: boolean) =>
 }
 
 const animateHeaderDockAnimation = (headerRef: ReactRef) => {
-    const timeline = gsap.timeline({ defaults: { duration: HEADER_EXPANSION_DURATION } });
+    const timeline = gsap.timeline({ defaults: { duration: AnimationDuration } });
 
     timeline.to(headerRef.current, {
         backgroundColor: "rgba(255, 255, 255, 0)",
@@ -30,7 +30,7 @@ const headerThemeConfig = {
 }
 
 export const flipHeaderColors = (docked: boolean) => {
-    const timeline = gsap.timeline({ defaults: { duration: HEADER_EXPANSION_DURATION } });
+    const timeline = gsap.timeline({ defaults: { duration: AnimationDuration } });
 
     const color = docked ? headerThemeConfig.docked.color : headerThemeConfig.scrolled.color;
 
@@ -51,7 +51,7 @@ export const flipHeaderColors = (docked: boolean) => {
 
 
 const animateHeaderScrollAnimation = (headerRef: ReactRef, flipped=false) => {
-    const timeline = gsap.timeline({ defaults: { duration: HEADER_EXPANSION_DURATION }});
+    const timeline = gsap.timeline({ defaults: { duration: AnimationDuration }});
 
     timeline
         .from(headerRef.current, {
