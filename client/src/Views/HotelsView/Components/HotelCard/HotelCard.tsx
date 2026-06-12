@@ -5,6 +5,7 @@ import { NavLink } from "react-router";
 import type { ITag } from "@quickstay/types/Hotel.ts";
 
 interface HotelCardProps {
+    id: string;
     name: string;
     address: string;
     exactAddress: string;
@@ -15,7 +16,6 @@ interface HotelCardProps {
 }
 
 const HotelCard = (props: HotelCardProps) => {
-    console.log(props.tags);
     return (
         <div className="font-[Inter] flex gap-10 w-fit">
             <img className="w-90 aspect-3/2 h-fit rounded-xl shadow-md" src={props.imageUrl} />
@@ -23,7 +23,7 @@ const HotelCard = (props: HotelCardProps) => {
             <div className= "flex flex-col gap-3 justify-between items-start">
                 <p className="text-sm text-gray-500">{props.exactAddress}</p>
 
-                <NavLink state={{ hotelId: props.name }} to={`/hotels/${props.name.toLowerCase().replace(/\s/g, "-")}`} className="no-underline! text-black! font-normal!">
+                <NavLink state={{ hotelId: props.id }} to={`/hotels/${props.name.toLowerCase().replace(/\s/g, "-")}`} className="no-underline! text-black! font-normal!">
                     <p className="text-2xl font-Playfair">{props.name}</p>
                 </NavLink>
 

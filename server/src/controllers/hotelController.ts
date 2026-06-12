@@ -38,4 +38,25 @@ const getHotels = async (req: Request, res: Response) => {
     }
 }
 
-export { addHotel, getHotels };
+const getHotelById = async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    try {
+        if(!id || typeof id !== "string") {
+            return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
+        }
+
+        const hotel = await HotelModel.getHotelById(id);
+
+        if(!hotel) {
+            return sendResponse(res, StatusCode.NOT_FOUND, "hotel_not_found");
+        }
+
+        return sendResponse(res, StatusCode.OK, "", { hotel })
+    } catch (error) {
+        console.log(error);
+        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "An error occurred while fetching the hotel");
+    }
+}
+
+export { addHotel, getHotels, getHotelById };

@@ -1,18 +1,24 @@
-import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import Skeleton from "@/Components/Skeleton/Skeleton";
 
-const SkeletonHotelCard = () => {
-    return (
-        <SkeletonTheme baseColor="#000000" highlightColor="#444444">
-            <div className="font-[Inter] w-full flex flex-row justify-start items-center gap-10 mb-20">
-                    {/* <img className="w-90 h-fit rounded-xl" src={props.imageSrc} /> */}
-                    <Skeleton width={360} height={240} containerClassName="flex-1" />
+const SkeletonHotelCard = ({ count=1 }: { count?: number}) => {
+    
+   const element =  <div className="mb-20 w-full h-fit flex relative flex-row gap-10 animate-pulse items-stretch justify-start">
+        {/* <img className="w-90 h-fit rounded-xl" src={props.imageSrc} /> */}
+        <Skeleton className="w-90! max-h-full! aspect-3/2 shrink-0 rounded-xl" />
 
-                    <div className= "flex flex-col grow gap-3 h-full justify-between">
-                        <Skeleton containerClassName="flex-1" count={5} />
-                    </div>
-            </div>
-        </SkeletonTheme >
-    )
+        <div className="w-full flex flex-col justify-between gap-3">
+            <Skeleton className="w-full h-6 rounded-lg" count={6} />
+        </div>
+    </div>
+
+    const elements = [];
+
+    for(let i = 0; i < count; i++) {
+        elements.push(element);
+    }
+
+    return elements;
+
 }
 
 export default SkeletonHotelCard;

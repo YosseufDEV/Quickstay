@@ -7,4 +7,12 @@ const getHotels = async (limit?: number) => {
   });
 }
 
-export { getHotels };
+const getHotelById = async (id: string) => {
+    return await api.get(`/hotels/${id}`).then((res) => res.data.payload.hotel).catch((err) => {
+        console.error(`Error fetching hotel with id ${id}:`, err);
+        return null;
+    });
+
+}
+
+export { getHotels, getHotelById };

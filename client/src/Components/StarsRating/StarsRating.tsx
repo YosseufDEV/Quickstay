@@ -3,17 +3,17 @@ import OutlinedStarIcon from "@/assets/starIconOutlined.svg?react";
 
 const ratings = {
     low: {
-        textClass: "text-red-900 bg-red-200",
+        textClass: "text-red-800 bg-red-200",
         iconStrokeClass: "[&_path]:stroke-red-400!",
         iconFillClass: "[&_path]:fill-red-400!",
     },
     average: {
-        textClass: "text-yellow-900 bg-yellow-200",
+        textClass: "text-yellow-800 bg-yellow-200",
         iconStrokeClass: "[&_path]:stroke-yellow-500!",
         iconFillClass: "[&_path]:fill-yellow-500!",
     },
     high: {
-        textClass: "text-emerald-900 bg-emerald-200",
+        textClass: "text-emerald-800 bg-emerald-200",
         iconStrokeClass: "[&_path]:stroke-emerald-400!",
         iconFillClass: "[&_path]:fill-emerald-400!",
     }

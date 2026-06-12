@@ -31,6 +31,20 @@ class HotelModel {
         });
         return hotels;
     }
+
+    static async getHotelById(id: string) {
+        const hotel = await prisma.hotel.findUnique({
+            where: {
+                id
+            },
+            include: {
+                tags: true
+            }
+        });
+
+        return hotel;
+    }
+    
 }
 
 export { HotelModel };
