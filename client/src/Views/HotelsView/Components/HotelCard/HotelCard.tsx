@@ -2,6 +2,7 @@ import StarsRating from "@/Components/StarsRating/StarsRating";
 import HotelTag from "../HotelTag/HotelTag";
 import LocationPinIcon from "@/assets/locationIcon.svg?react";
 import { NavLink } from "react-router";
+import type { ITag } from "@quickstay/types/Hotel.ts";
 
 interface HotelCardProps {
     name: string;
@@ -10,7 +11,7 @@ interface HotelCardProps {
     pricePerNight: number;
     rating: number;
     imageUrl: string;
-    tags: {text: string, icon: any }[];
+    tags: ITag[];
 }
 
 const HotelCard = (props: HotelCardProps) => {
@@ -35,10 +36,10 @@ const HotelCard = (props: HotelCardProps) => {
                     <p>{props.address}</p> 
                 </div>
                 <div className="grid grid-cols-[auto_auto_auto] gap-x-3 gap-y-3 full max-2xl:grid-cols-[auto_auto] max-2xl:grids-rows-2">
-                    {props.tags.map((tag, index) => <HotelTag key={index} iconClass={tag.iconClass} Icon={tag.icon} text={tag.text} />)}
+                    {props.tags.map((tag, index) => <HotelTag key={index} slag={tag.slag} />)}
                 </div>
                 <div className="flex flex-row gap-0.5 items-center mb-2">
-                    <p className="text-lg font-medium">${props.pricePerNight}/night</p>
+                    <p className="text-lg font-medium">${props.pricePerNight} /night</p>
                 </div>
             </div>
 

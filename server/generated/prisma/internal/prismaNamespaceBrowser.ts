@@ -101,7 +101,8 @@ export type HotelScalarFieldEnum = (typeof HotelScalarFieldEnum)[keyof typeof Ho
 
 export const TagScalarFieldEnum = {
   id: 'id',
-  name: 'name'
+  name: 'name',
+  slag: 'slag'
 } as const
 
 export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagScalarFieldEnum]

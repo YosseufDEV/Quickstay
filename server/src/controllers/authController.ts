@@ -72,7 +72,7 @@ const register = async (req: Request, res: Response) => {
     const { email, firstName, lastName, password, country } = req.body;
 
     try {
-        const existingUser = await prisma.users.findUnique({ where: { email } });
+        const existingUser = await prisma.user.findUnique({ where: { email } });
 
         const salt = bcrypt.genSalt(10);
 
@@ -82,7 +82,7 @@ const register = async (req: Request, res: Response) => {
             return sendResponse(res, StatusCode.BAD_REQUEST, "email_already_in_use");
         }
 
-        const user = await prisma.users.create({
+        const user = await prisma.user.create({
             data: {
                 email,
                 firstName,
@@ -112,7 +112,7 @@ const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     try {
-        const user = await prisma.users.findUnique({ where: { email } });
+        const user = await prisma.user.findUnique({ where: { email } });
 
         if(!user) return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");
         
@@ -152,7 +152,7 @@ const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user.id; 
 
     try {
-        const user = await prisma.users.findUnique({ where: { id: userId }, select: { id: true, email: true, firstName: true, lastName: true, country: true } });
+        const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, firstName: true, lastName: true, country: true } });
 
         if(!user) {
             return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");

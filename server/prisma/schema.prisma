@@ -41,6 +41,7 @@ model Hotel {
 model Tag {
     id Int @id @default(autoincrement())
     name String @unique
+    slag String @unique
     hotels Hotel[]
 }
 

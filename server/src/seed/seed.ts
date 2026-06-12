@@ -7,10 +7,10 @@ function getRandomInt(min: number, max: number) {
 
 function generateRandomHotel() {
     const name = faker.company.name() + " Hotel";
-    const address = faker.location.streetAddress() + ", " + faker.location.city() + ", " + faker.location.country();
+    const address = faker.location.city() + ", " + faker.location.country();
     const pricePerNight = getRandomInt(50, 500);
     const rating = parseFloat((Math.random() * 5).toFixed(1));
-    const imageUrl = `D:/Projects/assets/${getRandomInt(1, 12)}.jpg`;
+    const imageUrl = `${getRandomInt(1, 12)}.jpg`;
     const tags = []
 
     for(let i = 0; i < 3; i++) {
@@ -31,14 +31,16 @@ function generateRandomHotel() {
 try {
     await prisma.tag.createMany({
         data: [
-            { name: "Free Wi-Fi" },
-            { name: "Breakfast Included" },
-            { name: "Mountain View" },
-            { name: "Room Service" },
-            { name: "Pool Access" },
+            { name: "Free Wi-Fi", slag: "wifi" },
+            { name: "Breakfast Included", slag: "breakfast" },
+            { name: "Mountain View", slag: "mountain" },
+            { name: "Room Service", slag: "service" },
+            { name: "Pool Access", slag: "pool" },
         ],
         skipDuplicates: true,
     })
+
+    await prisma.hotel.deleteMany({});
 
     for(let i = 0; i < 10000; i++) {
         const hotelData = generateRandomHotel();

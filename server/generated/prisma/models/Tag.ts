@@ -37,16 +37,19 @@ export type TagSumAggregateOutputType = {
 export type TagMinAggregateOutputType = {
   id: number | null
   name: string | null
+  slag: string | null
 }
 
 export type TagMaxAggregateOutputType = {
   id: number | null
   name: string | null
+  slag: string | null
 }
 
 export type TagCountAggregateOutputType = {
   id: number
   name: number
+  slag: number
   _all: number
 }
 
@@ -62,16 +65,19 @@ export type TagSumAggregateInputType = {
 export type TagMinAggregateInputType = {
   id?: true
   name?: true
+  slag?: true
 }
 
 export type TagMaxAggregateInputType = {
   id?: true
   name?: true
+  slag?: true
 }
 
 export type TagCountAggregateInputType = {
   id?: true
   name?: true
+  slag?: true
   _all?: true
 }
 
@@ -164,6 +170,7 @@ export type TagGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type TagGroupByOutputType = {
   id: number
   name: string
+  slag: string
   _count: TagCountAggregateOutputType | null
   _avg: TagAvgAggregateOutputType | null
   _sum: TagSumAggregateOutputType | null
@@ -192,27 +199,31 @@ export type TagWhereInput = {
   NOT?: Prisma.TagWhereInput | Prisma.TagWhereInput[]
   id?: Prisma.IntFilter<"Tag"> | number
   name?: Prisma.StringFilter<"Tag"> | string
+  slag?: Prisma.StringFilter<"Tag"> | string
   hotels?: Prisma.HotelListRelationFilter
 }
 
 export type TagOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slag?: Prisma.SortOrder
   hotels?: Prisma.HotelOrderByRelationAggregateInput
 }
 
 export type TagWhereUniqueInput = Prisma.AtLeast<{
   id?: number
   name?: string
+  slag?: string
   AND?: Prisma.TagWhereInput | Prisma.TagWhereInput[]
   OR?: Prisma.TagWhereInput[]
   NOT?: Prisma.TagWhereInput | Prisma.TagWhereInput[]
   hotels?: Prisma.HotelListRelationFilter
-}, "id" | "name">
+}, "id" | "name" | "slag">
 
 export type TagOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slag?: Prisma.SortOrder
   _count?: Prisma.TagCountOrderByAggregateInput
   _avg?: Prisma.TagAvgOrderByAggregateInput
   _max?: Prisma.TagMaxOrderByAggregateInput
@@ -226,42 +237,50 @@ export type TagScalarWhereWithAggregatesInput = {
   NOT?: Prisma.TagScalarWhereWithAggregatesInput | Prisma.TagScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Tag"> | number
   name?: Prisma.StringWithAggregatesFilter<"Tag"> | string
+  slag?: Prisma.StringWithAggregatesFilter<"Tag"> | string
 }
 
 export type TagCreateInput = {
   name: string
+  slag: string
   hotels?: Prisma.HotelCreateNestedManyWithoutTagsInput
 }
 
 export type TagUncheckedCreateInput = {
   id?: number
   name: string
+  slag: string
   hotels?: Prisma.HotelUncheckedCreateNestedManyWithoutTagsInput
 }
 
 export type TagUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slag?: Prisma.StringFieldUpdateOperationsInput | string
   hotels?: Prisma.HotelUpdateManyWithoutTagsNestedInput
 }
 
 export type TagUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slag?: Prisma.StringFieldUpdateOperationsInput | string
   hotels?: Prisma.HotelUncheckedUpdateManyWithoutTagsNestedInput
 }
 
 export type TagCreateManyInput = {
   id?: number
   name: string
+  slag: string
 }
 
 export type TagUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slag?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type TagUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slag?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type TagListRelationFilter = {
@@ -277,6 +296,7 @@ export type TagOrderByRelationAggregateInput = {
 export type TagCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slag?: Prisma.SortOrder
 }
 
 export type TagAvgOrderByAggregateInput = {
@@ -286,11 +306,13 @@ export type TagAvgOrderByAggregateInput = {
 export type TagMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slag?: Prisma.SortOrder
 }
 
 export type TagMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slag?: Prisma.SortOrder
 }
 
 export type TagSumOrderByAggregateInput = {
@@ -337,11 +359,13 @@ export type TagUncheckedUpdateManyWithoutHotelsNestedInput = {
 
 export type TagCreateWithoutHotelsInput = {
   name: string
+  slag: string
 }
 
 export type TagUncheckedCreateWithoutHotelsInput = {
   id?: number
   name: string
+  slag: string
 }
 
 export type TagCreateOrConnectWithoutHotelsInput = {
@@ -371,20 +395,24 @@ export type TagScalarWhereInput = {
   NOT?: Prisma.TagScalarWhereInput | Prisma.TagScalarWhereInput[]
   id?: Prisma.IntFilter<"Tag"> | number
   name?: Prisma.StringFilter<"Tag"> | string
+  slag?: Prisma.StringFilter<"Tag"> | string
 }
 
 export type TagUpdateWithoutHotelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slag?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type TagUncheckedUpdateWithoutHotelsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slag?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type TagUncheckedUpdateManyWithoutHotelsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slag?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -421,6 +449,7 @@ export type TagCountOutputTypeCountHotelsArgs<ExtArgs extends runtime.Types.Exte
 export type TagSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  slag?: boolean
   hotels?: boolean | Prisma.Tag$hotelsArgs<ExtArgs>
   _count?: boolean | Prisma.TagCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tag"]>
@@ -428,19 +457,22 @@ export type TagSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
 export type TagSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  slag?: boolean
 }, ExtArgs["result"]["tag"]>
 
 export type TagSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  slag?: boolean
 }, ExtArgs["result"]["tag"]>
 
 export type TagSelectScalar = {
   id?: boolean
   name?: boolean
+  slag?: boolean
 }
 
-export type TagOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name", ExtArgs["result"]["tag"]>
+export type TagOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slag", ExtArgs["result"]["tag"]>
 export type TagInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   hotels?: boolean | Prisma.Tag$hotelsArgs<ExtArgs>
   _count?: boolean | Prisma.TagCountOutputTypeDefaultArgs<ExtArgs>
@@ -456,6 +488,7 @@ export type $TagPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
+    slag: string
   }, ExtArgs["result"]["tag"]>
   composites: {}
 }
@@ -882,6 +915,7 @@ export interface Prisma__TagClient<T, Null = never, ExtArgs extends runtime.Type
 export interface TagFieldRefs {
   readonly id: Prisma.FieldRef<"Tag", 'Int'>
   readonly name: Prisma.FieldRef<"Tag", 'String'>
+  readonly slag: Prisma.FieldRef<"Tag", 'String'>
 }
     
 

@@ -39,6 +39,7 @@ const Header = () => {
         setDocked(atHome ? window.scrollY < 5 : false);
     }, [atHome])
 
+    // TODO: this is a bit hacky, find a better way to trigger the color flip animation on login/logout, maybe by using a context or something
     useEffect(() => {
         if(ref.current) {
             flipHeaderColors(docked);

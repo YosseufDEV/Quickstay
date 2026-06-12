@@ -1,6 +1,7 @@
 import { AxiosError, type AxiosResponse } from "axios";
 import api from "./client";
 import useAuthStore from "@/stores/authStore";
+import type { IUser } from "@quickstay/types/User.ts";
 
 type Response = {
     success: true;
@@ -25,6 +26,17 @@ const login = async (email: string, password: string) => {
         if(res.status !== 200) {
             return { success: false, message: res.data.message || "Login failed" };
         }
+    })
+}
+
+const registerUser = async (user: IUser): Promise<Response> => {
+    const { firstName, lastName, email, password, country } = user;
+    return await api.post("/auth/register", { firstName, lastName, email, password, country }).then((res: AxiosResponse) => {
+        const { payload } = res.data;
+        return { success: true, payload };
+    }).catch((error: AxiosError) => {
+        const res = error.response as AxiosResponse;
+        return { success: false, message: res.data.message || "Registration failed" };
     })
 }
 
@@ -64,4 +76,4 @@ const logout = async () => {
     }
 }
 
-export { login, refreshSession, getCurrentUser, logout }
+export { login, registerUser, refreshSession, getCurrentUser, logout }
