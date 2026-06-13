@@ -1,4 +1,4 @@
-import { prisma } from "../db/prisma.ts";
+import prisma from "../db/prisma.ts";
 import { faker } from "@faker-js/faker";
 
 function getRandomInt(min: number, max: number) {

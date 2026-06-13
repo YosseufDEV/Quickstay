@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-import { prisma } from "../db/prisma";
+import prisma from "../db/prisma";
 
 import type { AuthenticatedRequest } from "../types/auth";
 import { insertSession, invalidateSession, isSessionValid, rotateToken } from "./sessionController";

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { sendResponse, StatusCode } from '../utils/response';
-import { prisma } from '../db/prisma';
+import prisma from '../db/prisma';
 
 const getUserById = async (req: Request, res: Response) => {
     const { id } = req.params;
