@@ -2,7 +2,7 @@ import Skeleton from "@/Components/Skeleton/Skeleton";
 
 const SkeletonHotelCard = ({ count=1 }: { count?: number}) => {
     
-   const element =  <div className="mb-20 w-full h-fit flex relative flex-row gap-10 animate-pulse items-stretch justify-start">
+   const element =  <div className="mb-20 w-full h-fit flex relative flex-row gap-10 items-stretch justify-start">
         {/* <img className="w-90 h-fit rounded-xl" src={props.imageSrc} /> */}
         <Skeleton className="w-90! max-h-full! aspect-3/2 shrink-0 rounded-xl" />
 

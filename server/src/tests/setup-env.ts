@@ -7,8 +7,11 @@ import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { createClient } from "redis";
 
-
 let postgresContainer: StartedTestContainer, redisContainer: StartedTestContainer;
+
+vi.stubEnv("JWT_ACCESS_SECRET", "access_secret");
+vi.stubEnv("JWT_REFRESH_SECRET", "refresh_secret");
+vi.stubEnv("NODE_ENV", "testing");
 
 const mocks = vi.hoisted(() => ({
     prisma: null as unknown as PrismaClient,
@@ -33,14 +36,13 @@ vi.mock("../db/redis", () => {
 
 beforeAll(async () => {
     postgresContainer = await new GenericContainer("postgres:latest")
-        .withName("vitest-postgres")
         .withEnvironment({
             POSTGRES_PASSWORD: "admin",
         })
         .withExposedPorts(5432)
         .start();
 
-    redisContainer = await new GenericContainer("redis:latest").withName("vitest-redis").withExposedPorts(6379).start();
+    redisContainer = await new GenericContainer("redis:latest").withExposedPorts(6379).start();
 
     mocks.redis = createClient({
         socket: {
@@ -55,16 +57,20 @@ beforeAll(async () => {
 
     mocks.prisma = new PrismaClient({ adapter: prismaConfig });
 
-    execSync(`npx prisma migrate deploy --schema=./prisma/schema.prisma`, {
-        env: {
-            ...process.env,
-            POSTGRES_URL: `postgresql://postgres:admin@${postgresContainer.getHost()}:${postgresContainer.getMappedPort(5432)}/postgres`,
-        },
-    });
-    execSync(`npx prisma generate --schema=./prisma/schema.prisma`);
-}, 90_000);
+    vi.stubEnv("POSTGRES_URL", `postgresql://postgres:admin@${postgresContainer.getHost()}:${postgresContainer.getMappedPort(5432)}/postgres`);
+
+    await mocks.redis.connect();
+}, 100_000);
 
 afterAll(async () => {
+    if(mocks.redis && mocks.redis.isOpen) { 
+        await mocks.redis.disconnect();
+    }
+
+    if(mocks.prisma) {
+        await mocks.prisma.$disconnect();
+    }
+
     await postgresContainer.stop();
     await redisContainer.stop();
 });

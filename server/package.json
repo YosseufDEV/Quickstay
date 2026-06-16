@@ -41,13 +41,11 @@
     "@types/pg": "^8.20.0",
     "@types/redis": "^4.0.10",
     "@types/supertest": "^7.2.0",
+    "@vitest/ui": "^4.1.8",
     "nock": "^14.0.15",
     "prisma": "^7.8.0",
     "supertest": "^7.2.2",
     "testcontainers": "^12.0.2",
-    "ts-jest": "^29.4.11",
-    "typescript": "^6.0.3",
-    "vite-tsconfig-paths": "^6.1.1",
-    "vitest-tsconfig-paths": "^3.4.1"
+    "typescript": "^6.0.3"
   }
 }

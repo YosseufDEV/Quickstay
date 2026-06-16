@@ -1,17 +1,8 @@
 import prisma from "../db/prisma";
+import { type IHotel } from "@quickstay/types/Hotel"
 
-interface Hotel {
-    name: string;
-    imageUrl: string;
-    rating: number;
-    address: string;
-    exactAddress: string;
-    pricePerNight: number;
-    tags: { id: number }[];
-}
-
-class HotelModel {
-    static async createHotel({ tags, ...hotelData }: Hotel) {
+class Hotel {
+    static async createHotel({ tags, ...hotelData }: IHotel) {
         return await prisma.hotel.create({
             data: {
                 ...hotelData,
@@ -22,9 +13,10 @@ class HotelModel {
         })
     }
 
-    static async getHotels(limit: number) {
+    static async getHotels(start: number, limit?: number) {
         const hotels = await prisma.hotel.findMany({
-            take: limit,
+            ...(limit ? { take: limit } : {}),
+            skip: start,
             include: {
                 tags: true
             }
@@ -47,5 +39,5 @@ class HotelModel {
     
 }
 
-export { HotelModel };
+export { Hotel };
 

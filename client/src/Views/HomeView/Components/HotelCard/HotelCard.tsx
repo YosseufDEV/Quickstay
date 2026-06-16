@@ -1,7 +1,7 @@
 import styles from "./HotelCard.module.css";
-import LocationPinIcon from '../../../../assets/locationIcon.svg?react';
 import StarIcon from '@/assets/starIconFilled.svg?react';
 import GenericButton from "@/Components/GenericButton/GenericButton";
+import Location from "@/Components/Location/Location";
 
 interface HotelProps {
     imageSrc: string,
@@ -30,10 +30,7 @@ const HotelCard = (props: HotelProps) => {
                         <StarIcon className="w-4"/>
                     </div>
                 </div>
-                <div className={`${styles.location} text-sm`}>
-                    <p>{props.location}</p> 
-                    <LocationPinIcon />
-                </div>
+                <Location address={props.location} />
                 <div className="flex flex-row gap-0.5 justify-between items-center">
                     <div className="flex flex-row gap-0.5 items-center">
                         <p className="text-xl">${props.pricePerNight}</p>

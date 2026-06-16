@@ -31,9 +31,10 @@ const StarsRating = ({ rating, showRating, categorized }: { rating: number, show
             stars.push(<OutlinedStarIcon className={`${iconClass} ${categorized && category.iconStrokeClass}`} key={i} />)
     }
 
+    // TODO: Fractional stars for ratings like 3.5
     return (
         <div className="flex  flex-row font-[Outfit] text-sm items-center gap-2.5">
-            <div className="flex flex-row items-center gap-1.5">
+            <div className="flex flex-row items-center gap-1.5" style={{}}>
                 {stars}
             </div>
             { showRating &&

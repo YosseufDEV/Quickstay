@@ -3,6 +3,7 @@ import HotelTag from "../HotelTag/HotelTag";
 import LocationPinIcon from "@/assets/locationIcon.svg?react";
 import { NavLink } from "react-router";
 import type { ITag } from "@quickstay/types/Hotel.ts";
+import Location from "@/Components/Location/Location";
 
 interface HotelCardProps {
     id: string;
@@ -27,14 +28,11 @@ const HotelCard = (props: HotelCardProps) => {
                     <p className="text-2xl font-Playfair">{props.name}</p>
                 </NavLink>
 
-                <div className="flex flex-row gap-3">
+                <div className="flex flex-row gap-3 items-center">
                     <StarsRating showRating categorized rating={Math.max(props.rating)} />
-                    <p className="text-sm font-[Inter]">200+ reviews</p>
+                    <p className="text-sm font-[Outfit]">200+ reviews</p>
                 </div>
-                <div className="flex gap-2 justify-center items-center text-gray-500 text-sm">
-                    <LocationPinIcon />
-                    <p>{props.address}</p> 
-                </div>
+                <Location address={props.address} />
                 <div className="grid grid-cols-[auto_auto_auto] gap-x-3 gap-y-3 full max-2xl:grid-cols-[auto_auto] max-2xl:grids-rows-2">
                     {props.tags.map((tag, index) => <HotelTag key={index} slag={tag.slag} />)}
                 </div>

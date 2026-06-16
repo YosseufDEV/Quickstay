@@ -12,77 +12,60 @@ const JWT_REFRESH_EXPIRATION_TIME = turnIntoTimestamp(process.env.JWT_REFRESH_EX
 const insertSession = async (token: string, payload: payload, exp: number=JWT_REFRESH_EXPIRATION_TIME) => {
     const hashedToken = createHash("sha256").update(token).digest("hex");
 
-    if(!payload.userId || !payload.sessionId || !token) {
-        console.error("Invalid payload or token for session insertion");
-        return;
-    }
+    const usedToken = await redis.get(`rt:${payload.userId}:${payload.sessionId}`);
+    const usedTokenExpiry = await redis.ttl(`rt:${payload.userId}:${payload.sessionId}`);
 
-    try {
-        await redis.set(`rt:${payload.userId}:${payload.sessionId}:${hashedToken}`, payload.sessionId);
-        await redis.sAdd(`rt:${payload.userId}:${payload.sessionId}`, hashedToken);
-        await redis.expire(`rt:${payload.userId}:${payload.sessionId}:${hashedToken}`, Math.trunc(exp), "NX"); 
-
-    } catch(error) {
-        console.error("Error inserting session into Redis: ", error);
-    }
-}
-
-const rotateToken = async (token: string, payload: payload) => {
     const { userId, sessionId } = payload;
-    try {
-        const hashedToken = createHash("sha256").update(token).digest("hex");
-        await redis.set(`rt:${userId}:${sessionId}:${hashedToken}`, `used ${sessionId}`);
-        await redis.expire(`rt:${userId}:${sessionId}:${hashedToken}`, 60*30); 
-    } catch(error) {
-        console.error("Error rotating token in Redis: ", error);
+
+    if(!userId || !sessionId || !token) {
+        throw new Error("Invalid payload or token for session insertion");
     }
-}
 
-const invalidateAllSessions = async (userId: string) => {
-    try {
-        const keys = await redis.sMembers(`rt:${userId}:*`)
-
-        console.log(keys);
-
-        if(keys.length > 0) {
-            await redis.del(keys);
-        }
-    } catch(error) {
-        console.error("Error invalidating sessions in Redis: ", error);
+    if(usedToken) {
+        await redis.set(`revoked:${payload.userId}:${payload.sessionId}:${usedToken}`, 1);
+        await redis.expire(`revoked:${payload.userId}:${payload.sessionId}:${usedToken}`, usedTokenExpiry);
     }
+
+    await redis.set(`rt:${payload.userId}:${payload.sessionId}`, hashedToken, { EX: Math.trunc(exp)});
 }
 
 const invalidateSession = async (payload: payload) => {
     const { userId, sessionId } = payload;
     try {
-        const keys = await redis.sMembers(`rt:${userId}:${sessionId}`);
-        await redis.del(keys);
+        await redis.set(`rt:${userId}:${sessionId}`, 1);
     } catch(error) {
         console.error("Error invalidating session in Redis: ", error);
     }
 }
 
 const isSessionValid = async (token: string, payload: payload) => {
-    const { userId, sessionId} = payload;
+    const { userId, sessionId } = payload;
+
     try {
         const hashedToken = createHash("sha256").update(token).digest("hex");
 
-        const storedToken = await redis.get(`rt:${userId}:${sessionId}:${hashedToken}`);
+        const storedToken = await redis.get(`rt:${userId}:${sessionId}`);
+        const revokedToken = await redis.get(`revoked:${userId}:${sessionId}:${hashedToken}`);
 
-        if(!storedToken) {
-            return { valid: false, reason: "token_not_found" };
+        if(storedToken == "1") {
+            return { valid: false, reason: "session_invalidated" };
         }
 
-        if(storedToken.startsWith("used")) {
-            await invalidateAllSessions(userId).then(() => console.log(`All sessions for user ${userId} invalidated due to token reuse`)).catch((error) => console.error('Error invalidating sessions in Redis: ', error));
+        if(revokedToken && revokedToken == "1") {
+            await invalidateSession(payload).then(() => console.log(`All sessions for user ${userId} invalidated due to token reuse`)).catch((error) => console.error('Error invalidating sessions in Redis: ', error));
             return { valid: false, reason: "token_reuse" };
         }
 
+        if(!storedToken || storedToken !== hashedToken) {
+            return { valid: false, reason: "token_not_found" };
+        }
+
         return { valid: true };
+
     } catch(error) {
         console.error("Error validating session in Redis: ", error);
         return { valid: false, reason: "redis_error" };
     }
 }
         
-export { insertSession, invalidateSession, invalidateAllSessions, isSessionValid, rotateToken };
+export { insertSession, invalidateSession, isSessionValid };

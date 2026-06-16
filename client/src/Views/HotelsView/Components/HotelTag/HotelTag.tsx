@@ -1,5 +1,4 @@
-import FreeWifiIcon from "@/assets/freeWifiIcon.svg?react";
-import FreeBreakfastIcon from "@/assets/freeBreakfastIcon.svg?react";
+import FreeWifiIcon from "@/assets/freeWifiIcon.svg?react"; import FreeBreakfastIcon from "@/assets/freeBreakfastIcon.svg?react";
 import MountainIcon from "@/assets/mountainIcon.svg?react";
 import RoomServiceIcon from "@/assets/roomServiceIcon.svg?react";
 import PoolAccessIcon from "@/assets/poolIcon.svg?react";
@@ -46,7 +45,7 @@ const HotelTag = (props: HotelTagProps) => {
     const tag = tags[props.slag];
 
     return tag &&
-        <div className="text-sm py-2 px-2 items-center justify-center bg-[#f8f8ff] text-black flex gap-2 rounded-lg">
+        <div className="text-sm py-2 px-2 w-fit items-center justify-center bg-[#f0f0f7] text-black flex gap-2 rounded-lg">
             <tag.icon className={ `[&_path]:fill-black w-[1.5em] h-[1.5em] ${tag.style}` }/>
             <p className="font-[Inter] w-full">{tag.text}</p>
         </div>

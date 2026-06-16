@@ -28,9 +28,13 @@ const addHotel = async (req: Request, res: Response) => {
 }
 
 const getHotels = async (req: Request, res: Response) => {
-    const limit = parseInt(req.query.limit as string) || 10000;
+    // How to parse those as ints while destructuring
+
+    const limit = Number(req.query.limit as string);
+    const start = Number(req.query.start as string) || 0;
+
     try {
-        const hotels = await HotelModel.getHotels(limit);
+        const hotels = await HotelModel.getHotels(start, limit);
         return sendResponse(res, StatusCode.OK, "", { hotels })
     } catch (error) {
         console.log(error);

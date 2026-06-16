@@ -1,7 +1,7 @@
 type slag = "wifi" | "breakfast" | "mountain" | "service" | "pool";
 
 interface ITag {
-    id?: string
+    id: number;
     text: string;
     slag: slag;
 }

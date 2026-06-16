@@ -11,9 +11,10 @@ export default defineConfig({
                     tsconfigPaths: true,
                 },
                 test: {
-                    name: "integration",
+                    name: "Controllers",
+                    globalSetup: "./src/tests/global-setup.ts",
                     setupFiles: ["./src/tests/setup-env.ts"],
-                    include: ["./src/tests/**/*.test.ts"],
+                    include: ["./src/tests/controllers/*.test.ts"],
                 }
             },
             {
@@ -21,11 +22,21 @@ export default defineConfig({
                     tsconfigPaths: true,
                 },
                 test: {
-                    name: "unit",
-                    include: ["./src/**/*.test.ts"],
-                    exclude: ["./src/tests"],
+                    name: "Integration",
+                    include: ["./src/tests/**/*.test.ts"],
+                    exclude: ["./src/tests/controllers/*.test.ts"],
                 }
-            }
+            },
+            {
+                resolve: {
+                    tsconfigPaths: true,
+                },
+                test: {
+                    name: "Unit",
+                    include: ["./src/*/*.test.ts"],
+                    exclude: ["./src/tests/**/*.test.ts"],
+                }
+            },
         ]
     }
 })

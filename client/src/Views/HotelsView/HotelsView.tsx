@@ -14,7 +14,7 @@ const HotelsView = () => {
         queryFn: (): Promise<IHotel[]> => getHotels(10)
     });
 
-    const mappedHotels = hotels?.map((hotel, i: number) => <><HotelCard key={hotel.id} { ...hotel } imageUrl={`http://localhost:5001/${hotel.imageUrl}`} /> { (i!=hotels.length-1) && <hr className="my-15 border-gray-500"/> }</>);
+    const mappedHotels = hotels?.sort((a,b) => b.rating-a.rating).map((hotel, i: number) => <><HotelCard key={hotel.id} { ...hotel } imageUrl={`http://localhost:5001/${hotel.imageUrl}`} /> { (i!=hotels.length-1) && <hr className="my-15 border-gray-500"/> }</>);
 
     return (
         <div className="w-full bg-white mb-20 content-container pt-30! grid grid-cols-[1.5fr_1fr]">

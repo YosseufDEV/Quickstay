@@ -6,11 +6,10 @@ import bcrypt from "bcrypt";
 import prisma from "../db/prisma";
 
 import type { AuthenticatedRequest } from "../types/auth";
-import { insertSession, invalidateSession, isSessionValid, rotateToken } from "./sessionController";
+import { insertSession, invalidateSession, isSessionValid } from "./sessionController";
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
 import { sendResponse, StatusCode } from "../utils/response";
-import { STATUS_CODES } from "node:http";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
@@ -32,20 +31,20 @@ const refreshToken = async (req: Request, res: Response) => {
         const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
         const newRefreshToken = generateToken({ ... payload, exp: usedToken.exp }, JWT_REFRESH_SECRET);
 
-        // const sessionValid = await isSessionValid(refreshToken, payload);
-        //
-        // if(!sessionValid.valid) {
-        //     return sendResponse(res, StatusCode.BAD_REQUEST, sessionValid.reason || "invalid_session");
-        // }
+        console.log("usedToken: ", refreshToken);
+        const sessionValid = await isSessionValid(refreshToken, payload);
+
+        if(!sessionValid.valid) {
+            return sendResponse(res, StatusCode.BAD_REQUEST, sessionValid.reason || "invalid_session");
+        }
 
         const expirationTime = usedToken.exp ? (usedToken.exp - Date.now()/1000) : JWT_REFRESH_EXPIRATION_TIME_MS/1000;
 
-        // await rotateToken(refreshToken, payload);
-        // await insertSession(newRefreshToken as string, payload, expirationTime);
+        res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV != "testing", maxAge: JWT_REFRESH_EXPIRATION_TIME_MS });
 
-        res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS });
-        
-        console.log("New refresh token issued for user ", payload.userId, " with session ", payload.sessionId);
+        await insertSession(newRefreshToken as string, payload, expirationTime);
+
+        console.log('end');
 
         return sendResponse(res, StatusCode.OK, "", { accessToken });
 
@@ -54,15 +53,13 @@ const refreshToken = async (req: Request, res: Response) => {
          if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
             switch (error.name) {
                 case "TokenExpiredError":
-                    return sendResponse(res, StatusCode.UNAUTHORIZED, "token_expired");
+                    return sendResponse(res, StatusCode.BAD_REQUEST, "token_expired");
                 case "NotBeforeError":
-                    return sendResponse(res, StatusCode.UNAUTHORIZED, "token_not_active");
-                case "SyntaxError": 
-                    return sendResponse(res, StatusCode.UNAUTHORIZED, "token_malformed");
+                    return sendResponse(res, StatusCode.BAD_REQUEST, "token_not_active");
                 case "JsonWebTokenError":
-                    return sendResponse(res, StatusCode.UNAUTHORIZED, "token_invalid");
+                    return sendResponse(res, StatusCode.BAD_REQUEST, "token_invalid");
                 default:
-                    return sendResponse(res, StatusCode.UNAUTHORIZED, "unknown_token_error");
+                    return sendResponse(res, StatusCode.BAD_REQUEST, "unknown_token_error");
             }
         }
     }
@@ -123,9 +120,11 @@ const login = async (req: Request, res: Response) => {
         const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
         const refreshToken = generateToken(payload, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRATION_TIME);
 
+        console.log(refreshToken, accessToken);
+
         await insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
 
-        res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: turnIntoTimestamp(JWT_REFRESH_EXPIRATION_TIME) });
+        res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS, secure: process.env.NODE_ENV !== "testing" });
 
         return sendResponse(res, StatusCode.OK, "", { accessToken, user: { ...user, password: undefined } });
     }
@@ -138,11 +137,12 @@ const login = async (req: Request, res: Response) => {
 const logout = async (req: AuthenticatedRequest, res: Response) => {
     if(!req.user) return res.status(401).json({ message: "Unauthorized" });
 
+    // TODO: Invalidate the session in Redis when logging out
     await invalidateSession({ userId: req.user.id, sessionId: req.user.sessionId });
 
     res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: true });
 
-    return res.status(200).json({ message: "Logged out successfully" });
+    return res.status(200).json({ message: "logged_out" });
 }
 
 const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
