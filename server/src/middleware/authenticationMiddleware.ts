@@ -27,10 +27,6 @@ const checkAuthentication = (req: AuthenticatedRequest, res: Response, next: any
                     return res.status(401).json({ message: "token_expired" });
                 case "NotBeforeError":
                     return res.status(401).json({ message: "token_not_active" });
-                case "SyntaxError":
-                    return res.status(401).json({ message: "token_malformed" });
-                case "VerificationError":
-                    return res.status(401).json({ message: "token_signature_invalid" });
                 case "JsonWebTokenError":
                     return res.status(401).json({ message: "token_invalid" });
                 default:

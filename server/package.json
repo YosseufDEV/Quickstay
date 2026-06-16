@@ -1,5 +1,5 @@
 {
-  "name": "quickstay-backend",
+  "name": "server",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
@@ -27,7 +27,8 @@
     "@faker-js/faker": "^10.4.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
-    "@quickstay/validators": "^1.0.0",
+    "@quickstay/types": "workspace:*",
+    "@quickstay/validators": "workspace:*",
     "@testcontainers/postgresql": "^12.0.2",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10",
@@ -41,11 +42,13 @@
     "@types/pg": "^8.20.0",
     "@types/redis": "^4.0.10",
     "@types/supertest": "^7.2.0",
+    "@vitest/coverage-v8": "^4.1.8",
     "@vitest/ui": "^4.1.8",
     "nock": "^14.0.15",
     "prisma": "^7.8.0",
     "supertest": "^7.2.2",
     "testcontainers": "^12.0.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   }
 }

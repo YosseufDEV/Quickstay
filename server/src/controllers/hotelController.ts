@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
 import prisma from '../db/prisma';
 import { sendResponse, StatusCode } from '../utils/response';
-import { HotelModel } from '../models/Hotel';
+
+import Hotel from '../models/Hotel';
 
 const addHotel = async (req: Request, res: Response) => {
     const { name, imageUrl, rating, address, exactAddress, pricePerNight, tags } = req.body;
@@ -34,7 +35,7 @@ const getHotels = async (req: Request, res: Response) => {
     const start = Number(req.query.start as string) || 0;
 
     try {
-        const hotels = await HotelModel.getHotels(start, limit);
+        const hotels = await Hotel.getHotels(start, limit);
         return sendResponse(res, StatusCode.OK, "", { hotels })
     } catch (error) {
         console.log(error);
@@ -50,7 +51,7 @@ const getHotelById = async (req: Request, res: Response) => {
             return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
         }
 
-        const hotel = await HotelModel.getHotelById(id);
+        const hotel = await Hotel.getHotelById(id);
 
         if(!hotel) {
             return sendResponse(res, StatusCode.NOT_FOUND, "hotel_not_found");

@@ -1,5 +1,5 @@
 {
-  "name": "quickstay-frontend",
+  "name": "client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,7 +12,8 @@
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.4.0",
-    "@quickstay/validators": "^1.0.0",
+    "@quickstay/validators": "workspace:*",
+    "@quickstay/types": "workspace:*",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/react-query": "^5.101.0",
     "@types/axios": "^0.9.36",
