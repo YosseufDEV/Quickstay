@@ -32,7 +32,10 @@ const HeaderNavigationButton = (props: HeaderNavigationButtonProps) => {
     return (
         <NavLink onMouseEnter={() => setHovered(true)} 
                  onMouseLeave={() => setHovered(false)}
-                 to={props.to} 
+                 to={{ 
+                    pathname: props.to,
+                    search: ""
+                 }} 
                  ref={ref}
                  className={`decoration-0 header-nav-button ${styles.button}`}>
             <p>{props.text}</p>

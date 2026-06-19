@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useLocation } from "react-router"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -36,7 +37,7 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 
 type PaginationLinkProps = {
   isActive?: boolean
-  to: string
+  to: number
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
   React.ComponentProps<"a">
 
@@ -47,6 +48,7 @@ function PaginationLink({
   to,
   ...props
 }: PaginationLinkProps) {
+  const path = useLocation().pathname
   return (
     <Button
       variant={isActive ? "outline" : "ghost"}
@@ -55,7 +57,10 @@ function PaginationLink({
       nativeButton={false}
       render={
         <NavLink
-          to={to}
+          to={{
+            pathname: path,
+            search: `?page=${to}`,
+          }}
           aria-current={isActive ? "page" : undefined}
           data-slot="pagination-link"
           data-active={isActive}

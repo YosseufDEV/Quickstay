@@ -40,14 +40,13 @@ const tags: Record<slag, tag> = {
     },
 }
 
-
 const HotelTag = (props: HotelTagProps) => {
     const tag = tags[props.slag];
 
     return tag &&
         <div className="text-sm py-2 px-2 w-fit items-center justify-center bg-[#f0f0f7] text-black flex gap-2 rounded-lg">
             <tag.icon className={ `[&_path]:fill-black w-[1.5em] h-[1.5em] ${tag.style}` }/>
-            <p className="font-[Inter] w-full">{tag.text}</p>
+            <p className="font-[Inter] text-nowrap w-full">{tag.text}</p>
         </div>
 }
 

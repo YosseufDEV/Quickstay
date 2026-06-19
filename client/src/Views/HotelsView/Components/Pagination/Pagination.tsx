@@ -2,35 +2,42 @@ import { Pagination as CNPagination, PaginationContent, PaginationItem, Paginati
 
 interface PaginationProps {
     page: number;
+    beforeAndAfter?: number;
 }
 
-const Pagination = ({ page }: PaginationProps) => {
+const generatePaginationItems = (currentPage: number, beforeAndAfter: number) => {
+    const items = [];
+    const startPage = Math.max(1, currentPage - beforeAndAfter);
+    const endPage = currentPage == 1 ? 3 : currentPage + beforeAndAfter;
+    for (let i = startPage; i <= endPage; i++) {
+        items.push(
+            <PaginationItem key={i}>
+                <PaginationLink isActive={i === currentPage} to={i}>
+                    {i}
+                </PaginationLink>
+            </PaginationItem>
+        );
+    }
+    return items;
+}
+
+const Pagination = (props: PaginationProps) => {
+    const paginationItems = generatePaginationItems(props.page, props.beforeAndAfter || 1);
+
     return (
         <CNPagination className="mb-15">
             <PaginationContent>
+             { props.page > 1 &&
                 <PaginationItem>
-                    <PaginationPrevious to="/"/>
+                    <PaginationPrevious to={props.page-1}/>
                 </PaginationItem>
-                <PaginationItem>
-                    <PaginationLink isActive to="/">
-                        {page}
-                    </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                    <PaginationLink to="/">
-                        {page+1}
-                    </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                    <PaginationLink to="/">
-                        {page+2}
-                    </PaginationLink>
-                </PaginationItem>
+             }
+                {paginationItems}
                 <PaginationItem>
                     <PaginationEllipsis />
                 </PaginationItem>
                 <PaginationItem>
-                    <PaginationNext to="/"/>
+                    <PaginationNext to={props.page+1}/>
                 </PaginationItem>
             </PaginationContent>
         </CNPagination>
