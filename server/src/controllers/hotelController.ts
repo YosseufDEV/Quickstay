@@ -29,14 +29,40 @@ const addHotel = async (req: Request, res: Response) => {
 }
 
 const getHotels = async (req: Request, res: Response) => {
-    // How to parse those as ints while destructuring
 
-    const limit = Number(req.query.limit as string);
-    const start = Number(req.query.start as string) || 0;
+    let limit = Number(req.query.limit);
+    let offset = Number(req.query.offset) || 0;
+
+    limit = limit > 10 ? 10 : limit;
+
+    const sort = req.query.sort as string | undefined;
+    const order = (req.query.order as "asc" | "desc") || "asc";
+
+    if(limit <= 0 || isNaN(limit) || isNaN(offset)) {
+        return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_pagination_parameters");
+    }
+
+    if(sort && !["price", "createdAt", "rating"].includes(sort)) {
+        return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_sort_parameter");
+    }
+
+    if(order && !["asc", "desc"].includes(order)) {
+        return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_order_parameter");
+    }
 
     try {
-        const hotels = await Hotel.getHotels(start, limit);
-        return sendResponse(res, StatusCode.OK, "", { hotels })
+        const hotels = await Hotel.getHotels(limit, sort, order, offset > 0 ? offset : undefined);
+
+        const meta = { 
+            total: hotels.length,
+            limit: limit > 10 ? 10 : limit,
+            cursor: btoa(hotels.at(-1)?.createdAt.toISOString() || ""),
+            sort,
+            order
+        }
+
+        return sendResponse(res, StatusCode.OK, "", { hotels }, meta)
+
     } catch (error) {
         console.log(error);
         return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "An error occurred while fetching hotels");

@@ -22,6 +22,7 @@ const LoginView = () => {
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(loginSchema),
     });
+    const setModalPage = useAuthModalStore(state => state.setModalPage);
 
     const handleLogin = (data: LoginFormData) => {
         const { email, password } = data;
@@ -47,8 +48,8 @@ const LoginView = () => {
 
     }
 
-    const handleSignupRedirect = (e: any) => {
-        useAuthModalStore.getState().setModalPage("signup");
+    const handleSignupRedirect = (_: any) => {
+        setModalPage("signup");
     }
 
     return (

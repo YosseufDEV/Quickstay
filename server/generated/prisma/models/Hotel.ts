@@ -44,6 +44,7 @@ export type HotelMinAggregateOutputType = {
   address: string | null
   pricePerNight: number | null
   imageUrl: string | null
+  createdAt: Date | null
 }
 
 export type HotelMaxAggregateOutputType = {
@@ -54,6 +55,7 @@ export type HotelMaxAggregateOutputType = {
   address: string | null
   pricePerNight: number | null
   imageUrl: string | null
+  createdAt: Date | null
 }
 
 export type HotelCountAggregateOutputType = {
@@ -64,6 +66,7 @@ export type HotelCountAggregateOutputType = {
   address: number
   pricePerNight: number
   imageUrl: number
+  createdAt: number
   _all: number
 }
 
@@ -86,6 +89,7 @@ export type HotelMinAggregateInputType = {
   address?: true
   pricePerNight?: true
   imageUrl?: true
+  createdAt?: true
 }
 
 export type HotelMaxAggregateInputType = {
@@ -96,6 +100,7 @@ export type HotelMaxAggregateInputType = {
   address?: true
   pricePerNight?: true
   imageUrl?: true
+  createdAt?: true
 }
 
 export type HotelCountAggregateInputType = {
@@ -106,6 +111,7 @@ export type HotelCountAggregateInputType = {
   address?: true
   pricePerNight?: true
   imageUrl?: true
+  createdAt?: true
   _all?: true
 }
 
@@ -203,6 +209,7 @@ export type HotelGroupByOutputType = {
   address: string
   pricePerNight: number
   imageUrl: string
+  createdAt: Date
   _count: HotelCountAggregateOutputType | null
   _avg: HotelAvgAggregateOutputType | null
   _sum: HotelSumAggregateOutputType | null
@@ -236,6 +243,7 @@ export type HotelWhereInput = {
   address?: Prisma.StringFilter<"Hotel"> | string
   pricePerNight?: Prisma.IntFilter<"Hotel"> | number
   imageUrl?: Prisma.StringFilter<"Hotel"> | string
+  createdAt?: Prisma.DateTimeFilter<"Hotel"> | Date | string
   tags?: Prisma.TagListRelationFilter
 }
 
@@ -247,6 +255,7 @@ export type HotelOrderByWithRelationInput = {
   address?: Prisma.SortOrder
   pricePerNight?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
   tags?: Prisma.TagOrderByRelationAggregateInput
 }
 
@@ -261,6 +270,7 @@ export type HotelWhereUniqueInput = Prisma.AtLeast<{
   address?: Prisma.StringFilter<"Hotel"> | string
   pricePerNight?: Prisma.IntFilter<"Hotel"> | number
   imageUrl?: Prisma.StringFilter<"Hotel"> | string
+  createdAt?: Prisma.DateTimeFilter<"Hotel"> | Date | string
   tags?: Prisma.TagListRelationFilter
 }, "id">
 
@@ -272,6 +282,7 @@ export type HotelOrderByWithAggregationInput = {
   address?: Prisma.SortOrder
   pricePerNight?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
   _count?: Prisma.HotelCountOrderByAggregateInput
   _avg?: Prisma.HotelAvgOrderByAggregateInput
   _max?: Prisma.HotelMaxOrderByAggregateInput
@@ -290,6 +301,7 @@ export type HotelScalarWhereWithAggregatesInput = {
   address?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
   pricePerNight?: Prisma.IntWithAggregatesFilter<"Hotel"> | number
   imageUrl?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Hotel"> | Date | string
 }
 
 export type HotelCreateInput = {
@@ -300,6 +312,7 @@ export type HotelCreateInput = {
   address: string
   pricePerNight: number
   imageUrl: string
+  createdAt?: Date | string
   tags?: Prisma.TagCreateNestedManyWithoutHotelsInput
 }
 
@@ -311,6 +324,7 @@ export type HotelUncheckedCreateInput = {
   address: string
   pricePerNight: number
   imageUrl: string
+  createdAt?: Date | string
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutHotelsInput
 }
 
@@ -322,6 +336,7 @@ export type HotelUpdateInput = {
   address?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerNight?: Prisma.IntFieldUpdateOperationsInput | number
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tags?: Prisma.TagUpdateManyWithoutHotelsNestedInput
 }
 
@@ -333,6 +348,7 @@ export type HotelUncheckedUpdateInput = {
   address?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerNight?: Prisma.IntFieldUpdateOperationsInput | number
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tags?: Prisma.TagUncheckedUpdateManyWithoutHotelsNestedInput
 }
 
@@ -344,6 +360,7 @@ export type HotelCreateManyInput = {
   address: string
   pricePerNight: number
   imageUrl: string
+  createdAt?: Date | string
 }
 
 export type HotelUpdateManyMutationInput = {
@@ -354,6 +371,7 @@ export type HotelUpdateManyMutationInput = {
   address?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerNight?: Prisma.IntFieldUpdateOperationsInput | number
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type HotelUncheckedUpdateManyInput = {
@@ -364,6 +382,7 @@ export type HotelUncheckedUpdateManyInput = {
   address?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerNight?: Prisma.IntFieldUpdateOperationsInput | number
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type HotelCountOrderByAggregateInput = {
@@ -374,6 +393,7 @@ export type HotelCountOrderByAggregateInput = {
   address?: Prisma.SortOrder
   pricePerNight?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
 }
 
 export type HotelAvgOrderByAggregateInput = {
@@ -389,6 +409,7 @@ export type HotelMaxOrderByAggregateInput = {
   address?: Prisma.SortOrder
   pricePerNight?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
 }
 
 export type HotelMinOrderByAggregateInput = {
@@ -399,6 +420,7 @@ export type HotelMinOrderByAggregateInput = {
   address?: Prisma.SortOrder
   pricePerNight?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
 }
 
 export type HotelSumOrderByAggregateInput = {
@@ -430,6 +452,10 @@ export type IntFieldUpdateOperationsInput = {
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
 }
 
 export type HotelCreateNestedManyWithoutTagsInput = {
@@ -478,6 +504,7 @@ export type HotelCreateWithoutTagsInput = {
   address: string
   pricePerNight: number
   imageUrl: string
+  createdAt?: Date | string
 }
 
 export type HotelUncheckedCreateWithoutTagsInput = {
@@ -488,6 +515,7 @@ export type HotelUncheckedCreateWithoutTagsInput = {
   address: string
   pricePerNight: number
   imageUrl: string
+  createdAt?: Date | string
 }
 
 export type HotelCreateOrConnectWithoutTagsInput = {
@@ -522,6 +550,7 @@ export type HotelScalarWhereInput = {
   address?: Prisma.StringFilter<"Hotel"> | string
   pricePerNight?: Prisma.IntFilter<"Hotel"> | number
   imageUrl?: Prisma.StringFilter<"Hotel"> | string
+  createdAt?: Prisma.DateTimeFilter<"Hotel"> | Date | string
 }
 
 export type HotelUpdateWithoutTagsInput = {
@@ -532,6 +561,7 @@ export type HotelUpdateWithoutTagsInput = {
   address?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerNight?: Prisma.IntFieldUpdateOperationsInput | number
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type HotelUncheckedUpdateWithoutTagsInput = {
@@ -542,6 +572,7 @@ export type HotelUncheckedUpdateWithoutTagsInput = {
   address?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerNight?: Prisma.IntFieldUpdateOperationsInput | number
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type HotelUncheckedUpdateManyWithoutTagsInput = {
@@ -552,6 +583,7 @@ export type HotelUncheckedUpdateManyWithoutTagsInput = {
   address?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerNight?: Prisma.IntFieldUpdateOperationsInput | number
   imageUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -593,6 +625,7 @@ export type HotelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   address?: boolean
   pricePerNight?: boolean
   imageUrl?: boolean
+  createdAt?: boolean
   tags?: boolean | Prisma.Hotel$tagsArgs<ExtArgs>
   _count?: boolean | Prisma.HotelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["hotel"]>
@@ -605,6 +638,7 @@ export type HotelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   address?: boolean
   pricePerNight?: boolean
   imageUrl?: boolean
+  createdAt?: boolean
 }, ExtArgs["result"]["hotel"]>
 
 export type HotelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -615,6 +649,7 @@ export type HotelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   address?: boolean
   pricePerNight?: boolean
   imageUrl?: boolean
+  createdAt?: boolean
 }, ExtArgs["result"]["hotel"]>
 
 export type HotelSelectScalar = {
@@ -625,9 +660,10 @@ export type HotelSelectScalar = {
   address?: boolean
   pricePerNight?: boolean
   imageUrl?: boolean
+  createdAt?: boolean
 }
 
-export type HotelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "rating" | "name" | "exactAddress" | "address" | "pricePerNight" | "imageUrl", ExtArgs["result"]["hotel"]>
+export type HotelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "rating" | "name" | "exactAddress" | "address" | "pricePerNight" | "imageUrl" | "createdAt", ExtArgs["result"]["hotel"]>
 export type HotelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tags?: boolean | Prisma.Hotel$tagsArgs<ExtArgs>
   _count?: boolean | Prisma.HotelCountOutputTypeDefaultArgs<ExtArgs>
@@ -648,6 +684,7 @@ export type $HotelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     address: string
     pricePerNight: number
     imageUrl: string
+    createdAt: Date
   }, ExtArgs["result"]["hotel"]>
   composites: {}
 }
@@ -1079,6 +1116,7 @@ export interface HotelFieldRefs {
   readonly address: Prisma.FieldRef<"Hotel", 'String'>
   readonly pricePerNight: Prisma.FieldRef<"Hotel", 'Int'>
   readonly imageUrl: Prisma.FieldRef<"Hotel", 'String'>
+  readonly createdAt: Prisma.FieldRef<"Hotel", 'DateTime'>
 }
     
 

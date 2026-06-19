@@ -17,8 +17,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CLIENT_URL, methods: "GET,POST,PUT,DELETE", credentials: true }));
 
-app.use("/auth", AuthRouter);
-app.use("/users", UserRouter);
-app.use("/hotels", HotelRouter);
+app.use("/api/v1/auth", AuthRouter);
+app.use("/api/v1/users", UserRouter);
+app.use("/api/v1/hotels", HotelRouter);
 
 export { app };

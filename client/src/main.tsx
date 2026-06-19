@@ -21,11 +21,12 @@ const router = createBrowserRouter([
             },
             {
                 path: "/hotels",
-                children: [
-                    { path: "explore", Component: HotelsView },
-                    { path: ":hotelName", Component: HotelView },
-                ],
-            }
+                Component: HotelsView
+            },
+            { 
+                path: "/hotels/:hotelName", 
+                Component: HotelView 
+            },
         ]
     }
 ])

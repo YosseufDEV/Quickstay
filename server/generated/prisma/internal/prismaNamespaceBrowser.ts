@@ -93,7 +93,8 @@ export const HotelScalarFieldEnum = {
   exactAddress: 'exactAddress',
   address: 'address',
   pricePerNight: 'pricePerNight',
-  imageUrl: 'imageUrl'
+  imageUrl: 'imageUrl',
+  createdAt: 'createdAt'
 } as const
 
 export type HotelScalarFieldEnum = (typeof HotelScalarFieldEnum)[keyof typeof HotelScalarFieldEnum]

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router";
 
 import { getHotels } from "@/api/hotel";
 
@@ -7,17 +8,27 @@ import type { IHotel } from "@quickstay/types/Hotel.ts";
 import HotelCard from "./Components/HotelCard/HotelCard";
 import FilterHotels from "../FilterHotels/FilterHotels";
 import SkeletonHotelCard from "./Components/SkeletonHotelCard/SkeletonHotelCard";
+import Pagination from "./Components/Pagination/Pagination";
 
 const HotelsView = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const page = Number(searchParams.get("page")) || 1;
+    const hotelsPerPage = 10;
+
     const { data: hotels, isLoading } = useQuery({
-        queryKey: ["hotels"],
-        queryFn: (): Promise<IHotel[]> => getHotels(10)
+        queryKey: ["hotels", page],
+        queryFn: (): Promise<IHotel[]> => getHotels(hotelsPerPage, (page-1)*hotelsPerPage)
     });
 
-    const mappedHotels = hotels?.sort((a,b) => b.rating-a.rating).map((hotel, i: number) => <><HotelCard key={hotel.id} { ...hotel } imageUrl={`http://localhost:5001/${hotel.imageUrl}`} /> { (i!=hotels.length-1) && <hr className="my-15 border-gray-500"/> }</>);
+    window.onclick = (e) => {
+        setSearchParams({ page: String(page+1) });
+    }
+
+    const mappedHotels = hotels?.map((hotel: IHotel) => <HotelCard key={hotel.id} { ...hotel } imageUrl={`http://localhost:5001/${hotel.imageUrl}`} />);
 
     return (
-        <div className="w-full bg-white mb-20 content-container pt-30! grid grid-cols-[1.5fr_1fr]">
+        <>
+        <div className="w-full bg-white content-container pt-30! grid grid-cols-[1.5fr_1fr]">
             <div>
                 <p className="section-title">Hotel Rooms</p>
                 <p className="section-description mb-10">Take advantage of our limited-time offers and special packages to enhance <br/> your stay and create unforgettable memories.</p>
@@ -27,6 +38,10 @@ const HotelsView = () => {
                 <FilterHotels />
             </div>
         </div>
+
+        <Pagination page={page} />
+
+        </>
     )
 }
 

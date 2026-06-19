@@ -10,11 +10,11 @@ enum StatusCode {
     INTERNAL_SERVER_ERROR = 500,
 }
 
-const sendResponse = (res: Response, status: StatusCode, message?: string, payload?: any) => {
+const sendResponse = (res: Response, status: StatusCode, message?: string, payload?: any, meta? : any) => {
     if(!payload && !message) {
         return res.sendStatus(status);
     }
-    return res.status(status).json({ payload, message });
+    return res.status(status).json({ message, payload, meta });
 }
 
 export { sendResponse, StatusCode };

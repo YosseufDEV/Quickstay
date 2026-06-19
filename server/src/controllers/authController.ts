@@ -40,7 +40,7 @@ const refreshToken = async (req: Request, res: Response) => {
 
         const expirationTime = usedToken.exp ? (usedToken.exp - Date.now()/1000) : JWT_REFRESH_EXPIRATION_TIME_MS/1000;
 
-        res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV != "testing", maxAge: JWT_REFRESH_EXPIRATION_TIME_MS });
+        res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV != "production", maxAge: JWT_REFRESH_EXPIRATION_TIME_MS });
 
         await insertSession(newRefreshToken as string, payload, expirationTime);
 
@@ -100,7 +100,7 @@ const register = async (req: Request, res: Response) => {
 
     } catch(error) {
         console.log(error);
-        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "Internal server error");
+        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "internal_server_error");
     }
 }
 
@@ -124,7 +124,7 @@ const login = async (req: Request, res: Response) => {
 
         await insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
 
-        res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS, secure: process.env.NODE_ENV !== "testing" });
+        res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS, secure: process.env.NODE_ENV !== "production" });
 
         return sendResponse(res, StatusCode.OK, "", { accessToken, user: { ...user, password: undefined } });
     }
@@ -140,16 +140,17 @@ const logout = async (req: AuthenticatedRequest, res: Response) => {
     // TODO: Invalidate the session in Redis when logging out
     await invalidateSession({ userId: req.user.id, sessionId: req.user.sessionId });
 
-    res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: true });
+    res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV !== "production" });
 
-    return res.status(200).json({ message: "logged_out" });
+    return sendResponse(res, StatusCode.OK);
 }
 
 const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
-    if(!req.user) return res.status(401).json({ message: "Unauthorized" });
-
+    if(!req.user) return sendResponse(res, StatusCode.UNAUTHORIZED);
 
     const userId = req.user.id; 
+
+    console.log("userId: ", userId);
 
     try {
         const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, firstName: true, lastName: true, country: true } });

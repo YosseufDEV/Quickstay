@@ -1,9 +1,6 @@
 import z from "zod";
 
 
-// TODO: Understand the regex and make it more readable
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&_]{8,}$/;
-
 const loginSchema = z.object({
     email: z.email("Please enter a valid email address"),
     password: z.string().min(8, "Password must be at least 8 characters long")

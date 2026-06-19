@@ -1,5 +1,12 @@
 type slag = "wifi" | "breakfast" | "mountain" | "service" | "pool";
 
+enum SortOptions {
+    PRICE = "price",
+    CREATED_AT = "created_At",
+    RATING = "rating",
+    PRICE_RANGE = "price_range"
+}
+
 interface ITag {
     id: number;
     text: string;
@@ -7,7 +14,7 @@ interface ITag {
 }
 
 interface IHotel {
-    id?: string;
+    id: string;
     name: string;
     address: string;
     exactAddress: string;
@@ -17,4 +24,4 @@ interface IHotel {
     tags: ITag[];
 }
 
-export { slag, IHotel, ITag };
+export { type slag, type IHotel, type ITag };

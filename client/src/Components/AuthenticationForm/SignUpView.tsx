@@ -25,6 +25,16 @@ interface SignUpFormData {
     country: string;
 }
 
+/**
+a {
+    font-weight: 600;
+    color: #3b82f6;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+}
+**/
+
 const SignUpView = () => {
     const { register, handleSubmit, control, formState: { errors } } = useForm({
         resolver: zodResolver(signUpSchema),
@@ -38,15 +48,16 @@ const SignUpView = () => {
     });
 
     const [authenticationError, setAuthenticationError] = useState<string | null>(null);
+    const setModalPage = useAuthModalStore(state => state.setModalPage);
 
-    const handleLoginRedirect = (e: any) => {
+    const handleLoginRedirect = (_: any) => {
         useAuthModalStore.getState().setModalPage("login");
     }
 
     const handleSignUp = async (data: SignUpFormData) => {
         const result = await registerUser({ ...data, role: "user" })
         if(result.success) {
-            useAuthModalStore.getState().setModalPage("login");
+            setModalPage("login");
         } else {
             setAuthenticationError(result.message || "Registration failed");
         }
@@ -87,7 +98,7 @@ const SignUpView = () => {
                 <Controller 
                     name="country"
                     control={control}
-                    render={ ({ field: { onChange, value }, fieldState: { error } }) => <SelectBox value={value} reactFormChange={onChange} items={country_list} title="Select Country" label="Country"/>}
+                    render={ ({ field: { onChange, value } }) => <SelectBox value={value} reactFormChange={onChange} items={country_list} title="Select Country" label="Country"/>}
                 />
 
                 {/* Todo: Implement password for this*/}

@@ -10,15 +10,12 @@ import SkeletonHotelView from "./SkeletonHotelsView";
 
 const HotelView = () => {
     const { hotelId } = useLocation().state;
+
     const { data: hotel, isLoading, status } = useQuery({
         queryKey: ["hotel", hotelId],
         queryFn: (): Promise<IHotel> => getHotelById(hotelId)
     });
     
-    useEffect(() => {
-        console.log(hotel);
-    }, [hotel]);
-
     return ( status=="success" ?
         <div className="bg-[#fdfdfd] pt-30! content-container h-screen flex flex-col gap-5">
             <p className="font-Playfair text-3xl font-medium">{hotel.name}</p>

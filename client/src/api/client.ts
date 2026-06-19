@@ -19,7 +19,7 @@ const processRequests = (params: ProcessRequestParameters) => {
 }
 
 const api = axios.create({
-    baseURL: "http://localhost:5050",
+    baseURL: "http://localhost:5050/api/v1",
 });
 
 api.interceptors.request.use((config) => {
@@ -49,7 +49,7 @@ api.interceptors.response.use(
         originalRequest._retry = true;
         refreshing = true;
 
-        return await axios.post("http://localhost:5050/auth/refresh").then(res => {
+        return await axios.post("http://localhost:5050/api/v1/auth/refresh").then(res => {
             const { payload } = res.data;
             useAuthStore.getState().setAuthToken(payload.accessToken);
 

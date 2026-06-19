@@ -1,3 +1,4 @@
+import type { ITag } from "@quickstay/types/Hotel.ts";
 import prisma from "../db/prisma.ts";
 import { faker } from "@faker-js/faker";
 
@@ -11,10 +12,16 @@ export function generateRandomHotel() {
     const pricePerNight = getRandomInt(150, 500);
     const rating = parseFloat(((Math.random()+3)*5/4).toFixed(2));
     const imageUrl = `${getRandomInt(1, 12)}.jpg`;
-    const tags = []
+    const tags: { id: number }[] = [];
 
     for(let i = 0; i < 3; i++) {
-        tags.push({ id: getRandomInt(1, 6) })
+        const id = getRandomInt(1, 6);
+        if(!tags.some(tag => (tag.id === id)) ) {
+
+            tags.push({ id })
+        } else {
+            i--;
+        }
     }
 
     return {
@@ -30,21 +37,22 @@ export function generateRandomHotel() {
 
 try {
     await prisma.hotel.deleteMany({});
+    await prisma.hotelTag.deleteMany({});
     await prisma.tag.deleteMany({});
 
     await prisma.tag.createMany({
         data: [
-            { name: "Free Wi-Fi", slag: "wifi" },
-            { name: "Breakfast Included", slag: "breakfast" },
-            { name: "Mountain View", slag: "mountain" },
-            { name: "Room Service", slag: "service" },
-            { name: "Pool Access", slag: "pool" },
+            { id: 1,name: "Free Wi-Fi", slag: "wifi" },
+            { id:2, name: "Breakfast Included", slag: "breakfast" },
+            { id: 3, name: "Mountain View", slag: "mountain" },
+            { id: 4, name: "Room Service", slag: "service" },
+            { id: 5, name: "Pool Access", slag: "pool" },
         ],
-        skipDuplicates: true,
     })
 
-    for(let i = 0; i < 1000; i++) {
+    for(let i = 0; i < 100_000; i++) {
         const hotelData = generateRandomHotel();
+
         await prisma.hotel.create({
             data: {
                 ...hotelData,
