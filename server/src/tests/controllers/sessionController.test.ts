@@ -71,7 +71,6 @@ describe('Session Controller Test', () => {
 
         const tokenExpiry = await redis.ttl(`revoked:${payload.userId}:${payload.sessionId}:${hashedToken}`);
 
-        console.log("Token expiry: ", tokenExpiry);
         expect(tokenExpiry).toBeLessThanOrEqual(42069);
         expect(tokenExpiry).toBeGreaterThan(0);
     });

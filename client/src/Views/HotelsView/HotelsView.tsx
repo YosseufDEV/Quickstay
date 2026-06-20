@@ -10,7 +10,7 @@ import SkeletonHotelCard from "./Components/SkeletonHotelCard/SkeletonHotelCard"
 import Pagination from "./Components/Pagination/Pagination";
 
 const HotelsView = () => {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const page = Number(searchParams.get("page")) || 1;
     const hotelsPerPage = 10;
 
@@ -19,15 +19,16 @@ const HotelsView = () => {
         queryFn: (): Promise<IHotel[]> => getHotels(hotelsPerPage, (page-1)*hotelsPerPage)
     });
 
-
     const mappedHotels = hotels?.map((hotel: IHotel) => <HotelCard key={hotel.id} { ...hotel } imageUrl={`http://localhost:5001/${hotel.imageUrl}`} />);
 
     return (
         <>
-            <div className="w-full bg-white content-container pt-30! grid grid-cols-[1.5fr_1fr]">
-                <div>
-                    <p className="section-title">Hotel Rooms</p>
-                    <p className="section-description mb-10">Take advantage of our limited-time offers and special packages to enhance <br/> your stay and create unforgettable memories.</p>
+            <div className="w-full bg-white space-y-15 content-container pt-30! grid grid-cols-[1.5fr_1fr]">
+                <div className="space-y-15" >
+                    <div className="mb-15">
+                        <p className="section-title">Hotels</p>
+                        <p className="section-description">Take advantage of our limited-time offers and special packages to enhance <br/> your stay and create unforgettable memories.</p>
+                    </div>
                     { isLoading ? <SkeletonHotelCard count={hotelsPerPage} /> : mappedHotels }
                 </div>
                 <FilterHotels />
@@ -35,7 +36,7 @@ const HotelsView = () => {
 
             <ScrollRestoration />
 
-            <Pagination beforeAndAfter={1} page={page} />
+            <Pagination beforeAndAfter={2} page={page} />
 
         </>
     )

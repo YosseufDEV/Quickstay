@@ -25,7 +25,10 @@ const HotelCard = (props: HotelCardProps) => {
                 <div className= "flex flex-col gap-3 justify-between items-start">
                     <p className="text-sm text-gray-500">{props.exactAddress}</p>
 
-                    <NavLink state={{ hotelId: props.id }} to={`/hotels/${props.name.toLowerCase().replace(/\s/g, "-")}`} className="no-underline! text-black! font-normal!">
+                    <NavLink state={{ hotelId: props.id }} 
+                    // TODO : fix this regex
+                             to={`/hotels/${props.name.toLowerCase().replace(/(\W)/g, "-")}`} 
+                             className="no-underline! text-black! font-normal!">
                         <p className="text-2xl font-Playfair">{props.name}</p>
                     </NavLink>
 
@@ -42,7 +45,7 @@ const HotelCard = (props: HotelCardProps) => {
                     </div>
                 </div>
             </div>
-            <hr className="my-15" />
+            <hr />
         </>
     )
 }

@@ -1,13 +1,12 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response } from "express";
 import type { AuthenticatedRequest } from "../types/auth";
+import { logger } from "../utils/logger";
 
 const checkAuthentication = (req: AuthenticatedRequest, res: Response, next: any) => {
     const authHeader = req.headers.authorization;
 
     const token = authHeader?.split(" ")[1];
-
-    console.log("I'm in the authentication middleware");
 
     if(!token || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ message: "token_not_provided" });
@@ -16,12 +15,11 @@ const checkAuthentication = (req: AuthenticatedRequest, res: Response, next: any
     try {
         const decodedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string) as jwt.JwtPayload;
         req.user = { id: decodedToken.userId, sessionId: decodedToken.sessionId, role: decodedToken.role };
-        console.log("user is authenticated with id: ", req.user.id);
+        logger.info(`User ${decodedToken.userId} authenticated successfully from IP ${req.ip}`);
         next();
     } catch (error) {
-        console.log("user is not authenticated:");
-        console.log(error);
         if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
+            logger.error(`JWT error during authentication: ${error.message} for ip ${req.ip}`);
             switch (error.name) {
                 case "TokenExpiredError":
                     return res.status(401).json({ message: "token_expired" });

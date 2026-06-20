@@ -25,8 +25,6 @@ const getUserById = async (req: Request, res: Response) => {
         return sendResponse(res, StatusCode.NOT_FOUND, "User not found");
     }
 
-    console.log(user);
-
     sendResponse(res, StatusCode.OK, "", user)
 }
 

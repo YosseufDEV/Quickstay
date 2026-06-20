@@ -25,7 +25,7 @@ function PaginationContent({
   return (
     <ul
       data-slot="pagination-content"
-      className={cn("flex items-center gap-0.5", className)}
+      className={cn("font-[Inter] flex items-center gap-0.5", className)}
       {...props}
     />
   )

@@ -17,7 +17,7 @@ const getSortingOptions = (sortBy: string | undefined, order: "asc" | "desc"="de
 }
 
 class Hotel {
-    static async createHotel({ tags, ...hotelData }: IHotel) {
+    static async createHotel({ tags, ...hotelData }: Omit<IHotel, 'id'>) {
         return await prisma.hotel.create({
             data: {
                 ...hotelData,
@@ -61,4 +61,3 @@ class Hotel {
 }
 
 export default Hotel;
-

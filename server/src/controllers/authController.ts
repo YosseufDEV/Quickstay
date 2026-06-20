@@ -10,6 +10,7 @@ import { insertSession, invalidateSession, isSessionValid } from "./sessionContr
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
 import { sendResponse, StatusCode } from "../utils/response";
+import { logger } from "../utils/logger";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
@@ -31,7 +32,6 @@ const refreshToken = async (req: Request, res: Response) => {
         const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
         const newRefreshToken = generateToken({ ... payload, exp: usedToken.exp }, JWT_REFRESH_SECRET);
 
-        console.log("usedToken: ", refreshToken);
         const sessionValid = await isSessionValid(refreshToken, payload);
 
         if(!sessionValid.valid) {
@@ -44,13 +44,11 @@ const refreshToken = async (req: Request, res: Response) => {
 
         await insertSession(newRefreshToken as string, payload, expirationTime);
 
-        console.log('end');
-
         return sendResponse(res, StatusCode.OK, "", { accessToken });
 
     } catch (error) {
-        console.log(error);
          if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
+            logger.error("JWT error during token refresh: ", error.message);
             switch (error.name) {
                 case "TokenExpiredError":
                     return sendResponse(res, StatusCode.BAD_REQUEST, "token_expired");

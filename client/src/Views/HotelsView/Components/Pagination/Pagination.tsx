@@ -25,12 +25,22 @@ const Pagination = (props: PaginationProps) => {
     const paginationItems = generatePaginationItems(props.page, props.beforeAndAfter || 1);
 
     return (
-        <CNPagination className="mb-15">
+        <CNPagination>
             <PaginationContent>
              { props.page > 1 &&
                 <PaginationItem>
                     <PaginationPrevious to={props.page-1}/>
                 </PaginationItem>
+             }
+             { props.page > 3 &&
+                <>
+                    <PaginationItem>
+                        <PaginationLink to={1}>1</PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationEllipsis />
+                    </PaginationItem>
+                </>
              }
                 {paginationItems}
                 <PaginationItem>

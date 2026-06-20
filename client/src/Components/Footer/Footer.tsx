@@ -29,7 +29,7 @@ const FooterSection = (props: FooterSectionProps) => {
 const Footer = () => {
     const description = "Discover the world's most extraordinary places to stay, from boutique hotels to luxury villas and private islands."
     return (
-        <footer className="content-container bg-footerBackground w-full flex flex-col">
+        <footer className="content-container mt-15 bg-footerBackground w-full flex flex-col">
             <div className="flex justify-between  w-full py-8 pt-3">
                 <div className={styles.siteInfo}>
                     <Logo className="fill-black"/>

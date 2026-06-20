@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import prisma from '../db/prisma';
 import { sendResponse, StatusCode } from '../utils/response';
 
 import Hotel from '../models/Hotel';
@@ -7,33 +6,26 @@ import Hotel from '../models/Hotel';
 const addHotel = async (req: Request, res: Response) => {
     const { name, imageUrl, rating, address, exactAddress, pricePerNight, tags } = req.body;
     try {
-        await prisma.hotel.create({ 
-            data: {
-                name,
-                address,
-                rating,
-                exactAddress,
-                imageUrl,
-                pricePerNight,
-                tags: {
-                    connectOrCreate: tags.map((tag: string) => ({   
-                        where: { name: tag },
-                        create: { name: tag }
-                    }))
-                }
-            }
-        })
-
+        const hotel = await Hotel.createHotel({
+            name,
+            imageUrl,
+            rating,
+            address,
+            exactAddress,
+            pricePerNight,
+            tags
+        });
+        return sendResponse(res, StatusCode.CREATED, "", { hotel });
     } catch (error) {
+        console.log(error);
+        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "An error occurred while creating the hotel");
     }
 }
 
 const getHotels = async (req: Request, res: Response) => {
 
-    let limit = Number(req.query.limit);
+    let limit = Math.min(Math.abs(Number(req.query.limit)), 30) || 30;
     let offset = Number(req.query.offset) || 0;
-
-    limit = limit > 10 ? 10 : limit;
 
     const sort = req.query.sort as string | undefined;
     const order = (req.query.order as "asc" | "desc") || "asc";
