@@ -386,6 +386,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   Hotel: 'Hotel',
+  HotelBooking: 'HotelBooking',
   Tag: 'Tag',
   HotelTag: 'HotelTag'
 } as const
@@ -403,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "hotel" | "tag" | "hotelTag"
+    modelProps: "user" | "hotel" | "hotelBooking" | "tag" | "hotelTag"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -552,6 +553,64 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.HotelCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.HotelCountAggregateOutputType> | number
+        }
+      }
+    }
+    HotelBooking: {
+      payload: Prisma.$HotelBookingPayload<ExtArgs>
+      fields: Prisma.HotelBookingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HotelBookingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HotelBookingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HotelBookingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HotelBookingPayload>
+        }
+        findFirst: {
+          args: Prisma.HotelBookingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HotelBookingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HotelBookingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HotelBookingPayload>
+        }
+        findMany: {
+          args: Prisma.HotelBookingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HotelBookingPayload>[]
+        }
+        delete: {
+          args: Prisma.HotelBookingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HotelBookingPayload>
+        }
+        update: {
+          args: Prisma.HotelBookingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HotelBookingPayload>
+        }
+        deleteMany: {
+          args: Prisma.HotelBookingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HotelBookingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HotelBookingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HotelBookingPayload>[]
+        }
+        aggregate: {
+          args: Prisma.HotelBookingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHotelBooking>
+        }
+        groupBy: {
+          args: Prisma.HotelBookingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HotelBookingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HotelBookingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HotelBookingCountAggregateOutputType> | number
         }
       }
     }
@@ -724,6 +783,10 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         args: [query: string, ...values: any[]],
         result: any
       }
+      $queryRawTyped: {
+        args: runtime.UnknownTypedSql,
+        result: JsonObject
+      }
     }
   }
 }
@@ -767,6 +830,18 @@ export const HotelScalarFieldEnum = {
 } as const
 
 export type HotelScalarFieldEnum = (typeof HotelScalarFieldEnum)[keyof typeof HotelScalarFieldEnum]
+
+
+export const HotelBookingScalarFieldEnum = {
+  id: 'id',
+  hotelId: 'hotelId',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  bookingStatus: 'bookingStatus',
+  checkInStatus: 'checkInStatus'
+} as const
+
+export type HotelBookingScalarFieldEnum = (typeof HotelBookingScalarFieldEnum)[keyof typeof HotelBookingScalarFieldEnum]
 
 
 export const TagScalarFieldEnum = {
@@ -875,6 +950,34 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BookingStatus'
+ */
+export type EnumBookingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BookingStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BookingStatus[]'
+ */
+export type ListEnumBookingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BookingStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CheckInStatus'
+ */
+export type EnumCheckInStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CheckInStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CheckInStatus[]'
+ */
+export type ListEnumCheckInStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CheckInStatus[]'>
     
 
 /**
@@ -989,6 +1092,7 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   hotel?: Prisma.HotelOmit
+  hotelBooking?: Prisma.HotelBookingOmit
   tag?: Prisma.TagOmit
   hotelTag?: Prisma.HotelTagOmit
 }

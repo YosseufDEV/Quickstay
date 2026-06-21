@@ -23,7 +23,7 @@ const HotelsView = () => {
 
     return (
         <>
-            <div className="w-full bg-white space-y-15 content-container pt-30! grid grid-cols-[1.5fr_1fr]">
+            <div className="w-full bg-white space-y-15 content-container pt-30! grid grid-cols-[1.5fr_auto]">
                 <div className="space-y-15" >
                     <div className="mb-15">
                         <p className="section-title">Hotels</p>

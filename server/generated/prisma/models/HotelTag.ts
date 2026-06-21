@@ -156,7 +156,7 @@ export type HotelTagWhereInput = {
   AND?: Prisma.HotelTagWhereInput | Prisma.HotelTagWhereInput[]
   OR?: Prisma.HotelTagWhereInput[]
   NOT?: Prisma.HotelTagWhereInput | Prisma.HotelTagWhereInput[]
-  hotelId?: Prisma.StringFilter<"HotelTag"> | string
+  hotelId?: Prisma.UuidFilter<"HotelTag"> | string
   tagId?: Prisma.StringFilter<"HotelTag"> | string
 }
 
@@ -170,7 +170,7 @@ export type HotelTagWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.HotelTagWhereInput | Prisma.HotelTagWhereInput[]
   OR?: Prisma.HotelTagWhereInput[]
   NOT?: Prisma.HotelTagWhereInput | Prisma.HotelTagWhereInput[]
-  hotelId?: Prisma.StringFilter<"HotelTag"> | string
+  hotelId?: Prisma.UuidFilter<"HotelTag"> | string
   tagId?: Prisma.StringFilter<"HotelTag"> | string
 }, "hotelId_tagId">
 
@@ -186,7 +186,7 @@ export type HotelTagScalarWhereWithAggregatesInput = {
   AND?: Prisma.HotelTagScalarWhereWithAggregatesInput | Prisma.HotelTagScalarWhereWithAggregatesInput[]
   OR?: Prisma.HotelTagScalarWhereWithAggregatesInput[]
   NOT?: Prisma.HotelTagScalarWhereWithAggregatesInput | Prisma.HotelTagScalarWhereWithAggregatesInput[]
-  hotelId?: Prisma.StringWithAggregatesFilter<"HotelTag"> | string
+  hotelId?: Prisma.UuidWithAggregatesFilter<"HotelTag"> | string
   tagId?: Prisma.StringWithAggregatesFilter<"HotelTag"> | string
 }
 

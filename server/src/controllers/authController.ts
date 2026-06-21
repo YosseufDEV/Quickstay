@@ -148,8 +148,6 @@ const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
 
     const userId = req.user.id; 
 
-    console.log("userId: ", userId);
-
     try {
         const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, firstName: true, lastName: true, country: true } });
 

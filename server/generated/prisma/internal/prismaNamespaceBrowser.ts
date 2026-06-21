@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Hotel: 'Hotel',
+  HotelBooking: 'HotelBooking',
   Tag: 'Tag',
   HotelTag: 'HotelTag'
 } as const
@@ -98,6 +99,18 @@ export const HotelScalarFieldEnum = {
 } as const
 
 export type HotelScalarFieldEnum = (typeof HotelScalarFieldEnum)[keyof typeof HotelScalarFieldEnum]
+
+
+export const HotelBookingScalarFieldEnum = {
+  id: 'id',
+  hotelId: 'hotelId',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  bookingStatus: 'bookingStatus',
+  checkInStatus: 'checkInStatus'
+} as const
+
+export type HotelBookingScalarFieldEnum = (typeof HotelBookingScalarFieldEnum)[keyof typeof HotelBookingScalarFieldEnum]
 
 
 export const TagScalarFieldEnum = {

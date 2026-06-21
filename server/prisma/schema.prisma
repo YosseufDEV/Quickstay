@@ -6,6 +6,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  previewFeatures = ["typedSql"]
 }
 
 datasource db {
@@ -18,17 +19,18 @@ enum Role {
 }
 
 model User {
-    id  String @id @default(uuid())
+    id  String @id @default(uuid()) @db.Uuid
     firstName String @map("first_name")
     lastName String @map("last_name")
     email String @unique
     country String
     password String 
+    booking HotelBooking[]
     role Role @default(USER)
 }
 
 model Hotel {
-    id String @id @default(uuid())
+    id String @id @default(uuid()) @db.Uuid
     rating Float
     name String
     exactAddress String @map("exact_address")
@@ -37,7 +39,35 @@ model Hotel {
     imageUrl String @map("image_url")
     createdAt DateTime @default(now()) @map("created_at")
     tags Tag[]
+    bookings HotelBooking[]
     @@index([createdAt])
+}
+
+enum BookingStatus {
+    PENDING
+    CONFIRMED
+    CANCELLED
+}
+
+enum CheckInStatus {
+    NOT_CHECKED_IN
+    CHECKED_IN
+    CHECKED_OUT
+}
+
+model HotelBooking {
+    id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    hotel Hotel @relation(fields: [hotelId], references: [id])
+    user User @relation(fields: [userId], references: [id])
+    hotelId String @map("hotel_id") @db.Uuid
+    userId String @map("user_id") @db.Uuid
+    fromTo Unsupported("tsrange") @map("from_to")
+    createdAt DateTime @default(now()) @map("created_at")
+    bookingStatus BookingStatus @default(PENDING) @map("booking_status")
+    checkInStatus CheckInStatus @default(NOT_CHECKED_IN) @map("check_in_status")
+
+    @@index([hotelId])
+    @@index([userId])
 }
 
 model Tag {
@@ -48,7 +78,7 @@ model Tag {
 }
 
 model HotelTag {
-    hotelId String
+    hotelId String @db.Uuid
     tagId String
     @@id([hotelId, tagId])
 }

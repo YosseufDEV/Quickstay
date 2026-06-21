@@ -52,6 +52,11 @@ export type User = Prisma.UserModel
  */
 export type Hotel = Prisma.HotelModel
 /**
+ * Model HotelBooking
+ * 
+ */
+export type HotelBooking = Prisma.HotelBookingModel
+/**
  * Model Tag
  * 
  */

@@ -10,6 +10,7 @@
  */
 export type * from './models/User.ts'
 export type * from './models/Hotel.ts'
+export type * from './models/HotelBooking.ts'
 export type * from './models/Tag.ts'
 export type * from './models/HotelTag.ts'
 export type * from './commonInputTypes.ts'
