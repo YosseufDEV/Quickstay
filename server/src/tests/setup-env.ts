@@ -1,11 +1,13 @@
 import { afterAll, beforeAll, vi } from "vitest";
-
-import { execSync } from 'node:child_process';
+import { execSync } from "node:child_process";
 
 import { type StartedTestContainer, GenericContainer } from "testcontainers";
-import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { createClient } from "redis";
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from "pg";
+import d from "../db/drizzle";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import * as schema from "../db/schema";
 
 let postgresContainer: StartedTestContainer, redisContainer: StartedTestContainer;
 
@@ -14,17 +16,9 @@ vi.stubEnv("JWT_REFRESH_SECRET", "refresh_secret");
 vi.stubEnv("NODE_ENV", "testing");
 
 const mocks = vi.hoisted(() => ({
-    prisma: null as unknown as PrismaClient,
+    drizzle: null as unknown as typeof d,
     redis: null as unknown as ReturnType<typeof createClient>,
 }));
-
-vi.mock("../db/prisma", () => {
-    return {
-        get default() { 
-            return mocks.prisma 
-        },
-    }
-});
 
 vi.mock("../db/redis", () => {
     return { 
@@ -34,6 +28,15 @@ vi.mock("../db/redis", () => {
     }
 });
 
+vi.mock("../db/drizzle", () => {
+    return { 
+        get default() {
+            return mocks.drizzle;
+        }
+    }
+});
+
+let pool;
 beforeAll(async () => {
     postgresContainer = await new GenericContainer("postgres:latest")
         .withEnvironment({
@@ -51,26 +54,13 @@ beforeAll(async () => {
         },
     });
 
-    let prismaConfig = new PrismaPg({
-        connectionString: `postgresql://postgres:admin@${postgresContainer.getHost()}:${postgresContainer.getMappedPort(5432)}/postgres`,
-    });
+    vi.stubEnv("DATABASE_URL", `postgresql://postgres:admin@${postgresContainer.getHost()}:${postgresContainer.getMappedPort(5432)}/postgres`);
+        
+    mocks.drizzle = drizzle(process.env.DATABASE_URL!, { schema, relations: { ...schema.relations }});
 
-    mocks.prisma = new PrismaClient({ adapter: prismaConfig });
+    await migrate(mocks.drizzle, { migrationsFolder: "./drizzle" })
 
-    vi.stubEnv("POSTGRES_URL", `postgresql://postgres:admin@${postgresContainer.getHost()}:${postgresContainer.getMappedPort(5432)}/postgres`);
+    await mocks.drizzle.$client.connect();
 
     await mocks.redis.connect();
 }, 100_000);
-
-afterAll(async () => {
-    if(mocks.redis && mocks.redis.isOpen) { 
-        await mocks.redis.disconnect();
-    }
-
-    if(mocks.prisma) {
-        await mocks.prisma.$disconnect();
-    }
-
-    await postgresContainer.stop();
-    await redisContainer.stop();
-});

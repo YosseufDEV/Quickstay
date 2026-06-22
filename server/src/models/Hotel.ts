@@ -1,5 +1,6 @@
-import prisma from "../db/prisma";
 import { type IHotel } from "@quickstay/types/Hotel"
+import drizzle from "../db/drizzle";
+import { hotels, hotelsTags } from "../db/schema";
 
 const AllowedFields = new Set(["price", "createdAt", "rating"]);
 
@@ -18,40 +19,49 @@ const getSortingOptions = (sortBy: string | undefined, order: "asc" | "desc"="de
 
 class Hotel {
     static async createHotel({ tags, ...hotelData }: Omit<IHotel, 'id'>) {
-        return await prisma.hotel.create({
-            data: {
-                ...hotelData,
-                tags: {
-                    connect: tags
-                }
-            }
-        })
+        const [hotel] =  await drizzle.insert(hotels).values({
+            ...hotelData,
+        }).returning();
+
+        if(!hotel) {
+            throw new Error("Failed to create hotel");
+        }
+
+        await drizzle.insert(hotelsTags).values(
+            tags.map(tag => ({
+                hotelId: hotel.id,
+                tagId: tag.id
+            }))
+        ).returning();
+
+        return { ...hotel, tags };
     }
 
     static async getHotels(limit?: number, sortBy?: string, order?: "asc" | "desc", offset?: number) {
-        const hotels = await prisma.hotel.findMany({
-            include: {
-                tags: true
+        const hotels = await drizzle.query.hotels.findMany({
+            with: {
+                tags: true,
+                booking: true
             },
+            ...(limit ? { limit } : {}),
             ...(offset ? { 
-                skip: offset
+                offset
             } : {}),
             orderBy: {
                 ...getSortingOptions(sortBy, order)
             },
-            ...(limit ? { take: limit } : {}),
-        });
+        })
 
         return hotels;
     }
 
-    static async getHotelById(id: string) {
-        const hotel = await prisma.hotel.findUnique({
+    static async getHotelById(hotelId: string) {
+        const hotel = await drizzle.query.hotels.findFirst({
             where: {
-                id
+                id: hotelId 
             },
-            include: {
-                tags: true
+            with: {
+                tags: true, 
             }
         });
 

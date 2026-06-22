@@ -11,10 +11,9 @@ export default defineConfig({
                     tsconfigPaths: true,
                 },
                 test: {
-                    name: "Controllers",
-                    globalSetup: "./src/tests/global-setup.ts",
+                    name: "Integration -- Databases",
                     setupFiles: ["./src/tests/setup-env.ts"],
-                    include: ["./src/tests/controllers/*.test.ts"],
+                    include: ["./src/tests/integration/**/*.test.ts"],
                 }
             },
             {
@@ -22,9 +21,9 @@ export default defineConfig({
                     tsconfigPaths: true,
                 },
                 test: {
-                    name: "Integration",
-                    include: ["./src/tests/**/*.test.ts"],
-                    exclude: ["./src/tests/controllers/*.test.ts"],
+                    name: "Integration -- Network",
+                    setupFiles: ["./src/tests/setup-env.ts"],
+                    include: ["./src/tests/integration/*.test.ts"],
                 }
             },
             {

@@ -57,8 +57,7 @@ async function run() {
   const loggerEnabled = process.env.DB_MIGRATE_DEBUG_SQL === "1";
 
   try {
-    await client.connect();
-    const db = drizzle(client, { logger: loggerEnabled });
+    const db = drizzle(connectionString, { logger: loggerEnabled });
 
     await migrate(db, { migrationsFolder: "./drizzle" });
     console.log("Migrations applied successfully.");

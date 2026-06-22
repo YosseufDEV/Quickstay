@@ -9,7 +9,6 @@ enum SortOptions {
 
 interface ITag {
     id: number;
-    text: string;
     slag: slag;
 }
 

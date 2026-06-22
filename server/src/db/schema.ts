@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { customType } from "drizzle-orm/pg-core";
+import { defineRelations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["USER", "ADMIN"]);
 
@@ -27,10 +28,30 @@ export const checkInStatusEnum = pgEnum("check_in_status", [
   "CHECKED_OUT",
 ]);
 
-export const tsrange = customType<{ data: string }>({
-  dataType() {
-    return "tsrange";
-  },
+export const tsrange = customType<{ data: { from: Date, to: Date } }>({
+    dataType() {
+        return "tsrange";
+    },
+
+    toDriver(value) {
+        const from = value.from.toISOString();
+        const to = value.to.toISOString();
+        return `[${from},${to}]`;
+    },
+
+    fromDriver(value) {
+        if(typeof value !== 'string') {
+            throw new Error(`Driver return invalid type for tsrange: ${typeof value}`);
+        }
+
+        const matches = value.slice(1, -1).split(",");
+
+        if (matches.length !== 2) {
+          throw new Error(`Invalid tsrange format: ${value}`);
+        }
+
+        return { from: new Date(matches[0]!), to: new Date(matches[1]!) }; // Placeholder implementation
+  }
 });
 
 export const users = pgTable("users", {
@@ -46,7 +67,6 @@ export const users = pgTable("users", {
 
 export const tags = pgTable("tags", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
   slag: text("slag").notNull().unique(),
 });
 
@@ -66,7 +86,7 @@ export const hotels = pgTable(
 );
 
 
-export const hotelBookings = pgTable(
+export const hotelsBookings = pgTable(
   "hotels_bookings",
   {
     id: uuid("id")
@@ -94,7 +114,7 @@ export const hotelBookings = pgTable(
   ]
 );
 
-export const hotelTags = pgTable(
+export const hotelsTags = pgTable(
   "hotels_tags",
   {
     hotelId: uuid("hotel_id")
@@ -106,3 +126,43 @@ export const hotelTags = pgTable(
   },
   (table) => [primaryKey({ columns: [table.hotelId, table.tagId] })]
 );
+
+export const relations = defineRelations({ hotels, hotelsBookings, users, tags, hotelsTags }, (r) => ({
+    hotelsBookings: {
+        hotel: r.one.hotels({
+            from: r.hotelsBookings.hotelId,
+            to: r.hotels.id,
+        }),
+        user: r.one.users({
+            from: r.hotelsBookings.userId,
+            to: r.users.id,
+        })
+    },
+    hotelsTags: {
+        hotel: r.one.hotels({
+            from: r.hotelsTags.hotelId,
+            to: r.hotels.id,
+        }),
+        tag: r.one.tags({
+            from: r.hotelsTags.tagId,
+            to: r.tags.id,
+        })
+    },
+    hotels: {
+        bookings: r.many.hotelsBookings({
+            from: r.hotels.id,
+            to: r.hotelsBookings.hotelId,
+        }),
+        tags: r.many.tags({
+            from: r.hotels.id.through(r.hotelsTags.hotelId),
+            to: r.tags.id.through(r.hotelsTags.tagId),
+        })
+    },
+    users: {
+        bookings: r.many.hotelsBookings({
+            from: r.users.id,
+            to: r.hotelsBookings.userId,
+        })
+    },
+}));
+
