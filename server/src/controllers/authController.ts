@@ -3,14 +3,13 @@ import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-import prisma from "../db/prisma";
-
 import type { AuthenticatedRequest } from "../types/auth";
 import { insertSession, invalidateSession, isSessionValid } from "./sessionController";
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
 import { sendResponse, StatusCode } from "../utils/response";
 import { logger } from "../utils/logger";
+import { User } from "../models/User";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
@@ -40,7 +39,7 @@ const refreshToken = async (req: Request, res: Response) => {
 
         const expirationTime = usedToken.exp ? (usedToken.exp - Date.now()/1000) : JWT_REFRESH_EXPIRATION_TIME_MS/1000;
 
-        res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV != "production", maxAge: JWT_REFRESH_EXPIRATION_TIME_MS });
+        res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV == "production", maxAge: JWT_REFRESH_EXPIRATION_TIME_MS });
 
         await insertSession(newRefreshToken as string, payload, expirationTime);
 
@@ -48,7 +47,7 @@ const refreshToken = async (req: Request, res: Response) => {
 
     } catch (error) {
          if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
-            logger.error("JWT error during token refresh: ", error.message);
+            logger.error(`JWT error during token refresh: ${error.message}`, { message: error.message });
             switch (error.name) {
                 case "TokenExpiredError":
                     return sendResponse(res, StatusCode.BAD_REQUEST, "token_expired");
@@ -67,7 +66,8 @@ const register = async (req: Request, res: Response) => {
     const { email, firstName, lastName, password, country } = req.body;
 
     try {
-        const existingUser = await prisma.user.findUnique({ where: { email } });
+        // const existingUser = await prisma.user.findUnique({ where: { email } });
+        const existingUser = await User.getUserByEmail(email);
 
         const salt = bcrypt.genSalt(10);
 
@@ -77,23 +77,7 @@ const register = async (req: Request, res: Response) => {
             return sendResponse(res, StatusCode.BAD_REQUEST, "email_already_in_use");
         }
 
-        const user = await prisma.user.create({
-            data: {
-                email,
-                firstName,
-                lastName,
-                password: hashedPassword,
-                country
-            },
-            select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                country: true,
-            }
-        });
-
+        const user = await User.createUser({ email, firstName, lastName, password: hashedPassword, country });
         return sendResponse(res, StatusCode.CREATED, "", { user });
 
     } catch(error) {
@@ -107,7 +91,7 @@ const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     try {
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await User.getUserByEmail(email);
 
         if(!user) return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");
         
@@ -118,11 +102,9 @@ const login = async (req: Request, res: Response) => {
         const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
         const refreshToken = generateToken(payload, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRATION_TIME);
 
-        console.log(refreshToken, accessToken);
-
         await insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
 
-        res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS, secure: process.env.NODE_ENV !== "production" });
+        res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS, secure: process.env.NODE_ENV == "production" });
 
         return sendResponse(res, StatusCode.OK, "", { accessToken, user: { ...user, password: undefined } });
     }
@@ -138,7 +120,7 @@ const logout = async (req: AuthenticatedRequest, res: Response) => {
     // TODO: Invalidate the session in Redis when logging out
     await invalidateSession({ userId: req.user.id, sessionId: req.user.sessionId });
 
-    res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV !== "production" });
+    res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV == "production" });
 
     return sendResponse(res, StatusCode.OK);
 }
@@ -149,7 +131,7 @@ const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user.id; 
 
     try {
-        const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, firstName: true, lastName: true, country: true } });
+        const user = await User.getUserById(userId);
 
         if(!user) {
             return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");

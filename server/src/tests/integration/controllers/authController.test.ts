@@ -1,10 +1,9 @@
-import { describe, it,  expect, beforeAll, beforeEach } from "vitest";
+import { describe, it,  expect, beforeEach } from "vitest";
 
 import { app } from "@/src/app.ts";
 import redis from "@/src/db/redis";
 
 import request from "supertest";
-import { execSync } from "node:child_process";
 
 const user = {
     email: "nameyinx@gmail.com",
@@ -22,28 +21,25 @@ const extractRefreshTokenFromCookies = (cookies: string[] | undefined): string |
     return refreshTokenCookie ? refreshTokenCookie : null;
 }
 
-beforeAll(async () => {
-    execSync(`npx prisma migrate deploy --schema=./prisma/schema.prisma`);
-})
-
 beforeEach(async () => {
     await redis.flushAll();
+    expect(redis.isOpen).toBe(true);
 })
 
 describe("Auth Controller Login & Register Integration Tests", () => {
     it("Should register user ", async () => {
-        const res = await request(app).post("/auth/register").send(user);
+        const res = await request(app).post("/api/v1/auth/register").send(user);
         expect(res.status).toBe(201);
     })
 
     it("Should throw error if email already exists", async () => {
-        const res = await request(app).post("/auth/register").send(user);
+        const res = await request(app).post("/api/v1/auth/register").send(user);
         expect(res.status).toBe(400);
         expect(res.body.message).toBe("email_already_in_use");
     })
 
     it("Should login user", async () => {
-        const res = await request(app).post("/auth/login").send({ email: user.email, password: user.password });
+        const res = await request(app).post("/api/v1/auth/login").send({ email: user.email, password: user.password });
 
         const cookies: string[] = res.headers["set-cookie"] as unknown as string[] || [];
 
@@ -55,14 +51,14 @@ describe("Auth Controller Login & Register Integration Tests", () => {
     });
 
     it("should not login user with wrong credentials", async () => {
-        const res = await request(app).post("/auth/login").send({ email: user.email, password: "wrong_password" });
+        const res = await request(app).post("/api/v1/auth/login").send({ email: user.email, password: "wrong_password" });
 
         expect(res.status).toBe(401);
         expect(res.body.message).toBe("invalid_credentials");
     });
 
      it("should not login user that does not exist", async () => {
-        const res = await request(app).post("/auth/login").send({ email: "doesntexist@doesntexist.exist", password: "wrong_password" });
+        const res = await request(app).post("/api/v1/auth/login").send({ email: "doesntexist@doesntexist.exist", password: "wrong_password" });
 
         expect(res.status).toBe(404);
         expect(res.body.message).toBe("user_not_found");
@@ -76,25 +72,24 @@ describe("Auth Controller Authentication & Token-state Integration Tests", () =>
         const agent = request.agent(app);
 
         // To get the refresh token cookie, we need to use the same agent for both login and logout requests
-        const loginRes = await agent.post("/auth/login").send({ email: user.email, password: user.password });
+        const loginRes = await agent.post("/api/v1/auth/login").send({ email: user.email, password: user.password });
         
-        const logoutRes = await agent.post("/auth/logout").set("Authorization", `Bearer ${loginRes.body.payload.accessToken}`);
+        const logoutRes = await agent.post("/api/v1/auth/logout").set("Authorization", `Bearer ${loginRes.body.payload.accessToken}`);
 
         expect(logoutRes.status).toBe(200);
     })
 
     it("should return 401 if user is not authenticated", async () => {
-        const res = await request(app).post("/auth/logout");
+        const res = await request(app).post("/api/v1/auth/logout");
         expect(res.status).toBe(401);
     });
 
-    it("should refresh access token using refresh token", async () => {
+    it("should refresh access token and exchange", async () => {
         const agent = request.agent(app);
 
-        await agent.post("/auth/login").send({ email: user.email, password: user.password });
+        await agent.post("/api/v1/auth/login").send({ email: user.email, password: user.password });
 
-        const refreshRes = await agent.post("/auth/refresh");
-
+        const refreshRes = await agent.post("/api/v1/auth/refresh");
 
         expect(refreshRes.status).toBe(200);
         expect(refreshRes.body.payload.accessToken).toBeDefined();
@@ -102,14 +97,14 @@ describe("Auth Controller Authentication & Token-state Integration Tests", () =>
     })
 
     it("should return 400 if refresh token is not not provided", async () => {
-        const refreshRes = await request(app).post("/auth/refresh");
+        const refreshRes = await request(app).post("/api/v1/auth/refresh");
 
         expect(refreshRes.status).toBe(400);
         expect(refreshRes.body.message).toBe("no_token_provided");
     })
 
     it("should return 401 if refresh token is invalid", async () => {
-        const refreshRes = await request(app).post("/auth/refresh").set("Cookie", ["refreshToken=invalid_token"]);
+        const refreshRes = await request(app).post("/api/v1/auth/refresh").set("Cookie", ["refreshToken=invalid_token"]);
 
         expect(refreshRes.status).toBe(400);
         expect(refreshRes.body.message).toBe("token_invalid");
@@ -118,15 +113,13 @@ describe("Auth Controller Authentication & Token-state Integration Tests", () =>
     it("should return 400 if refresh token is reused", async () => {
         const agent = request.agent(app);
 
-        const loginReq = await agent.post("/auth/login").send({ email: user.email, password: user.password });
+        const loginReq = await agent.post("/api/v1/auth/login").send({ email: user.email, password: user.password });
 
         const refreshCookie = extractRefreshTokenFromCookies(loginReq.headers["set-cookie"] as unknown as string[]);
 
-        await agent.post("/auth/refresh");
+        await agent.post("/api/v1/auth/refresh");
 
-        const refreshRes = await request(app).post("/auth/refresh").set("Cookie", refreshCookie!.split(";")[0] as string);
-
-        console.log(refreshRes);
+        const refreshRes = await request(app).post("/api/v1/auth/refresh").set("Cookie", refreshCookie!.split(";")[0] as string);
 
         expect(refreshRes.status).toBe(400);
         expect(refreshRes.body.message).toBe("token_reuse");

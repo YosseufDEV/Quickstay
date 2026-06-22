@@ -45,6 +45,8 @@ class Booking {
     }
 }
 
+export default Booking;
+
 // INFO: Benchmarking code (uncomment to run benchmarks, requires a populated database and may take time to execute)
 // const ITERATIONS = 1000;
 // const WARMUP = 50;
@@ -89,4 +91,3 @@ class Booking {
 // console.log("Processed:", stats(processedDurations));
 // console.log("Raw:", stats(rawDurations));
 //
-// export default Booking;

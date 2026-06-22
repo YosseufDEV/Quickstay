@@ -23,9 +23,7 @@ let refreshToken: string, payload: { iat: number, userId: string, sessionId: str
 const extractToken = (cookies: string[]) => cookies.find((cookie) => cookie.startsWith("refreshToken="))?.split(";")[0]?.split("=")[1];
 
 beforeAll(async () => {
-    execSync(`npx prisma migrate deploy --schema=./prisma/schema.prisma`);
-
-    await agent.post("/auth/register").send({ 
+    await agent.post("/api/v1/auth/register").send({ 
         email: user.email,
         password: user.password,
         firstName: "testFirstName",
@@ -33,7 +31,7 @@ beforeAll(async () => {
         country: "testCountry",
     }).expect(201);
 
-    const loginReq = await agent.post("/auth/login").send(user).expect(200);
+    const loginReq = await agent.post("/api/v1/auth/login").send(user).expect(200);
 
     // Ignore Error: Object is possibly 'undefined' TS error, we know the cookie will be set because the login was successful
     refreshToken = extractToken(loginReq.headers["set-cookie"] as unknown as string[])!;
@@ -54,7 +52,9 @@ describe("Refresh function to Redis integration test", () => {
     })
 
     it("Should rotate the JWT Token and set the old one as revoked in the cache with correct TTL", async () => {
-        const refreshReq = await agent.post("/auth/refresh");
+        const refreshReq = await agent.post("/api/v1/auth/refresh");
+
+        expect(refreshReq.status).toBe(200);
 
         const newRefreshToken = extractToken(refreshReq.headers["set-cookie"] as unknown as string[] || []);
 
