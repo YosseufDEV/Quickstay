@@ -1,10 +1,10 @@
 import HotelCard from '../HotelCard/HotelCard';
 import styles from './FeaturedDestination.module.css';
 
-import HotelImage1 from "../../../../assets/roomImg1.png";
-import HotelImage2 from "../../../../assets/roomImg2.png";
-import HotelImage3 from "../../../../assets/roomImg3.png";
-import HotelImage4 from "../../../../assets/roomImg4.png"
+import HotelImage1 from "@/assets/roomImg1.webp";
+import HotelImage2 from "@/assets/roomImg2.webp";
+import HotelImage3 from "@/assets/roomImg3.webp";
+import HotelImage4 from "@/assets/roomImg4.webp"
 
 import GenericButton from '@/Components/GenericButton/GenericButton';
 

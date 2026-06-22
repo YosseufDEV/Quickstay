@@ -6,4 +6,4 @@ SELECT
     "HotelBooking".hotel_id,
     "Hotel".*,
     "User".*
-    FROM "HotelBooking" JOIN "User" ON "HotelBooking".user_id = "User".id JOIN "Hotel" ON "HotelBooking".hotel_id = "Hotel".id;
+    FROM "HotelBooking" JOIN "User" ON "HotelBooking".user_id = "User".id JOIN "Hotel" ON "HotelBooking".hotel_id = "Hotel".id LIMIT 30;

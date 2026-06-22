@@ -57,8 +57,8 @@ enum CheckInStatus {
 
 model HotelBooking {
     id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-    hotel Hotel @relation(fields: [hotelId], references: [id])
-    user User @relation(fields: [userId], references: [id])
+    hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
     hotelId String @map("hotel_id") @db.Uuid
     userId String @map("user_id") @db.Uuid
     fromTo Unsupported("tsrange") @map("from_to")

@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1782124222526,
+      "tag": "0000_classy_captain_stacy",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782124332924,
+      "tag": "0001_enable_btree_gist",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782124360687,
+      "tag": "0002_enable_gist_constraint",
+      "breakpoints": true
+    }
+  ]
+}

@@ -8,7 +8,7 @@ import { type $DbEnums } from "./$DbEnums.ts"
 
 /**
  */
-export const getAllBookings = $runtime.makeTypedQueryFactory("SELECT\n\"HotelBooking\".from_to::text as from_to,\n\"HotelBooking\".booking_status,\n\"HotelBooking\".check_in_status,\n\"HotelBooking\".user_id,\n\"HotelBooking\".hotel_id,\n\"Hotel\".*,\n\"User\".*\nFROM \"HotelBooking\" JOIN \"User\" ON \"HotelBooking\".user_id = \"User\".id JOIN \"Hotel\" ON \"HotelBooking\".hotel_id = \"Hotel\".id;") as () => $runtime.TypedSql<getAllBookings.Parameters, getAllBookings.Result>
+export const getAllBookings = $runtime.makeTypedQueryFactory("SELECT\n\"HotelBooking\".from_to::text,\n\"HotelBooking\".booking_status,\n\"HotelBooking\".check_in_status,\n\"HotelBooking\".user_id,\n\"HotelBooking\".hotel_id,\n\"Hotel\".*,\n\"User\".*\nFROM \"HotelBooking\" JOIN \"User\" ON \"HotelBooking\".user_id = \"User\".id JOIN \"Hotel\" ON \"HotelBooking\".hotel_id = \"Hotel\".id LIMIT 30;") as () => $runtime.TypedSql<getAllBookings.Parameters, getAllBookings.Result>
 
 export namespace getAllBookings {
   export type Parameters = []

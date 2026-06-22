@@ -19,7 +19,7 @@ const HotelsView = () => {
         queryFn: (): Promise<IHotel[]> => getHotels(hotelsPerPage, (page-1)*hotelsPerPage)
     });
 
-    const mappedHotels = hotels?.map((hotel: IHotel) => <HotelCard key={hotel.id} { ...hotel } imageUrl={`http://localhost:5001/${hotel.imageUrl}`} />);
+    const mappedHotels = hotels?.map((hotel: IHotel) => <HotelCard key={hotel.id} { ...hotel } imageUrl={hotel.imageUrl} />);
 
     return (
         <>

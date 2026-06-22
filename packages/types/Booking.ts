@@ -1,13 +1,12 @@
 import type { IHotel } from "./Hotel";
 import type { IUser } from "./User";
 
-interface IBooking {
+interface IBooking extends IHotel, IUser {
     id: string;
     userId: string;
     hotelId: string;
-    fromTo: string; 
-    hotel: IHotel;
-    user: IUser;
+    from: Date; 
+    to: Date; 
 }
 
 export type { IBooking };
