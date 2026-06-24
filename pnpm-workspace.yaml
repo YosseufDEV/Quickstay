@@ -3,11 +3,9 @@ packages:
   - server
   - packages/*
 allowBuilds:
-  '@prisma/engines': false
-  bcrypt: false
-  cpu-features: false
-  esbuild: false
-  prisma: false
-  protobufjs: false
-  ssh2: false
-  unrs-resolver: false
+  bcrypt: true
+  cpu-features: true
+  esbuild: true
+  protobufjs: true
+  ssh2: true
+  unrs-resolver: true

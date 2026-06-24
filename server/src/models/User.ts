@@ -4,7 +4,8 @@ import { users } from '../db/schema';
 
 class User {
     static createUser = async (userData: Omit<IUser & { password: string }, "role">) => {
-        return await drizzle.insert(users).values({ ...userData, role: "USER" }).returning().then(([user]) => user)!; 
+        const user = await drizzle.insert(users).values({ ...userData, role: "USER" }).returning().then(([user]) => user)
+        return user!; 
     }
 
     static getUserById = async (userId: string) => {

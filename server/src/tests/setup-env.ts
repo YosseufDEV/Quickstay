@@ -1,10 +1,7 @@
-import { afterAll, beforeAll, vi } from "vitest";
-import { execSync } from "node:child_process";
-
+import {  afterAll, beforeAll, vi } from "vitest";
 import { type StartedTestContainer, GenericContainer } from "testcontainers";
 import { createClient } from "redis";
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from "pg";
 import d from "../db/drizzle";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import * as schema from "../db/schema";
@@ -36,16 +33,16 @@ vi.mock("../db/drizzle", () => {
     }
 });
 
-let pool;
 beforeAll(async () => {
     postgresContainer = await new GenericContainer("postgres:latest")
         .withEnvironment({
             POSTGRES_PASSWORD: "admin",
         })
+        .withStartupTimeout(60000)
         .withExposedPorts(5432)
         .start();
 
-    redisContainer = await new GenericContainer("redis:latest").withExposedPorts(6379).start();
+    redisContainer = await new GenericContainer("redis:latest").withExposedPorts(6379).withStartupTimeout(60000).start();
 
     mocks.redis = createClient({
         socket: {
@@ -60,7 +57,12 @@ beforeAll(async () => {
 
     await migrate(mocks.drizzle, { migrationsFolder: "./drizzle" })
 
-    await mocks.drizzle.$client.connect();
-
     await mocks.redis.connect();
 }, 100_000);
+
+afterAll(async () => {
+    if(mocks.redis && mocks.redis.isOpen) await mocks.redis.disconnect();
+    mocks.drizzle.$client.end();
+    await postgresContainer.stop();
+    await redisContainer.stop();
+}, 100_000)

@@ -125,24 +125,4 @@ const logout = async (req: AuthenticatedRequest, res: Response) => {
     return sendResponse(res, StatusCode.OK);
 }
 
-const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
-    if(!req.user) return sendResponse(res, StatusCode.UNAUTHORIZED);
-
-    const userId = req.user.id; 
-
-    try {
-        const user = await User.getUserById(userId);
-
-        if(!user) {
-            return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");
-        }
-
-        return sendResponse(res, StatusCode.OK, "", { user });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-
-}
-
-export { login, register, refreshToken, getCurrentUser, logout }
+export { login, register, refreshToken, logout }

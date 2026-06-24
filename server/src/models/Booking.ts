@@ -1,24 +1,55 @@
+import type { PgAsyncTransaction } from "drizzle-orm/pg-core";
 import drizzle from "../db/drizzle";
-import { hotelsBookings } from "../db/schema";
+import { eq } from "drizzle-orm";
+import { hotelsBookings, hotels, rooms } from "../db/schema";
+import { logger } from "../utils/logger";
 
 interface BookingData {
     userId: string;
-    hotelId: string;
+    roomId: string;
     from: Date;
     to: Date;
 }
 
 class Booking {
-    static async createBooking(data: BookingData): Promise<any> {
-        return await drizzle.insert(hotelsBookings).values({
-            hotelId: data.hotelId,
+    static async createBooking(data: BookingData, tx?: PgAsyncTransaction<any, any, any, any>): Promise<any> {
+        return await (tx ? tx : drizzle).insert(hotelsBookings).values({
+            roomId: data.roomId,
             userId: data.userId,
-            fromTo: {
+            timeRange: {
                 from: data.from,
                 to: data.to
             }
         }).returning().then(([booking]) => booking)!;
     }
+
+    static async book({ roomId, userId, from, to }: { roomId: string, userId: string, from: Date, to: Date }) {
+        return await drizzle.transaction(async (tx) => {
+                await tx.select().from(rooms).where(eq(rooms.id, roomId)).for('update', { noWait: true }).execute().catch((err) => {
+                    if(err.code === '55P03') {
+                        logger.error(`Room ${roomId} is locked by another transaction`);
+                        throw new Error('Room is currently locked under another transaction.');
+                    }
+                    throw new Error('Failed to select row for update');
+                });
+
+                const booking = await Booking.createBooking({
+                    roomId,
+                    userId,
+                    from,
+                    to
+                }, tx);
+
+                await tx
+                        .update(rooms)
+                        .set({ bookedBy: userId, status: 'BOOKED' })
+                        .where(eq(rooms.id, roomId))
+                        .returning();
+
+                return booking;
+        })
+    }
+
 
     static async  getBookingById(id: string) {
         return await drizzle.query.hotelsBookings.findFirst({
@@ -46,48 +77,3 @@ class Booking {
 }
 
 export default Booking;
-
-// INFO: Benchmarking code (uncomment to run benchmarks, requires a populated database and may take time to execute)
-// const ITERATIONS = 1000;
-// const WARMUP = 50;
-//
-// function percentile(arr, p) {
-//   const sorted = [...arr].sort((a, b) => a - b);
-//   const idx = Math.ceil((p / 100) * sorted.length) - 1;
-//   return sorted[idx];
-// }
-//
-// function stats(arr) {
-//   const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
-//   return {
-//     avg,
-//     median: percentile(arr, 50),
-//     p95: percentile(arr, 95),
-//     p99: percentile(arr, 99),
-//     min: Math.min(...arr),
-//     max: Math.max(...arr),
-//   };
-// }
-//
-// // Warm-up (discarded)
-// for (let i = 0; i < WARMUP; i++) {
-//   await Booking.getAllBookings();
-//   await prisma.$queryRawTyped(getAllBookings());
-// }
-//
-// const processedDurations = [];
-// const rawDurations = [];
-//
-// for (let i = 0; i < ITERATIONS; i++) {
-//   const t0 = performance.now();
-//   await Booking.getAllBookings();
-//   processedDurations.push(performance.now() - t0);
-//
-//   const t1 = performance.now();
-//   await prisma.$queryRawTyped(getAllBookings());
-//   rawDurations.push(performance.now() - t1);
-// }
-//
-// console.log("Processed:", stats(processedDurations));
-// console.log("Raw:", stats(rawDurations));
-//

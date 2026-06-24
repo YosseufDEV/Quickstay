@@ -1,8 +1,10 @@
-import type { ITag } from "@quickstay/types/Hotel.ts";
-import prisma from "../db/prisma.ts";
 import { faker } from "@faker-js/faker";
-import { Role } from "@/generated/prisma/enums.ts";
 import Booking from "../models/Booking.ts";
+import drizzle from "@/src/db/drizzle";
+import { hotels, hotelsTags, tags, users, type UserRoles } from "../db/schema.ts";
+import { User } from "../models/User.ts";
+import Hotel from "../models/Hotel.ts";
+import { sql } from "drizzle-orm";
 
 function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min;
@@ -50,7 +52,7 @@ async function generateUser() {
     emails.add(email);
     const password = faker.internet.password();
     const country = faker.location.country();
-    const role = Role.USER;
+    const role: UserRoles = "USER";
     return {
         firstName,
         lastName,
@@ -62,42 +64,34 @@ async function generateUser() {
 }
 
 try {
-    await prisma.hotel.deleteMany({});
-    await prisma.hotelTag.deleteMany({});
-    await prisma.tag.deleteMany({});
-    await prisma.hotelBooking.deleteMany({});
-    await prisma.user.deleteMany({});
+    await drizzle.delete(hotels);
+    await drizzle.delete(hotelsTags);
+    await drizzle.delete(tags);
+    await drizzle.delete(users);
+    await drizzle.execute(sql`TRUNCATE TABLE tags RESTART IDENTITY CASCADE;`);
 
-    await prisma.tag.createMany({
-        data: [
-            { id: 1,name: "Free Wi-Fi", slag: "wifi" },
-            { id:2, name: "Breakfast Included", slag: "breakfast" },
-            { id: 3, name: "Mountain View", slag: "mountain" },
-            { id: 4, name: "Room Service", slag: "service" },
-            { id: 5, name: "Pool Access", slag: "pool" },
-        ],
-    })
+    await drizzle.insert(tags).values([
+        { slag: "wifi" },
+        { slag: "breakfast" },
+        { slag: "mountain" },
+        { slag: "service" },
+        { slag: "pool" },
+    ])
+
+    console.log(await drizzle.query.tags.findMany());
 
     for(let i = 0; i < 3000; i++) {
         const hotelData = generateRandomHotel();
         const userData = await generateUser();
 
-        await prisma.user.create({
-            data: userData,
-        });
+        // await drizzle.insert(users).values(userData);
+        await User.createUser(userData);
 
-        await prisma.hotel.create({
-            data: {
-                ...hotelData,
-                tags: {
-                    connect: hotelData.tags
-                }
-            }
-        });
+        await Hotel.createHotel(hotelData as any);
     }
 
-    const allUsers = await prisma.user.findMany();
-    const allHotels = await prisma.hotel.findMany();
+    const allHotels = await Hotel.getHotels();
+    const allUsers = await User.getAllUsers();
 
     for(let i = 0; i < 3000; i++) {
         const user = allUsers[getRandomInt(0, allUsers.length)]!;
@@ -109,8 +103,8 @@ try {
         await Booking.createBooking({
             userId: user.id,
             hotelId: hotel.id,
-            startDate: date,
-            endDate: date,
+            from: date,
+            to: date,
         })
 
     }

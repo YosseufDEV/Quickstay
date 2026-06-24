@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response } from "express";
-import type { AuthenticatedRequest } from "../types/auth";
+import type { UserRoles } from "../db/schema";
 import { logger } from "../utils/logger";
 
-const checkAuthentication = (req: AuthenticatedRequest, res: Response, next: any) => {
+const checkAuthentication = (req: Request & { user?: { id: string, sessionId: string, role: UserRoles } | never }, res: Response, next: any) => {
     const authHeader = req.headers.authorization;
 
     const token = authHeader?.split(" ")[1];

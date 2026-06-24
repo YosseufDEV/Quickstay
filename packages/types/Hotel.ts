@@ -12,12 +12,21 @@ interface ITag {
     slag: slag;
 }
 
+interface IRoom {
+    id: string;
+    hotelId: string;
+    name: string;
+    pricePerNight: number;
+    numOfGuests: number;
+    rating: number;
+    imageUrl: string;
+}
+
 interface IHotel {
     id: string;
     name: string;
     address: string;
     exactAddress: string;
-    pricePerNight: number;
     rating: number;
     imageUrl: string;
     tags: ITag[];

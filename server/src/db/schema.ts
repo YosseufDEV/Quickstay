@@ -28,9 +28,17 @@ export const checkInStatusEnum = pgEnum("check_in_status", [
   "CHECKED_OUT",
 ]);
 
-export const tsrange = customType<{ data: { from: Date, to: Date } }>({
+export const roomTypeEnum = pgEnum("room_type", ["SINGLE", "DOUBLE", "SUITE"]);
+export const roomStatusEnum = pgEnum("room_status", ["AVAILABLE", "BOOKED", "MAINTENANCE"]);
+
+export type UserRoles = typeof roleEnum.enumValues[number];
+export type RoomType = typeof roomTypeEnum.enumValues[number];
+export type RoomStatus = typeof roomStatusEnum.enumValues[number];
+
+
+export const tstzrange = customType<{ data: { from: Date, to: Date } }>({
     dataType() {
-        return "tsrange";
+        return "tstzrange";
     },
 
     toDriver(value) {
@@ -41,16 +49,17 @@ export const tsrange = customType<{ data: { from: Date, to: Date } }>({
 
     fromDriver(value) {
         if(typeof value !== 'string') {
-            throw new Error(`Driver return invalid type for tsrange: ${typeof value}`);
+            throw new Error(`Driver return invalid type for tstzrange: ${typeof value}`);
         }
 
         const matches = value.slice(1, -1).split(",");
 
         if (matches.length !== 2) {
-          throw new Error(`Invalid tsrange format: ${value}`);
+          throw new Error(`Invalid tstzrange format: ${value}`);
         }
 
-        return { from: new Date(matches[0]!), to: new Date(matches[1]!) }; // Placeholder implementation
+        // INFO: The +Z is to treat the date as UTC since tstzrange doesn't store the timezone
+        return { from: new Date(matches[0]?.slice(1,-1)!), to: new Date(matches[1]?.slice(1,-1)!) }; // Placeholder implementation
   }
 });
 
@@ -78,12 +87,23 @@ export const hotels = pgTable(
     name: text("name").notNull(),
     exactAddress: text("exact_address").notNull(),
     address: text("address").notNull(),
-    pricePerNight: integer("price_per_night").notNull(),
     imageUrl: text("image_url").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [index("hotel_created_at_idx").on(table.createdAt)]
 );
+
+// TODO: Room image.
+export const rooms = pgTable("rooms", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
+    roomType: roomTypeEnum("room_type").notNull().default("SINGLE"),
+    status: roomStatusEnum("status").notNull().default("AVAILABLE"),
+    imageUrl: text("image_url").notNull(),
+    bookedBy: uuid("booked_by").references(() => users.id, { onDelete: "set null" }),
+    pricePerNight: integer("price_per_night").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+});
 
 
 export const hotelsBookings = pgTable(
@@ -92,13 +112,13 @@ export const hotelsBookings = pgTable(
     id: uuid("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
-    hotelId: uuid("hotel_id")
+    roomId: uuid("room_id")
       .notNull()
-      .references(() => hotels.id, { onDelete: "cascade" }),
+      .references(() => rooms.id, { onDelete: "cascade" }),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    fromTo: tsrange("from_to").notNull(),
+    timeRange: tstzrange("time_range").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     bookingStatus: bookingStatusEnum("booking_status")
       .notNull()
@@ -108,9 +128,9 @@ export const hotelsBookings = pgTable(
       .default("NOT_CHECKED_IN"),
   },
   (table) => [
-    index("hotels_bookings_hotel_id_idx").on(table.hotelId),
+    index("hotels_bookings_room_id_idx").on(table.roomId),
     index("hotels_bookings_user_id_idx").on(table.userId),
-    index("hotels_bookings_from_to_idx").using("gist", table.fromTo),
+    index("hotels_bookings_time_range_idx").using("gist", table.timeRange),
   ]
 );
 
@@ -119,19 +139,19 @@ export const hotelsTags = pgTable(
   {
     hotelId: uuid("hotel_id")
       .notNull()
-      .references(() => hotels.id),
+      .references(() => hotels.id, { onDelete: "cascade" }),
     tagId: integer("tag_id")
       .notNull()
-      .references(() => tags.id),
+      .references(() => tags.id, { onDelete: "cascade" }),
   },
   (table) => [primaryKey({ columns: [table.hotelId, table.tagId] })]
 );
 
-export const relations = defineRelations({ hotels, hotelsBookings, users, tags, hotelsTags }, (r) => ({
+export const relations = defineRelations({ hotels, rooms, hotelsBookings, users, tags, hotelsTags }, (r) => ({
     hotelsBookings: {
-        hotel: r.one.hotels({
-            from: r.hotelsBookings.hotelId,
-            to: r.hotels.id,
+        room: r.one.rooms({
+            from: r.hotelsBookings.roomId,
+            to: r.rooms.id,
         }),
         user: r.one.users({
             from: r.hotelsBookings.userId,
@@ -149,13 +169,13 @@ export const relations = defineRelations({ hotels, hotelsBookings, users, tags, 
         })
     },
     hotels: {
-        bookings: r.many.hotelsBookings({
-            from: r.hotels.id,
-            to: r.hotelsBookings.hotelId,
-        }),
         tags: r.many.tags({
             from: r.hotels.id.through(r.hotelsTags.hotelId),
             to: r.tags.id.through(r.hotelsTags.tagId),
+        }),
+        rooms: r.many.rooms({
+            from: r.hotels.id,
+            to: r.rooms.hotelId,
         })
     },
     users: {
@@ -164,5 +184,16 @@ export const relations = defineRelations({ hotels, hotelsBookings, users, tags, 
             to: r.hotelsBookings.userId,
         })
     },
+    rooms: {
+        hotel: r.one.hotels(),
+        bookedUser: r.one.users({
+            from: r.rooms.bookedBy,
+            to: r.users.id,
+        }),
+        bookings: r.many.hotelsBookings({
+            from: r.rooms.id,
+            to: r.hotelsBookings.roomId,
+        })
+    }
 }));
 

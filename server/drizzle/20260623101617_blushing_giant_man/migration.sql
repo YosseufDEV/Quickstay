@@ -1,0 +1,1 @@
+ALTER TABLE "hotels_bookings" RENAME COLUMN "from_to" TO "time_range";

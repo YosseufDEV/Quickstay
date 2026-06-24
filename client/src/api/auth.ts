@@ -58,7 +58,7 @@ const refreshSession = async () => {
 }
 
 const getCurrentUser = async (): Promise<Response> => {
-    return await api.get("/auth/me").then(res => {
+    return await api.get("/users/me").then(res => {
         const { payload } = res.data;
         return { success: true, payload };
     }).catch((error: AxiosError) => {

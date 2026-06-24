@@ -14,15 +14,18 @@ import { loggingMiddleware } from './middleware/loggingMiddleware.ts';
 config();
 
 const app = express();
+const router = express.Router();
 
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CLIENT_URL, methods: "GET,POST,PUT,DELETE", credentials: true }));
 app.use(loggingMiddleware);
 
-app.use("/api/v1/auth", AuthRouter);
-app.use("/api/v1/users", UserRouter);
-app.use("/api/v1/hotels", HotelRouter);
-app.use("/api/v1/bookings", BookingRouter);
+router.use("/auth", AuthRouter);
+router.use("/users", UserRouter);
+router.use("/hotels", HotelRouter);
+router.use("/bookings", BookingRouter);
+
+app.use("/api/v1", router);
 
 export { app };
