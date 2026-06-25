@@ -24,22 +24,24 @@ try {
     console.log(await drizzle.query.amenities.findMany());
 
     for (let i = 0; i < 3000; i++) {
-        const hotelData = generateRandomHotel();
         const userData = await generateUser();
-
-        // await drizzle.insert(users).values(userData);
         await User.createUser(userData);
 
+        const hotelData = generateRandomHotel();
         await Hotel.createHotel(hotelData as any);
     }
 
-    const allHotels = await Hotel.getHotels();
     const allUsers = await User.getAllUsers();
 
+    const bookedRooms = new Map<string, boolean>();
     for (let i = 0; i < 3000; i++) {
         const user = allUsers[getRandomInt(0, allUsers.length)]!;
-        const hotel = allHotels[getRandomInt(0, allHotels.length)]!;
+        const hotel = (await Hotel.getHotels(20, getRandomInt(0, 2000)))[getRandomInt(0, 20)]!;
         const room = hotel.rooms[getRandomInt(0, hotel.rooms.length)]!;
+
+        if(bookedRooms.has(room.id)) continue;
+
+        bookedRooms.set(room.id, true);
 
         let date = new Date();
         date.setDate(date.getDate() - i);

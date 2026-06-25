@@ -26,7 +26,6 @@ const getHotels = async (req: Request, res: Response) => {
 
     let limit = Math.min(Math.abs(Number(req.query.limit)), 30) || 30;
     let offset = Number(req.query.offset) || 0;
-    let slow = req.query.slow === "true" || false;
 
     const sort = req.query.sort as string | undefined;
     const order = (req.query.order as "asc" | "desc") || "asc";
@@ -44,15 +43,14 @@ const getHotels = async (req: Request, res: Response) => {
     }
 
     try {
-        const hotels = await (slow ? Hotel.getHotelsSlow(limit, offset) : Hotel.getHotels(limit, offset > 0 ? offset : 0, sort, order));
+        const hotels = await Hotel.getHotels(limit, offset > 0 ? offset : 0, sort, order);
 
-        // const meta = { 
-        //     total: hotels.length,
-        //     limit: limit > 10 ? 10 : limit,
-        //     cursor: btoa(hotels.at(-1)?.createdAt.toISOString() || ""),
-        //     sort,
-        //     order
-        // }
+        const meta = { 
+            total: hotels.length,
+            limit: limit > 10 ? 10 : limit,
+            sort,
+            order
+        }
 
         return sendResponse(res, StatusCode.OK, "", { hotels })
 

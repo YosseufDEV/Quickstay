@@ -133,7 +133,7 @@ export const hotelsBookings = pgTable(
     ]
 );
 
-export const hotelsTags = pgTable(
+export const hotelsAmenities = pgTable(
     "hotels_amenities",
     {
         hotelId: uuid("hotel_id")
@@ -146,7 +146,7 @@ export const hotelsTags = pgTable(
     (table) => [primaryKey({ columns: [table.hotelId, table.amenityId] })]
 );
 
-export const relations = defineRelations({ hotels, rooms, hotelsBookings, users, amenities, hotelsTags }, (r) => ({
+export const relations = defineRelations({ hotels, rooms, hotelsBookings, users, amenities, hotelsAmenities }, (r) => ({
     hotelsBookings: {
         room: r.one.rooms({
             from: r.hotelsBookings.roomId,
@@ -157,20 +157,20 @@ export const relations = defineRelations({ hotels, rooms, hotelsBookings, users,
             to: r.users.id,
         })
     },
-    hotelsTags: {
+    hotelsAmenities: {
         hotel: r.one.hotels({
-            from: r.hotelsTags.hotelId,
+            from: r.hotelsAmenities.hotelId,
             to: r.hotels.id,
         }),
         tag: r.one.amenities({
-            from: r.hotelsTags.amenityId,
+            from: r.hotelsAmenities.amenityId,
             to: r.amenities.id,
         })
     },
     hotels: {
         amenities: r.many.amenities({
-            from: r.hotels.id.through(r.hotelsTags.hotelId),
-            to: r.amenities.id.through(r.hotelsTags.amenityId),
+            from: r.hotels.id.through(r.hotelsAmenities.hotelId),
+            to: r.amenities.id.through(r.hotelsAmenities.amenityId),
         }),
         rooms: r.many.rooms({
             from: r.hotels.id,

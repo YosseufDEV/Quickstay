@@ -7,7 +7,7 @@ export function getRandomInt(min: number, max: number) {
 }
 
 const roomTypes: RoomType[] = ["SINGLE", "DOUBLE", "SUITE"];
-const roomStatus = [{ weight: 7, id: "AVAILABLE" }, { weight: 2 , id: "BOOKED" } , {  weight: 1, id: "MAINTENANCE" }];
+const roomStatus = [{ weight: 7, id: "AVAILABLE" }, {  weight: 1, id: "MAINTENANCE" }];
 
 export function generateRooms(count: number): {}[] {
     if (count <= 0) {

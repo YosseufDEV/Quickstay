@@ -1,7 +1,7 @@
 import drizzle from "../db/drizzle";
-import { hotels, rooms, hotelsTags, amenities as s_amenities, type RoomType } from "../db/schema";
+import { hotels, rooms, amenities as s_amenities, hotelsAmenities, type RoomType } from "../db/schema";
 import Room from "./Room";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const AllowedFields = new Set(["price", "createdAt", "rating"]);
 
@@ -34,13 +34,17 @@ interface HotelData {
 }
 
 interface RowHotelData {
-    hotel: Omit<HotelData, "amenities" | "rooms"> & { id: string };
+    hotel: Omit<HotelData, "amenities" | "rooms"> & { id: string, amenities: any[] };
     rooms: {
         pricePerNight: number;
         roomType: RoomType;
         status: string;
         imageUrl: string;
     },
+    amenities: {
+        hotelId: string,
+        amenities: { id: number, slag: string }[]
+    }
     // amenities: { id: number, slag: string }[]
 }
 
@@ -53,13 +57,8 @@ class Hotel {
 
             if(!hotelMap.has(hotelId)) {
                 hotelMap.set(hotelId, {
-                    id: hotelId,
-                    name: row.hotel.name,
-                    address: row.hotel.address,
-                    exactAddress: row.hotel.exactAddress,
-                    rating: row.hotel.rating,
-                    imageUrl: row.hotel.imageUrl,
-                    amenities: [],
+                    ...row.hotel,
+                    amenities: row.amenities.amenities,
                     rooms: []
                 })
             }
@@ -80,7 +79,7 @@ class Hotel {
         }
 
         if (amenities.length !== 0) {
-            await drizzle.insert(hotelsTags).values(
+            await drizzle.insert(hotelsAmenities).values(
                 amenities.map(amentiy => ({
                     hotelId: hotel.id,
                     amenityId: amentiy.id
@@ -113,10 +112,15 @@ class Hotel {
 
     static async getHotels(limit?: number, offset?: number, sortBy?: string, order?: "asc" | "desc") {
         const paginatedHotels = drizzle.select().from(hotels).offset(offset || 0).limit(limit || 20).as("hotel")
+        const amenitiesQuery = drizzle.select({
+            hotelId: hotelsAmenities.hotelId,
+            amenities: sql`json_agg(json_build_object('id', ${s_amenities.id}, 'slag', ${s_amenities.slag}))`.as("amenities")
+        }).from(hotelsAmenities).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).groupBy(hotelsAmenities.hotelId).as("amenities");
 
         const dbHotels = await drizzle.select()
                                     .from(paginatedHotels)
-                                    .leftJoin(rooms, eq(paginatedHotels.id, rooms.hotelId)) as RowHotelData[];
+                                    .leftJoin(amenitiesQuery, eq(paginatedHotels.id, amenitiesQuery.hotelId))
+                                    .leftJoin(rooms, eq(paginatedHotels.id, rooms.hotelId));
 
         return this.processRawHotelData(dbHotels);
 
