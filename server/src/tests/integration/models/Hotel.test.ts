@@ -49,4 +49,12 @@ describe("Hotel Model Test", () => {
             ]
         }));
     })
+
+    it("Custom query should return hotels with the correct properties", async () => {
+        const limit = 10;
+        const offset = 2000;
+        const hotels = await Hotel.getHotels(limit, offset);
+        const hotelsSlow = await Hotel.getHotelsSlow(limit, offset);
+        expect(hotels).toEqual(hotelsSlow);
+    });
 })

@@ -11,7 +11,7 @@ interface RoomData {
 
 class Room {
     static createRoom = async (data: RoomData | RoomData[]) => {
-        return await drizzle.insert(rooms).values([data]).returning().then(([room]) => room)!;
+        return await drizzle.insert(rooms).values(Array.isArray(data) ? data : [data]).returning().then(([room]) => room)!;
     }
 
     static getRoomById = async (id: string) => {

@@ -1,2 +1,0 @@
-ALTER TABLE "hotels" ADD COLUMN "booked_by" uuid;--> statement-breakpoint
-ALTER TABLE "hotels" ADD CONSTRAINT "hotels_booked_by_users_id_fkey" FOREIGN KEY ("booked_by") REFERENCES "users"("id") ON DELETE SET NULL;

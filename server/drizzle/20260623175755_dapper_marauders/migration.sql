@@ -1,1 +1,0 @@
-ALTER TABLE "rooms" ALTER COLUMN "room_type" SET DEFAULT 'SINGLE'::"room_type";

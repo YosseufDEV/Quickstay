@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "a1777286-b031-4cb4-b989-f8e519315d1e",
+  "id": "bd62256c-1648-42ac-b39d-c786199fa709",
   "prevIds": [
-    "212b9073-18be-4205-95ad-910063b8176f"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -37,12 +37,28 @@
     },
     {
       "values": [
+        "AVAILABLE",
+        "BOOKED",
+        "MAINTENANCE"
+      ],
+      "name": "room_status",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
         "SINGLE",
         "DOUBLE",
         "SUITE"
       ],
       "name": "room_type",
       "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "amenities",
+      "entityType": "tables",
       "schema": "public"
     },
     {
@@ -59,7 +75,7 @@
     },
     {
       "isRlsEnabled": false,
-      "name": "hotels_tags",
+      "name": "hotels_amenities",
       "entityType": "tables",
       "schema": "public"
     },
@@ -71,15 +87,35 @@
     },
     {
       "isRlsEnabled": false,
-      "name": "tags",
+      "name": "users",
       "entityType": "tables",
       "schema": "public"
     },
     {
-      "isRlsEnabled": false,
-      "name": "users",
-      "entityType": "tables",
-      "schema": "public"
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "amenities"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "slag",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "amenities"
     },
     {
       "type": "uuid",
@@ -168,19 +204,6 @@
       "generated": null,
       "identity": null,
       "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "hotels"
-    },
-    {
-      "type": "uuid",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "booked_by",
       "entityType": "columns",
       "schema": "public",
       "table": "hotels"
@@ -287,7 +310,7 @@
       "name": "hotel_id",
       "entityType": "columns",
       "schema": "public",
-      "table": "hotels_tags"
+      "table": "hotels_amenities"
     },
     {
       "type": "integer",
@@ -297,10 +320,10 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "tag_id",
+      "name": "amenity_id",
       "entityType": "columns",
       "schema": "public",
-      "table": "hotels_tags"
+      "table": "hotels_amenities"
     },
     {
       "type": "uuid",
@@ -342,6 +365,19 @@
       "table": "rooms"
     },
     {
+      "type": "room_status",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'AVAILABLE'",
+      "generated": null,
+      "identity": null,
+      "name": "status",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "rooms"
+    },
+    {
       "type": "text",
       "typeSchema": null,
       "notNull": true,
@@ -350,6 +386,19 @@
       "generated": null,
       "identity": null,
       "name": "image_url",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "rooms"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "booked_by",
       "entityType": "columns",
       "schema": "public",
       "table": "rooms"
@@ -379,32 +428,6 @@
       "entityType": "columns",
       "schema": "public",
       "table": "rooms"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "tags"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "slag",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "tags"
     },
     {
       "type": "uuid",
@@ -576,27 +599,10 @@
       "with": "",
       "method": "gist",
       "concurrently": false,
-      "name": "hotels_bookings_from_to_idx",
+      "name": "hotels_bookings_time_range_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "hotels_bookings"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "booked_by"
-      ],
-      "schemaTo": "public",
-      "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "SET NULL",
-      "name": "hotels_booked_by_users_id_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "hotels"
     },
     {
       "nameExplicit": false,
@@ -644,27 +650,27 @@
       ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "hotels_tags_hotel_id_hotels_id_fkey",
+      "name": "hotels_amenities_hotel_id_hotels_id_fkey",
       "entityType": "fks",
       "schema": "public",
-      "table": "hotels_tags"
+      "table": "hotels_amenities"
     },
     {
       "nameExplicit": false,
       "columns": [
-        "tag_id"
+        "amenity_id"
       ],
       "schemaTo": "public",
-      "tableTo": "tags",
+      "tableTo": "amenities",
       "columnsTo": [
         "id"
       ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "hotels_tags_tag_id_tags_id_fkey",
+      "name": "hotels_amenities_amenity_id_amenities_id_fkey",
       "entityType": "fks",
       "schema": "public",
-      "table": "hotels_tags"
+      "table": "hotels_amenities"
     },
     {
       "nameExplicit": false,
@@ -684,15 +690,42 @@
       "table": "rooms"
     },
     {
+      "nameExplicit": false,
+      "columns": [
+        "booked_by"
+      ],
+      "schemaTo": "public",
+      "tableTo": "users",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "SET NULL",
+      "name": "rooms_booked_by_users_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "rooms"
+    },
+    {
       "columns": [
         "hotel_id",
-        "tag_id"
+        "amenity_id"
       ],
       "nameExplicit": false,
-      "name": "hotels_tags_pkey",
+      "name": "hotels_amenities_pkey",
       "entityType": "pks",
       "schema": "public",
-      "table": "hotels_tags"
+      "table": "hotels_amenities"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "amenities_pkey",
+      "schema": "public",
+      "table": "amenities",
+      "entityType": "pks"
     },
     {
       "columns": [
@@ -729,16 +762,6 @@
         "id"
       ],
       "nameExplicit": false,
-      "name": "tags_pkey",
-      "schema": "public",
-      "table": "tags",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
       "name": "users_pkey",
       "schema": "public",
       "table": "users",
@@ -750,9 +773,9 @@
         "slag"
       ],
       "nullsNotDistinct": false,
-      "name": "tags_slag_key",
+      "name": "amenities_slag_key",
       "schema": "public",
-      "table": "tags",
+      "table": "amenities",
       "entityType": "uniques"
     },
     {

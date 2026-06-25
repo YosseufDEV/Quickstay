@@ -59,7 +59,7 @@ describe('Booking Model Test', () => {
 
         // expect(async () => {
         const booking = await Booking.book({
-                hotelId: hotel.id,
+                roomId: hotel.id,
                 userId: user.id,
                 from: fromDate,
                 to: toDate,
