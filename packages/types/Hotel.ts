@@ -7,7 +7,7 @@ enum SortOptions {
     PRICE_RANGE = "price_range"
 }
 
-interface ITag {
+interface IAmenities {
     id: number;
     slag: slag;
 }
@@ -29,7 +29,7 @@ interface IHotel {
     exactAddress: string;
     rating: number;
     imageUrl: string;
-    tags: ITag[];
+    amenities: IAmenities[];
 }
 
-export { type slag, type IHotel, type ITag };
+export { type slag, type IHotel, type IAmenities };

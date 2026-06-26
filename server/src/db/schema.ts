@@ -102,7 +102,13 @@ export const rooms = pgTable("rooms", {
     bookedBy: uuid("booked_by").references(() => users.id, { onDelete: "set null" }),
     pricePerNight: integer("price_per_night").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+},
+(table) => [
+    index("rooms_hotel_id_idx").on(table.hotelId), 
+    index("rooms_booked_by_idx").on(table.bookedBy), 
+    index("rooms_hotel_status_idx").on(table.hotelId, table.status), 
+    index("rooms_room_type_idx").on(table.roomType)
+]);
 
 
 export const hotelsBookings = pgTable(

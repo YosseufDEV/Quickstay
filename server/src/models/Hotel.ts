@@ -1,7 +1,7 @@
 import drizzle from "../db/drizzle";
 import { hotels, rooms, amenities as s_amenities, hotelsAmenities, type RoomType } from "../db/schema";
 import Room from "./Room";
-import { eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 const AllowedFields = new Set(["price", "createdAt", "rating"]);
 
@@ -10,7 +10,7 @@ const getSortingOptions = (sortBy: string | undefined, order: "asc" | "desc" = "
 
     switch (sortBy) {
         case "price":
-            return { pricePerNight: order };
+            return (order=="desc" ? desc(rooms.pricePerNight) : rooms.pricePerNight);
         case "rating":
             return { rating: order };
         case "createdAt":
@@ -41,6 +41,7 @@ interface RowHotelData {
         status: string;
         imageUrl: string;
     },
+    counts: { room_type: RoomType, count: number }[],
     amenities: {
         hotelId: string,
         amenities: { id: number, slag: string }[]
@@ -59,6 +60,7 @@ class Hotel {
                 hotelMap.set(hotelId, {
                     ...row.hotel,
                     amenities: row.amenities.amenities,
+                    counts: row.roomsCounts.counts,
                     rooms: []
                 })
             }
@@ -111,18 +113,39 @@ class Hotel {
     }
 
     static async getHotels(limit?: number, offset?: number, sortBy?: string, order?: "asc" | "desc") {
-        const paginatedHotels = drizzle.select().from(hotels).offset(offset || 0).limit(limit || 20).as("hotel")
+        const paginatedHotels = drizzle.select()
+                                .from(hotels)
+                                .offset(offset || 0)
+                                .limit(limit || 20)
+                                .as("hotel")
+
+        const hotelIdsSq = drizzle.select({ id: paginatedHotels.id }).from(paginatedHotels);
+
+
         const amenitiesQuery = drizzle.select({
             hotelId: hotelsAmenities.hotelId,
-            amenities: sql`json_agg(json_build_object('id', ${s_amenities.id}, 'slag', ${s_amenities.slag}))`.as("amenities")
-        }).from(hotelsAmenities).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).groupBy(hotelsAmenities.hotelId).as("amenities");
+            amenities: sql`json_agg(json_build_object('id', ${s_amenities.id}, 'slag', ${s_amenities.slag}))`.as("amenities"),
+        }).from(hotelsAmenities).where(inArray(hotelsAmenities.hotelId, hotelIdsSq)).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).groupBy(hotelsAmenities.hotelId).as("amenities");
 
-        const dbHotels = await drizzle.select()
+
+        const roomCountSubQuery = drizzle.select({ 
+            hotelId: rooms.hotelId,
+            roomType: rooms.roomType,
+            count: sql`COUNT(${rooms.id})`.as("cnt")
+        }).from(rooms).where(and(eq(rooms.status, "AVAILABLE"), inArray(rooms.hotelId, hotelIdsSq))).groupBy(rooms.hotelId, rooms.roomType).as("roomsCounts");
+
+        const roomsCountQuery = drizzle.select({
+            hotelId: roomCountSubQuery.hotelId,
+            counts: sql`json_agg(json_build_object('room_type', ${roomCountSubQuery.roomType}, 'count', ${roomCountSubQuery.count}))`.as('counts') 
+        }).from(roomCountSubQuery).groupBy(roomCountSubQuery.hotelId).as("roomsCounts");
+
+        const dbHotels = drizzle.select()
                                     .from(paginatedHotels)
                                     .leftJoin(amenitiesQuery, eq(paginatedHotels.id, amenitiesQuery.hotelId))
-                                    .leftJoin(rooms, eq(paginatedHotels.id, rooms.hotelId));
-
-        return this.processRawHotelData(dbHotels);
+                                    .leftJoin(rooms, eq(paginatedHotels.id, rooms.hotelId))
+                                    .leftJoin(roomsCountQuery, eq(paginatedHotels.id, roomsCountQuery.hotelId));
+        console.log(dbHotels.toSQL().sql);
+        return this.processRawHotelData(await dbHotels as unknown as RowHotelData[]);
 
     }
 
@@ -133,10 +156,15 @@ class Hotel {
             },
             with: {
                 amenities: true,
+                rooms: true,
             }
         });
 
         return hotel;
+    }
+
+    static async getHotelRooms(hotelId: string) {
+        return await Room.getRoomsByHotelId(hotelId);
     }
 
 }

@@ -4,23 +4,23 @@ import RoomServiceIcon from "@/assets/roomServiceIcon.svg?react";
 import PoolAccessIcon from "@/assets/poolIcon.svg?react";
 import type { slag } from "@quickstay/types/Hotel.ts";
 
-interface HotelTagProps {
+interface HotelAmenityProps {
     slag: slag;
     iconClass?: string;
 }
 
-type tag = {
+type amenity = {
     text: string;
     icon: any;
     style?: string;
 }
 
-const tags: Record<slag, tag> = {
+const amenities: Record<slag, amenity> = {
     wifi: {
         text: "Free Wi-Fi",
         icon: FreeWifiIcon,
     },
-    // TODO: replace this hardcoded icon class with something more dynamic, maybe pass it as a prop to the HotelTag component
+    // TODO: replace this hardcoded icon class with something more dynamic, maybe pass it as a prop to the HotelAmenity component
     breakfast: {
         text: "Breakfast Included",
         style: "[&_path]:stroke-black! [&_path]:fill-none!",
@@ -40,14 +40,14 @@ const tags: Record<slag, tag> = {
     },
 }
 
-const HotelTag = (props: HotelTagProps) => {
-    const tag = tags[props.slag];
+const HotelAmenity = (props: HotelAmenityProps) => {
+    const amenity = amenities[props.slag];
 
-    return tag &&
+    return amenity &&
         <div className="text-sm py-2 px-2.5 items-center justify-center bg-[#f0f0f7] text-black flex gap-2 rounded-lg">
-            <tag.icon className={ `[&_path]:fill-black w-[1.5em] h-[1.5em] ${tag.style}` }/>
-            <p className="font-[Inter] text-nowrap w-fit">{tag.text}</p>
+            <amenity.icon className={ `[&_path]:fill-black w-[1.5em] h-[1.5em] ${amenity.style}` }/>
+            <p className="font-[Inter] text-nowrap w-fit">{amenity.text}</p>
         </div>
 }
 
-export default HotelTag;
+export default HotelAmenity;
