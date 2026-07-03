@@ -1,6 +1,6 @@
 import { app } from "./app";
-import redis from "@/src/db/redis";
-import drizzle from "@/src/db/drizzle";
+import redis from "@/db/redis";
+import drizzle from "@/db/drizzle";
 
 const PORT = process.env.PORT || 5050;
 

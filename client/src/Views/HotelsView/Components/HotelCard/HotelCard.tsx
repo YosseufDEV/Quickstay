@@ -12,14 +12,18 @@ interface HotelCardProps {
     rating: number;
     imageUrl: string;
     amenities: ITag[];
+    catalog: {
+        roomType: string;
+        imageUrl: string;
+        pricePerNight: number;
+    }[];
     rooms: {
         pricePerNight: number;
     }[]
 }
 
 const HotelCard = (props: HotelCardProps) => {
-    const lowestPrice = Math.min(...props.rooms.map(room => room.pricePerNight));
-    console.log(props);
+    const lowestPrice = Math.min(...props.catalog.map(room => room.pricePerNight));
     return (
         <>
             <div className="font-[Inter] flex gap-10 w-fit">
@@ -41,7 +45,7 @@ const HotelCard = (props: HotelCardProps) => {
                     </div>
                     <Location address={props.address} />
                     <div className="grid grid-cols-[auto_auto_auto] gap-x-3 gap-y-3 full max-2xl:grid-cols-[auto_auto] max-2xl:grids-rows-2">
-                        {props.amenities.map((amenity, index) => <HotelAmenity key={index} slag={amenity.slag} />)}
+                        {props.amenities.map((amenity, index) => <HotelAmenity key={index} slug={amenity.slug} />)}
                     </div>
                     <div className="flex flex-row gap-0.5 items-center mb-2">
                         <p className="text-lg font-medium">${lowestPrice} /night</p>

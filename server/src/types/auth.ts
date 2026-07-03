@@ -1,10 +1,10 @@
 import type { Request } from 'express';
-import type { UserRoles } from '../db/schema';
+import type { UserRole } from '../db/schema';
 export interface AuthenticatedRequest extends Request {
-    user: {
+    user?: {
         id: string;
         sessionId: string;
-        role: UserRoles;
+        role: UserRole;
     }
 }
 

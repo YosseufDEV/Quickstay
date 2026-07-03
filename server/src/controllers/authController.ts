@@ -4,11 +4,11 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 import type { AuthenticatedRequest } from "../types/auth";
+import { AuthenticationError, UserError, TokenRefreshError } from "@/errors/errors";
 import { insertSession, invalidateSession, isSessionValid } from "./sessionController";
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
 import { sendResponse, StatusCode } from "../utils/response";
-import { logger } from "../utils/logger";
 import { User } from "../models/User";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
@@ -47,78 +47,58 @@ const refreshToken = async (req: Request, res: Response) => {
 
     } catch (error) {
          if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
-            logger.error(`JWT error during token refresh: ${error.message}`, { message: error.message });
             switch (error.name) {
                 case "TokenExpiredError":
-                    return sendResponse(res, StatusCode.BAD_REQUEST, "token_expired");
+                    throw new TokenRefreshError("token_expired");
                 case "NotBeforeError":
-                    return sendResponse(res, StatusCode.BAD_REQUEST, "token_not_active");
+                    throw new TokenRefreshError("token_not_active");
                 case "JsonWebTokenError":
-                    return sendResponse(res, StatusCode.BAD_REQUEST, "token_invalid");
+                    throw new TokenRefreshError("token_invalid");
                 default:
-                    return sendResponse(res, StatusCode.BAD_REQUEST, "unknown_token_error");
+                    throw new TokenRefreshError("unknown_token_error");
             }
         }
+        throw error;
     }
 }
 
 const register = async (req: Request, res: Response) => {
     const { email, firstName, lastName, password, country } = req.body;
 
-    try {
-        // const existingUser = await prisma.user.findUnique({ where: { email } });
-        const existingUser = await User.getUserByEmail(email);
+    const existingUser = await User.getUserByEmail(email);
 
-        const salt = bcrypt.genSalt(10);
+    if(existingUser) throw new UserError("email_already_in_use", StatusCode.CONFLICT);
 
-        const hashedPassword = await bcrypt.hash(password, await salt);
+    const user = await User.createUser({ email, firstName, lastName, password, country });
 
-        if(existingUser) {
-            return sendResponse(res, StatusCode.BAD_REQUEST, "email_already_in_use");
-        }
-
-        const user = await User.createUser({ email, firstName, lastName, password: hashedPassword, country });
-        return sendResponse(res, StatusCode.CREATED, "", { user });
-
-    } catch(error) {
-        console.log(error);
-        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "internal_server_error");
-    }
+    return sendResponse(res, StatusCode.CREATED, "", { user });
 }
 
 
 const login = async (req: Request, res: Response) => {    
     const { email, password } = req.body;
 
-    try {
-        const user = await User.getUserByEmail(email);
+    const user = await User.getUserByEmail(email);
 
-        if(!user) return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");
-        
-        if(!await bcrypt.compare(password, user.password)) return sendResponse(res, StatusCode.UNAUTHORIZED, "invalid_credentials");
-        
-        const payload = { userId: user.id, sessionId: crypto.randomUUID(), role: user.role };
+    if(!user) throw new AuthenticationError("email_not_registered");
+    
+    if(!await bcrypt.compare(password, user.password)) throw new AuthenticationError("invalid_credentials");
+    
+    const payload = { userId: user.id, sessionId: crypto.randomUUID(), role: user.role };
 
-        const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
-        const refreshToken = generateToken(payload, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRATION_TIME);
+    const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
+    const refreshToken = generateToken(payload, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRATION_TIME);
 
-        await insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
+    await insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
 
-        res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS, secure: process.env.NODE_ENV == "production" });
+    res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS, secure: process.env.NODE_ENV == "production" });
 
-        return sendResponse(res, StatusCode.OK, "", { accessToken, user: { ...user, password: undefined } });
-    }
-    catch (error) {
-        console.log(error);
-        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "Internal server error");
-    }
+    return sendResponse(res, StatusCode.OK, "", { accessToken, user: { ...user, password: undefined } });
 }
 
 const logout = async (req: AuthenticatedRequest, res: Response) => {
-    if(!req.user) return res.status(401).json({ message: "Unauthorized" });
-
     // TODO: Invalidate the session in Redis when logging out
-    await invalidateSession({ userId: req.user.id, sessionId: req.user.sessionId });
+    await invalidateSession({ userId: req.user!.id, sessionId: req.user!.sessionId });
 
     res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV == "production" });
 

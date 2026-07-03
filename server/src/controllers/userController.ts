@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { sendResponse, StatusCode } from '../utils/response';
 import type { AuthenticatedRequest } from '../types/auth';
 import { User } from '../models/User';
-import { logger } from '@/src/utils/logger';
+import { logger } from '@/utils/logger';
 
 const getUserById = async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -22,10 +22,10 @@ const getUserById = async (req: Request, res: Response) => {
 
 const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const user = await User.getUserById(req.user.id);
+        const user = await User.getUserById(req.user!.id);
 
         if(!user) {
-            logger.error(`Authenticated user with id ${req.user.id} not found in database`, { data: { userId: req.user.id } });
+            logger.error(`Authenticated user with id ${req.user!.id} not found in database`, { data: { userId: req.user!.id } });
             return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");
 
         }

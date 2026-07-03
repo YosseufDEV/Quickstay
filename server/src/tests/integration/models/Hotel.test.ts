@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import drizzle from "@/src/db/drizzle";
-import { tags } from '@/src/db/schema';
-import Hotel from '@/src/models/Hotel';
+import drizzle from "@/db/drizzle";
+import { amenities } from '@/db/schema';
+import Hotel from '@/models/Hotel';
 
 beforeAll(async () => {
-    await drizzle.insert(tags).values([
+    await drizzle.insert(amenities).values([
         { slag: "test-1" },
         { slag: "test-2" },
         { slag: "test-3" },
@@ -22,7 +22,7 @@ describe("Hotel Model Test", () => {
             address: "Test City",
             exactAddress: "123 Test Street",
             imageUrl: "http://example.com/image.jpg",
-            tags: [{ id: 1 }, { id: 2 }]
+            amenities: [{ id: 1 }, { id: 2 }]
         };
 
         const hotel = await Hotel.createHotel(hotelData as any);
@@ -43,7 +43,7 @@ describe("Hotel Model Test", () => {
             address: "Test City",
             exactAddress: "123 Test Street",
             imageUrl: "http://example.com/image.jpg",
-            tags: [
+            amenities: [
                 { id: 1, slag: "test-1" },
                 { id: 2, slag: "test-2" }
             ]

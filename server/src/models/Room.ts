@@ -1,12 +1,12 @@
-import { type RoomType, type RoomStatus, rooms } from "@/src/db/schema";
-import drizzle from "@/src/db/drizzle"; 
-import { eq } from "drizzle-orm";
+import { type RoomStatus, rooms } from "@/db/schema";
+import drizzle from "@/db/drizzle"; 
+import { and, eq } from "drizzle-orm";
+import { AppError } from "@/errors/errors";
 
 interface RoomData {
-    hotelId: string;
-    pricePerNight: number;
-    roomType: RoomType;
-    imageUrl: string;
+    hotelId: string
+    roomNumber: number
+    roomType: string
 }
 
 class Room {
@@ -22,25 +22,29 @@ class Room {
         });
     }
 
-    static getRoomsByHotelId = async (hotelId: string) => {
-        return await drizzle.query.rooms.findMany({
+    static getRoomsByHotelId = async (hotelId: string, availableOnly?: boolean) => {
+        const allRooms =  drizzle.query.rooms.findMany({
             where: {
-                hotelId
+                hotelId: hotelId,
+                ...(availableOnly ? { status: 'AVAILABLE' } : {})
             },
-            with: {
-                hotel: true
-            }
+            // with: {
+            //     hotel: true
+            // }
         });
+
+        return await (allRooms);
     }
 
     static updateRoomStatus = async (roomId: string, status: RoomStatus) => {
         return await drizzle.transaction(async (tx) => {
             const [room] = await tx.select().from(rooms).where(eq(rooms.id, roomId)).for('update').execute().catch((err) => {
-                throw new Error('room_is_locked');
+                // TODO: Throw a custom error RoomError
+                throw new AppError('room_is_locked');
             });
 
             if(!room) {
-                throw new Error('room_does_not_exist');
+                throw new AppError('room_does_not_exist');
             }
 
             return await tx.update(rooms).set({ status }).where(eq(rooms.id, roomId)).returning();

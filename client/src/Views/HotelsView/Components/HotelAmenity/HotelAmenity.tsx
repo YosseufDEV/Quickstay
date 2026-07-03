@@ -2,10 +2,10 @@ import FreeWifiIcon from "@/assets/freeWifiIcon.svg?react"; import FreeBreakfast
 import MountainIcon from "@/assets/mountainIcon.svg?react";
 import RoomServiceIcon from "@/assets/roomServiceIcon.svg?react";
 import PoolAccessIcon from "@/assets/poolIcon.svg?react";
-import type { slag } from "@quickstay/types/Hotel.ts";
+import type { slug } from "@quickstay/types/Hotel.ts";
 
 interface HotelAmenityProps {
-    slag: slag;
+    slug: slug;
     iconClass?: string;
 }
 
@@ -15,7 +15,7 @@ type amenity = {
     style?: string;
 }
 
-const amenities: Record<slag, amenity> = {
+const amenities: Record<slug, amenity> = {
     wifi: {
         text: "Free Wi-Fi",
         icon: FreeWifiIcon,
@@ -41,7 +41,7 @@ const amenities: Record<slag, amenity> = {
 }
 
 const HotelAmenity = (props: HotelAmenityProps) => {
-    const amenity = amenities[props.slag];
+    const amenity = amenities[props.slug];
 
     return amenity &&
         <div className="text-sm py-2 px-2.5 items-center justify-center bg-[#f0f0f7] text-black flex gap-2 rounded-lg">

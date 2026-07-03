@@ -1,6 +1,6 @@
 import { logger } from "../utils/logger";
 import type { Response, Request } from "express";
-import Booking from "@/src/models/Booking";
+import Booking from "@/models/Booking";
 import type { AuthenticatedRequest } from "../types/auth";
 import { sendResponse, StatusCode } from "../utils/response";
 
@@ -71,15 +71,8 @@ const getBookingById = async (req: AuthenticatedRequest | Request, res: Response
 }
 
 const getAllBookings = async (req: AuthenticatedRequest | Request, res: Response) => {
-    try {
-        const bookings = await Booking.getAllBookings();
-        return sendResponse(res, StatusCode.OK, "", { bookings });
-    } catch (error) {
-        if(typeof error == "object" && error && "message" in error) {
-            logger.error(`Error fetching bookings: ${error.message} for ip ${req.ip}`);
-        }
-            return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "internal_server_error");
-    }
+    const bookings = await Booking.getAllBookings();
+    return sendResponse(res, StatusCode.OK, "", { bookings });
 }
 
 export { createBooking, getBookingById, getAllBookings };

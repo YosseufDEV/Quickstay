@@ -1,0 +1,1 @@
+ALTER TABLE "hotels_catalogs" RENAME COLUMN "pricePerNight" TO "price_per_night";

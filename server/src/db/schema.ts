@@ -1,11 +1,13 @@
 import {
     pgTable,
     pgEnum,
+    foreignKey,
     uuid,
     text,
     real,
     integer,
     timestamp,
+    unique,
     serial,
     primaryKey,
     index,
@@ -14,7 +16,7 @@ import { sql } from "drizzle-orm";
 import { customType } from "drizzle-orm/pg-core";
 import { defineRelations } from "drizzle-orm";
 
-export const roleEnum = pgEnum("role", ["USER", "ADMIN"]);
+export const roleEnum = pgEnum("role", ["USER", "ADMIN", "HOTEL_OWNER", "HOTEL_STAFF", "GUEST"]);
 
 export const bookingStatusEnum = pgEnum("booking_status", [
     "PENDING",
@@ -28,11 +30,9 @@ export const checkInStatusEnum = pgEnum("check_in_status", [
     "CHECKED_OUT",
 ]);
 
-export const roomTypeEnum = pgEnum("room_type", ["SINGLE", "DOUBLE", "SUITE"]);
 export const roomStatusEnum = pgEnum("room_status", ["AVAILABLE", "BOOKED", "MAINTENANCE"]);
 
-export type UserRoles = typeof roleEnum.enumValues[number];
-export type RoomType = typeof roomTypeEnum.enumValues[number];
+export type UserRole = typeof roleEnum.enumValues[number];
 export type RoomStatus = typeof roomStatusEnum.enumValues[number];
 
 
@@ -58,8 +58,7 @@ export const tstzrange = customType<{ data: { from: Date, to: Date } }>({
             throw new Error(`Invalid tstzrange format: ${value}`);
         }
 
-        // INFO: The +Z is to treat the date as UTC since tstzrange doesn't store the timezone
-        return { from: new Date(matches[0]?.slice(1, -1)!), to: new Date(matches[1]?.slice(1, -1)!) }; // Placeholder implementation
+        return { from: new Date(matches[0]?.slice(1, -1)!), to: new Date(matches[1]?.slice(1, -1)!) };
     }
 });
 
@@ -76,7 +75,7 @@ export const users = pgTable("users", {
 
 export const amenities  = pgTable("amenities", {
     id: serial("id").primaryKey(),
-    slag: text("slag").notNull().unique(),
+    slug: text("slug").notNull().unique(),
 });
 
 export const hotels = pgTable(
@@ -96,20 +95,35 @@ export const hotels = pgTable(
 export const rooms = pgTable("rooms", {
     id: uuid("id").primaryKey().defaultRandom(),
     hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
-    roomType: roomTypeEnum("room_type").notNull().default("SINGLE"),
+    roomType: text("room_type").notNull(),
+    roomNumber: integer("room_number").notNull(),
     status: roomStatusEnum("status").notNull().default("AVAILABLE"),
-    imageUrl: text("image_url").notNull(),
     bookedBy: uuid("booked_by").references(() => users.id, { onDelete: "set null" }),
-    pricePerNight: integer("price_per_night").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
 },
 (table) => [
+    foreignKey({ name: "rooms_hotel_id_room_type_fkey", columns: [table.hotelId, table.roomType], foreignColumns: [hotelsCatalogs.hotelId, hotelsCatalogs.roomType] }).onDelete("cascade"),
     index("rooms_hotel_id_idx").on(table.hotelId), 
     index("rooms_booked_by_idx").on(table.bookedBy), 
     index("rooms_hotel_status_idx").on(table.hotelId, table.status), 
-    index("rooms_room_type_idx").on(table.roomType)
+    index("rooms_room_type_idx").on(table.roomType),
+    unique("rooms_hotel_room_number_unique").on(table.hotelId, table.roomNumber)
 ]);
 
+export const hotelsCatalogs = pgTable("hotels_catalogs", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
+    roomType: text("room_type").notNull().default("Standard Room"),
+    imageUrl: text("image_url").notNull(),
+    area: integer("area").notNull(),
+    numberOfGuests: integer("number_of_guests").notNull().default(1),
+    pricePerNight: integer("price_per_night").notNull(),
+},
+
+(table) => [
+    index("hotel_catalog_id_idx").on(table.hotelId), 
+    unique("hotel_catalog_hotel_room_type_unique").on(table.hotelId, table.roomType)
+]);
 
 export const hotelsBookings = pgTable(
     "hotels_bookings",
@@ -152,7 +166,7 @@ export const hotelsAmenities = pgTable(
     (table) => [primaryKey({ columns: [table.hotelId, table.amenityId] })]
 );
 
-export const relations = defineRelations({ hotels, rooms, hotelsBookings, users, amenities, hotelsAmenities }, (r) => ({
+export const relations = defineRelations({ hotels, rooms, hotelsBookings, hotelsCatalogs, users, amenities, hotelsAmenities }, (r) => ({
     hotelsBookings: {
         room: r.one.rooms({
             from: r.hotelsBookings.roomId,
@@ -191,6 +205,10 @@ export const relations = defineRelations({ hotels, rooms, hotelsBookings, users,
     },
     rooms: {
         hotel: r.one.hotels(),
+        catalog: r.one.hotelsCatalogs({
+            from: r.rooms.hotelId,
+            to: r.hotelsCatalogs.hotelId,
+        }),
         bookedUser: r.one.users({
             from: r.rooms.bookedBy,
             to: r.users.id,

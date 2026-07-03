@@ -1,4 +1,4 @@
-type slag = "wifi" | "breakfast" | "mountain" | "service" | "pool";
+type slug = "wifi" | "breakfast" | "mountain" | "service" | "pool";
 
 enum SortOptions {
     PRICE = "price",
@@ -9,17 +9,14 @@ enum SortOptions {
 
 interface IAmenities {
     id: number;
-    slag: slag;
+    slug: slug;
 }
 
 interface IRoom {
     id: string;
     hotelId: string;
+    roomNumber: number;
     name: string;
-    pricePerNight: number;
-    numOfGuests: number;
-    rating: number;
-    imageUrl: string;
 }
 
 interface IHotel {
@@ -30,6 +27,13 @@ interface IHotel {
     rating: number;
     imageUrl: string;
     amenities: IAmenities[];
+    rooms: IRoom[];
+    catalog: {
+        roomType: string;
+        pricePerNight: number;
+        imageUrl: string;
+        available: number;
+    }[]
 }
 
-export { type slag, type IHotel, type IAmenities };
+export { type slug, type IHotel, type IAmenities };

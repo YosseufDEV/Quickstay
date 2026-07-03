@@ -2,7 +2,9 @@ import type { Request, Response } from 'express';
 import { sendResponse, StatusCode } from '../utils/response';
 
 import Hotel from '../models/Hotel';
+import Room from '../models/Room';
 
+// TODO: Fix this
 const addHotel = async (req: Request, res: Response) => {
     const { name, imageUrl, rating, address, exactAddress, pricePerNight, tags } = req.body;
     try {
@@ -42,43 +44,57 @@ const getHotels = async (req: Request, res: Response) => {
         return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_order_parameter");
     }
 
-    try {
-        const hotels = await Hotel.getHotels(limit, offset > 0 ? offset : 0, sort, order);
+    const hotels = await Hotel.getHotels(limit, offset > 0 ? offset : 0, sort, order);
 
-        const meta = { 
-            total: hotels.length,
-            limit: limit > 10 ? 10 : limit,
-            sort,
-            order
-        }
-
-        return sendResponse(res, StatusCode.OK, "", { hotels })
-
-    } catch (error) {
-        console.log(error);
-        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "An error occurred while fetching hotels");
-    }
+    return sendResponse(res, StatusCode.OK, "", { hotels })
 }
 
 const getHotelById = async (req: Request, res: Response) => {
     const id = req.params.id;
 
-    try {
-        if(!id || typeof id !== "string") {
-            return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
-        }
-
-        const hotel = await Hotel.getHotelById(id);
-
-        if(!hotel) {
-            return sendResponse(res, StatusCode.NOT_FOUND, "hotel_not_found");
-        }
-
-        return sendResponse(res, StatusCode.OK, "", { hotel })
-    } catch (error) {
-        console.log(error);
-        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "An error occurred while fetching the hotel");
+    if(!id || typeof id !== "string") {
+        return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
     }
+
+    const hotel = await Hotel.getHotelById(id);
+
+    if(!hotel) {
+        return sendResponse(res, StatusCode.NOT_FOUND, "hotel_not_found");
+    }
+
+    return sendResponse(res, StatusCode.OK, "", { hotel })
 }
 
-export { addHotel, getHotels, getHotelById };
+const getHotelRoomsById = async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const availableOnly = req.query.availableOnly === "true" || false;
+
+    if(!id || typeof id !== "string") {
+        return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
+    }
+
+    return sendResponse(res, StatusCode.OK, "", { rooms: await Room.getRoomsByHotelId(id, availableOnly) });
+}
+
+const getHotelRoomById = async (req: Request, res: Response) => {
+    const hotelId = req.params.hotelId;
+    const roomId = req.params.roomId;
+
+    if(!hotelId || typeof hotelId !== "string") {
+        return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
+    }
+
+    if(!roomId || typeof roomId !== "string") {
+        return sendResponse(res, StatusCode.BAD_REQUEST, "room_id_required");
+    }
+    
+    const room = await Room.getRoomById(roomId);
+
+    if(!room || room.hotelId !== hotelId) {
+        return sendResponse(res, StatusCode.NOT_FOUND, "room_not_found");
+    }
+    
+    return sendResponse(res, StatusCode.OK, "", { room });
+}
+
+export { addHotel, getHotels, getHotelById, getHotelRoomsById, getHotelRoomById };

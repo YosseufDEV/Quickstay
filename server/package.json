@@ -11,7 +11,7 @@
     "test": "vitest run --silent",
     "seed": "tsx ./src/seed/seed.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx ./migrate.ts",
+    "db:migrate": "drizzle-kit generate && drizzle-kit migrate",
     "db:setup": "tsx ./migrate.ts"
   },
   "dependencies": {

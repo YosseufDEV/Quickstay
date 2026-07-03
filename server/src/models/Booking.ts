@@ -58,7 +58,6 @@ class Booking {
         })
     }
 
-
     static async  getBookingById(id: string) {
         return await drizzle.query.hotelsBookings.findFirst({
             where: {
@@ -75,9 +74,10 @@ class Booking {
     static async  getAllBookings() {
         const bookings =  await drizzle.query.hotelsBookings.findMany({
             with: {
-                hotel: true,
-                user: true
-            }
+                room: true,
+                user: true,
+            },
+            limit: 10,
         });
 
         return bookings;

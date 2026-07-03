@@ -1,9 +1,13 @@
 import winston from "winston";
+import { config } from "dotenv";
+config();
 
 const { combine, timestamp, printf, json } = winston.format;
 
+const logLevel = process.env.LOG_LEVEL || "debug";
+
 const logger = winston.createLogger({
-    level: process.env.LOG_LEVEL || "info",
+    level: logLevel,
     format: combine(timestamp(), json()),
     transports: [
         new winston.transports.File({ filename: "logs/app.log" }),

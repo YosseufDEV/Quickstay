@@ -1,15 +1,16 @@
 import jwt from "jsonwebtoken";
-import type { Request, Response } from "express";
-import type { UserRoles } from "../db/schema";
+import type { Response } from "express";
+import { AuthenticationError } from "@/errors/errors.ts";
+import { type AuthenticatedRequest } from "@/types/auth";
 import { logger } from "../utils/logger";
 
-const checkAuthentication = (req: Request & { user?: { id: string, sessionId: string, role: UserRoles } | never }, res: Response, next: any) => {
+const checkAuthentication = (req: AuthenticatedRequest, _: Response, next: any) => {
     const authHeader = req.headers.authorization;
 
     const token = authHeader?.split(" ")[1];
 
     if(!token || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ message: "token_not_provided" });
+        throw new AuthenticationError("token_not_provided");
     }
 
     try {
@@ -17,20 +18,18 @@ const checkAuthentication = (req: Request & { user?: { id: string, sessionId: st
         req.user = { id: decodedToken.userId, sessionId: decodedToken.sessionId, role: decodedToken.role };
         logger.info(`User ${decodedToken.userId} authenticated successfully from IP ${req.ip}`);
         next();
-    } catch (error) {
-        if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
-            logger.error(`JWT error during authentication: ${error.message} for ip ${req.ip}`);
-            switch (error.name) {
+    } catch (err) {
+        if(err instanceof jwt.JsonWebTokenError || err instanceof jwt.TokenExpiredError) {
+            switch (err.name) {
                 case "TokenExpiredError":
-                    return res.status(401).json({ message: "token_expired" });
-                case "NotBeforeError":
-                    return res.status(401).json({ message: "token_not_active" });
+                    throw new AuthenticationError("token_expired");
                 case "JsonWebTokenError":
-                    return res.status(401).json({ message: "token_invalid" });
+                    throw new AuthenticationError("token_invalid");
                 default:
-                    return res.status(401).json({ message: "unknown_token_error" });
+                    throw new AuthenticationError("token_error");
             }
         }
+        throw err;
     }
 }
 

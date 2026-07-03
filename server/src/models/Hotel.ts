@@ -1,5 +1,6 @@
+import { Optional } from "@/utils/optional";
 import drizzle from "../db/drizzle";
-import { hotels, rooms, amenities as s_amenities, hotelsAmenities, type RoomType } from "../db/schema";
+import { hotels, rooms, amenities as s_amenities, hotelsAmenities, type RoomType, hotelsCatalogs } from "../db/schema";
 import Room from "./Room";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
@@ -7,14 +8,18 @@ const AllowedFields = new Set(["price", "createdAt", "rating"]);
 
 const getSortingOptions = (sortBy: string | undefined, order: "asc" | "desc" = "desc") => {
     if (!sortBy || !AllowedFields.has(sortBy)) return { createdAt: "desc" };
+    const orderBy = order === "desc" ? desc : (field: any) => field;
+
 
     switch (sortBy) {
-        case "price":
-            return (order=="desc" ? desc(rooms.pricePerNight) : rooms.pricePerNight);
+        case "id":
+            return orderBy(hotels.id);
         case "rating":
-            return { rating: order };
+            return orderBy(hotels.rating);
         case "createdAt":
-            return { createdAt: order };
+            return orderBy(hotels.createdAt);
+        default:
+            return orderBy(hotels.createdAt);
     }
 }
 
@@ -25,9 +30,18 @@ interface HotelData {
     rating: number;
     imageUrl: string;
     amenities: { id: number }[];
-    rooms: {
+    counts: { roomType: RoomType, availableCount: number }[];
+    catalog: {
+        roomType: string;
+        imageUrl: string;
         pricePerNight: number;
-        roomType: RoomType;
+        area: number;
+
+    }[],
+    rooms: {
+        id: string;
+        roomType: string;
+        roomNumber: number;
         status: string;
         imageUrl: string;
     }[];
@@ -36,20 +50,46 @@ interface HotelData {
 interface RowHotelData {
     hotel: Omit<HotelData, "amenities" | "rooms"> & { id: string, amenities: any[] };
     rooms: {
+        id: string;
         pricePerNight: number;
         roomType: RoomType;
         status: string;
         imageUrl: string;
     },
-    counts: { room_type: RoomType, count: number }[],
-    amenities: {
+    roomsCounts?: { hotelId: string, catalog: { roomType: RoomType, available: number, pricePerNight: number }[] },
+    amenities?: {
         hotelId: string,
-        amenities: { id: number, slag: string }[]
+        amenities: { id: number, slug: string }[]
     }
-    // amenities: { id: number, slag: string }[]
+    // amenities: { id: number, slug: string }[]
 }
 
 class Hotel {
+    static roomCatalogSQ = drizzle.select({ 
+        hotelId: rooms.hotelId,
+        roomType: rooms.roomType,
+        count: sql`COUNT(${rooms.id})`.as("cnt")
+    })
+        .from(rooms)
+        .where(eq(rooms.status, "AVAILABLE"))
+        .groupBy(rooms.hotelId, rooms.roomType).as("hotelCatalog");
+
+    static roomsCatalogQ = drizzle.select({
+        hotelId: this.roomCatalogSQ.hotelId,
+        catalog: 
+            sql`
+                json_agg(json_build_object(
+                    'roomType', ${this.roomCatalogSQ.roomType}, 
+                    'area', ${hotelsCatalogs.area}, 
+                    'numberOfGuests', ${hotelsCatalogs.numberOfGuests}, 
+                    'imageUrl', ${hotelsCatalogs.imageUrl}, 
+                    'available', ${this.roomCatalogSQ.count}, 
+                    'pricePerNight', ${hotelsCatalogs.pricePerNight}))`.as('catalog') 
+    })
+        .from(hotelsCatalogs)
+        .innerJoin(this.roomCatalogSQ, and(eq(hotelsCatalogs.hotelId, this.roomCatalogSQ.hotelId), eq(hotelsCatalogs.roomType, this.roomCatalogSQ.roomType)))
+        .groupBy(this.roomCatalogSQ.hotelId).as("roomsCounts");
+
     static processRawHotelData(rawData: RowHotelData[]) {
         const hotelMap = new Map<string, HotelData & { id: string }>();
 
@@ -59,19 +99,25 @@ class Hotel {
             if(!hotelMap.has(hotelId)) {
                 hotelMap.set(hotelId, {
                     ...row.hotel,
-                    amenities: row.amenities.amenities,
-                    counts: row.roomsCounts.counts,
+                    ...Optional("amenities", row.amenities?.amenities, row.amenities?.amenities),
+                    ...Optional("catalog", row.roomsCounts?.catalog, row.roomsCounts?.catalog),
                     rooms: []
                 })
             }
 
             hotelMap.get(hotelId)!.rooms.push(row.rooms);
         }
+
+        const hotelsArray = Array.from(hotelMap.values());
    
-        return Array.from(hotelMap.values());
+        return hotelsArray.length == 1 ? hotelsArray[0] : hotelsArray;
     }
 
-    static async createHotel({ rooms, amenities, ...hotelData }: HotelData) {
+    static async createCatalog(catalog: { roomType: RoomType, imageUrl: string, pricePerNight: number, hotelId: string }[]) {
+        await drizzle.insert(hotelsCatalogs).values(catalog);
+    }
+
+    static async createHotel({ rooms, amenities, catalog, ...hotelData }: HotelData) {
         const [hotel] = await drizzle.insert(hotels).values({
             ...hotelData,
         }).returning();
@@ -89,27 +135,17 @@ class Hotel {
             )
         }
 
-        if(rooms.length !== 0) {
+        if(catalog && catalog.length !== 0) {
+            await Hotel.createCatalog(catalog.map(room => ({...room, hotelId: hotel.id })));
+        }
+
+        if(rooms && rooms.length !== 0) {
             await Room.createRoom(rooms.map(room => ({...room, hotelId: hotel.id })));
         }
 
-        const createdTags = await drizzle.select({ id: s_amenities.id, slag: s_amenities.slag }).from(hotelsTags).innerJoin(s_amenities, eq(hotelsTags.amenityId, s_amenities.id)).where(eq(hotelsTags.hotelId, hotel.id));
+        const createdTags = await drizzle.select({ id: s_amenities.id, slug: s_amenities.slug }).from(hotelsAmenities).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).where(eq(hotelsAmenities.hotelId, hotel.id));
 
         return { ...hotel, amenities: createdTags };
-    }
-
-    static async getHotelsSlow(limit?: number, offset?: number, sortBy?: string, order?: "asc" | "desc") {
-        const h = await drizzle.query.hotels.findMany({
-            with: {
-                amenities: true,
-                rooms: true,
-            },
-            ...(limit ? { limit } : { limit: 20 }),
-            ...(offset ? {
-                offset
-            } : {}),
-        });
-        return h;
     }
 
     static async getHotels(limit?: number, offset?: number, sortBy?: string, order?: "asc" | "desc") {
@@ -117,56 +153,44 @@ class Hotel {
                                 .from(hotels)
                                 .offset(offset || 0)
                                 .limit(limit || 20)
+                                .orderBy(getSortingOptions(sortBy, order))
                                 .as("hotel")
 
         const hotelIdsSq = drizzle.select({ id: paginatedHotels.id }).from(paginatedHotels);
 
-
         const amenitiesQuery = drizzle.select({
             hotelId: hotelsAmenities.hotelId,
-            amenities: sql`json_agg(json_build_object('id', ${s_amenities.id}, 'slag', ${s_amenities.slag}))`.as("amenities"),
+            amenities: sql`json_agg(json_build_object('id', ${s_amenities.id}, 'slug', ${s_amenities.slug}))`.as("amenities"),
         }).from(hotelsAmenities).where(inArray(hotelsAmenities.hotelId, hotelIdsSq)).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).groupBy(hotelsAmenities.hotelId).as("amenities");
 
 
-        const roomCountSubQuery = drizzle.select({ 
-            hotelId: rooms.hotelId,
-            roomType: rooms.roomType,
-            count: sql`COUNT(${rooms.id})`.as("cnt")
-        }).from(rooms).where(and(eq(rooms.status, "AVAILABLE"), inArray(rooms.hotelId, hotelIdsSq))).groupBy(rooms.hotelId, rooms.roomType).as("roomsCounts");
-
-        const roomsCountQuery = drizzle.select({
-            hotelId: roomCountSubQuery.hotelId,
-            counts: sql`json_agg(json_build_object('room_type', ${roomCountSubQuery.roomType}, 'count', ${roomCountSubQuery.count}))`.as('counts') 
-        }).from(roomCountSubQuery).groupBy(roomCountSubQuery.hotelId).as("roomsCounts");
-
-        const dbHotels = drizzle.select()
+        const dbHotels = await drizzle.select()
                                     .from(paginatedHotels)
                                     .leftJoin(amenitiesQuery, eq(paginatedHotels.id, amenitiesQuery.hotelId))
                                     .leftJoin(rooms, eq(paginatedHotels.id, rooms.hotelId))
-                                    .leftJoin(roomsCountQuery, eq(paginatedHotels.id, roomsCountQuery.hotelId));
-        console.log(dbHotels.toSQL().sql);
-        return this.processRawHotelData(await dbHotels as unknown as RowHotelData[]);
+                                    .leftJoin(this.roomsCatalogQ, eq(paginatedHotels.id, this.roomsCatalogQ.hotelId));
+        return this.processRawHotelData(dbHotels as unknown as RowHotelData[]);
 
     }
 
     static async getHotelById(hotelId: string) {
-        const hotel = await drizzle.query.hotels.findFirst({
-            where: {
-                id: hotelId
-            },
-            with: {
-                amenities: true,
-                rooms: true,
-            }
-        });
+        const hotelSq = drizzle.select().from(hotels).where(eq(hotels.id, hotelId)).as("hotel");
 
-        return hotel;
+        const amenitiesQuery = drizzle.select({
+            hotelId: hotelsAmenities.hotelId,
+            amenities: sql`json_agg(json_build_object('id', ${s_amenities.id}, 'slug', ${s_amenities.slug}))`.as("amenities"),
+        }).from(hotelsAmenities).where(eq(hotelsAmenities.hotelId, hotelId)).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).groupBy(hotelsAmenities.hotelId).as("amenities");
+
+        const hotel = await drizzle.select()
+            .from(hotelSq)
+            .where(eq(hotelSq.id, hotelId))
+            .leftJoin(amenitiesQuery, eq(hotelSq.id, amenitiesQuery.hotelId))
+            .leftJoin(rooms, eq(hotelSq.id, rooms.hotelId))
+            .leftJoin(this.roomsCatalogQ, eq(hotelSq.id, this.roomsCatalogQ.hotelId))
+        console.log(hotel);
+
+        return this.processRawHotelData(hotel);
     }
-
-    static async getHotelRooms(hotelId: string) {
-        return await Room.getRoomsByHotelId(hotelId);
-    }
-
 }
 
 export default Hotel;

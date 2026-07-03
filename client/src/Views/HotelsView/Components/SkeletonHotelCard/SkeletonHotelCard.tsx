@@ -9,7 +9,7 @@ const SkeletonHotelCard = ({ count=1 }: { count?: number}) => {
             <Skeleton className="w-90! max-h-full! aspect-3/2 shrink-0 rounded-xl" />
 
             <div className="w-full flex flex-col justify-between gap-3">
-                <Skeleton className="w-full h-6 rounded-lg" widths={[150, 260, 280, 200, -1, 100]} count={6} />
+                <Skeleton className="w-full h-6 rounded-lg" widths={[150, 260, 280, 200, 450, 100]} count={6} />
             </div>
         </div>
         <hr />
