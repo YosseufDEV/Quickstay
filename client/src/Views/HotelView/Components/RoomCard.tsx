@@ -16,7 +16,7 @@ const RoomCard = (props: RoomCardProps) => {
                 <p className="text-xl">{props.roomType}</p>
                 <div className="text-sm mt-3 w-full">
                     <p>{props.area} sqm</p>
-                    <p>{props.numberOfGuests} Guest{props.numberOfGuests==1?"":"s"}</p>
+                    <p>{props.numberOfGuests} guest{props.numberOfGuests==1?"":"s"}</p>
                 </div>
             </div>
             <div className="text-sm mt-3 w-full">
