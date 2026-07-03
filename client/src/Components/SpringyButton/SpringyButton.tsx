@@ -35,7 +35,12 @@ const SpringyButton = (props: SpringyButtonProps ) => {
                 onClick={props.onClick}
                 onMouseDown={() => animateClick(gsapRef) } 
                 onMouseUp={() => reverseClickAnimation(gsapRef) }
-                ref={gsapRef} 
+                ref={(el) => { 
+                    if(el) {
+                        gsapRef.current = el; 
+                        if(props.ref) props.ref.current = el; 
+                    }
+                }} 
                 className={`cursor-pointer font-[Outfit] bg-black px-5 py-2 rounded-sm ${props.className}`}>
             { props.children }
         </button>
