@@ -117,11 +117,7 @@ const Input = ({ label, required, validity, children, type, ...props }: InputPro
                     <label htmlFor={id} className="absolute hmd:-top-6 hlg:-top-8 mb-3 hlg:text-[14px] hmd:text-[12px] font-medium flex items-center gap-1 text-gray-700">{label}{required && <span className="text-red-500">*</span>}</label>
                 }
                 {children}
-                <input id={id} {...props} ref={inputRef} className={ `${props.className} bg-white input relative z-20 w-full text-gray-500 border-[1.5px] border-gray-300 rounded-md px-5 py-2 mb-0!`  }/>
-                
-                {type === "password" &&
-                    <ShowPasswordButton inputRef={inputRef}/>
-                }
+                <input id={id} type={type} {...props} className={ `${props.className} bg-white input relative z-20 w-full text-gray-500 border-[1.5px] border-gray-300 rounded-md px-5 py-2 mb-0!`  }/>
 
                 { !validity.dontValidate &&
                     <StatusMessage message={validity.message} valid={ validity.isValid } />
