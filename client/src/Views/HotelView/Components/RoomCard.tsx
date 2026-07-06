@@ -21,7 +21,7 @@ const RoomCard = (props: RoomCardProps) => {
             </div>
             <div className="text-sm mt-3 w-full">
                 <SpringyButton className="text-white rounded-xl self-center text-lg w-full! bg-blue-700">
-                    <p className="text-blue-50">Book Now for ${props.pricePerNight}</p>
+                    <p className="text-blue-50">Book Now for ${props.pricePerNight} <span className="text-blue-200 text-sm font-medium">/night</span></p>
                 </SpringyButton>
             </div>
         </div>

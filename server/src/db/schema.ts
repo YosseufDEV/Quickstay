@@ -70,6 +70,8 @@ export const users = pgTable("users", {
     country: text("country").notNull(),
     password: text("password").notNull(),
     role: roleEnum("role").notNull().default("USER"),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 
@@ -88,6 +90,7 @@ export const hotels = pgTable(
         address: text("address").notNull(),
         imageUrl: text("image_url").notNull(),
         createdAt: timestamp("created_at").notNull().defaultNow(),
+        updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
     },
     (table) => [index("hotel_created_at_idx").on(table.createdAt)]
 );
@@ -100,6 +103,7 @@ export const rooms = pgTable("rooms", {
     status: roomStatusEnum("status").notNull().default("AVAILABLE"),
     bookedBy: uuid("booked_by").references(() => users.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 },
 (table) => [
     foreignKey({ name: "rooms_hotel_id_room_type_fkey", columns: [table.hotelId, table.roomType], foreignColumns: [hotelsCatalogs.hotelId, hotelsCatalogs.roomType] }).onDelete("cascade"),
@@ -118,6 +122,8 @@ export const hotelsCatalogs = pgTable("hotels_catalogs", {
     area: integer("area").notNull(),
     numberOfGuests: integer("number_of_guests").notNull().default(1),
     pricePerNight: integer("price_per_night").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 },
 
 (table) => [
@@ -138,13 +144,14 @@ export const hotelsBookings = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         timeRange: tstzrange("time_range").notNull(),
-        createdAt: timestamp("created_at").notNull().defaultNow(),
         bookingStatus: bookingStatusEnum("booking_status")
             .notNull()
             .default("PENDING"),
         checkInStatus: checkInStatusEnum("check_in_status")
             .notNull()
             .default("NOT_CHECKED_IN"),
+        createdAt: timestamp("created_at").notNull().defaultNow(),
+        updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
     },
     (table) => [
         index("hotels_bookings_room_id_idx").on(table.roomId),

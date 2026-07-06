@@ -187,7 +187,6 @@ class Hotel {
             .leftJoin(amenitiesQuery, eq(hotelSq.id, amenitiesQuery.hotelId))
             .leftJoin(rooms, eq(hotelSq.id, rooms.hotelId))
             .leftJoin(this.roomsCatalogQ, eq(hotelSq.id, this.roomsCatalogQ.hotelId))
-        console.log(hotel);
 
         return this.processRawHotelData(hotel);
     }

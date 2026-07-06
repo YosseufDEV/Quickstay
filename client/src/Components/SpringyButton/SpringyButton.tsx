@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useRef, useState } from "react"
 
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react";
@@ -28,13 +28,22 @@ const reverseClickAnimation = (ref: React.RefObject<any>) => {
 
 const SpringyButton = (props: SpringyButtonProps ) => {
     const gsapRef = useRef({} as HTMLButtonElement);
-    window.addEventListener("mouseup", () => reverseClickAnimation(gsapRef));
+    const [clicked, setClicked] = useState(false);
+
+    useGSAP(() => {
+        if(clicked) {
+            animateClick(gsapRef);
+        } else {
+            reverseClickAnimation(gsapRef);
+        }
+    }, [clicked]);
+
+    window.addEventListener("mouseup", () => setClicked(false));
 
     return (
         <button 
                 onClick={props.onClick}
-                onMouseDown={() => animateClick(gsapRef) } 
-                onMouseUp={() => reverseClickAnimation(gsapRef) }
+                onMouseDown={() => setClicked(true)} 
                 ref={(el) => { 
                     if(el) {
                         gsapRef.current = el; 
