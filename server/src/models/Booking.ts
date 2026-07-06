@@ -23,40 +23,37 @@ class Booking {
         }).returning().then(([booking]) => booking)!;
     }
 
-    static async book({ roomId, userId, from, to }: { roomId: string, userId: string, from: Date, to: Date }) {
-        return await drizzle.transaction(async (tx) => {
-                const [room] = await tx.select().from(rooms).where(eq(rooms.id, roomId)).for('update', { noWait: true }).execute().catch((err) => {
-                    if(err.code === '55P03') {
-                        logger.error(`Room ${roomId} is locked by another transaction`);
-                        throw new Error('Room is currently locked under another transaction.');
-                    }
-                    throw new Error('Failed to select row for update');
-                });
-
-                if(room!.status === 'BOOKED') {
-                    throw new Error('Room is already booked');
-                }
-
-                if(room!.status === 'MAINTENANCE') {
-                    throw new Error('Room is under maintenance');
-                }
-
-                const booking = await Booking.createBooking({
-                    roomId,
-                    userId,
-                    from,
-                    to
-                }, tx);
-
-                await tx
-                        .update(rooms)
-                        .set({ bookedBy: userId, status: 'BOOKED' })
-                        .where(eq(rooms.id, roomId))
-                        .returning();
-
-                return booking;
-        })
-    }
+    // static async book({ roomType, userId, from, to }: { roomType: string, userId: string, from: Date, to: Date }) {
+    //     return await drizzle.transaction(async (tx) => {
+    //             const [room] = await tx.select().from(rooms).where(eq(rooms.roomType, roomType)).for('update', { noWait: true }).execute().catch((err) => {
+    //                 if(err.code === '55P03') {
+    //                     logger.error(`Room is locked by another transaction`);
+    //                     throw new Error('Room is currently locked under another transaction.');
+    //                 }
+    //                 throw new Error('Failed to select row for update');
+    //             });
+    //
+    //             if(room!.status === 'BOOKED') {
+    //                 throw new Error('Room is already booked');
+    //             }
+    //
+    //             if(room!.status === 'MAINTENANCE') {
+    //                 throw new Error('Room is under maintenance');
+    //             }
+    //
+    //             const booking = await Booking.createBooking({
+    //                 roomId: room!.id,
+    //                 userId,
+    //                 from,
+    //                 to
+    //             }, tx).catch((err) => {
+    //                 logger.error(`Failed to create booking: ${err.message}`);
+    //                 throw new Error('Failed to create booking');
+    //             });
+    //
+    //             return booking;
+    //     })
+    // }
 
     static async  getBookingById(id: string) {
         return await drizzle.query.hotelsBookings.findFirst({
