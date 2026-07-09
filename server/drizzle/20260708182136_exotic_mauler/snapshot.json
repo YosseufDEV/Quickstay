@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "b1bbc16c-e9d4-4dd5-b0aa-4763da8d68b3",
+  "id": "9deb4c07-edd7-4e09-b018-7f844f2475e3",
   "prevIds": [
-    "22dee2db-e9f4-4131-845c-37fd665fa995"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -40,21 +40,11 @@
     },
     {
       "values": [
-        "AVAILABLE",
-        "BOOKED",
+        "READY",
+        "CLEANING",
         "MAINTENANCE"
       ],
       "name": "room_status",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "SINGLE",
-        "DOUBLE",
-        "SUITE"
-      ],
-      "name": "room_type",
       "entityType": "enums",
       "schema": "public"
     },
@@ -205,7 +195,46 @@
       "table": "hotels"
     },
     {
-      "type": "timestamp",
+      "type": "time",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "check_in_time",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels"
+    },
+    {
+      "type": "time",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "check_out_time",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'UTC'",
+      "generated": null,
+      "identity": null,
+      "name": "time_zone",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels"
+    },
+    {
+      "type": "timestamp with time zone",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -213,6 +242,19 @@
       "generated": null,
       "identity": null,
       "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
       "entityType": "columns",
       "schema": "public",
       "table": "hotels"
@@ -283,7 +325,7 @@
       "table": "hotels_bookings"
     },
     {
-      "type": "tstzrange",
+      "type": "daterange",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -291,19 +333,6 @@
       "generated": null,
       "identity": null,
       "name": "time_range",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "hotels_bookings"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
       "entityType": "columns",
       "schema": "public",
       "table": "hotels_bookings"
@@ -335,6 +364,32 @@
       "table": "hotels_bookings"
     },
     {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels_bookings"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels_bookings"
+    },
+    {
       "type": "uuid",
       "typeSchema": null,
       "notNull": true,
@@ -361,11 +416,11 @@
       "table": "hotels_catalogs"
     },
     {
-      "type": "room_type",
-      "typeSchema": "public",
+      "type": "text",
+      "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": "'SINGLE'",
+      "default": "'Standard Room'",
       "generated": null,
       "identity": null,
       "name": "room_type",
@@ -394,7 +449,59 @@
       "default": null,
       "generated": null,
       "identity": null,
+      "name": "area",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels_catalogs"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "1",
+      "generated": null,
+      "identity": null,
+      "name": "number_of_guests",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels_catalogs"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
       "name": "price_per_night",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels_catalogs"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "hotels_catalogs"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
       "entityType": "columns",
       "schema": "public",
       "table": "hotels_catalogs"
@@ -426,11 +533,11 @@
       "table": "rooms"
     },
     {
-      "type": "room_type",
-      "typeSchema": "public",
+      "type": "text",
+      "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": "'SINGLE'",
+      "default": null,
       "generated": null,
       "identity": null,
       "name": "room_type",
@@ -456,7 +563,7 @@
       "typeSchema": "public",
       "notNull": true,
       "dimensions": 0,
-      "default": "'AVAILABLE'",
+      "default": "'READY'",
       "generated": null,
       "identity": null,
       "name": "status",
@@ -465,20 +572,7 @@
       "table": "rooms"
     },
     {
-      "type": "uuid",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "booked_by",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "rooms"
-    },
-    {
-      "type": "timestamp",
+      "type": "timestamp with time zone",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -486,6 +580,19 @@
       "generated": null,
       "identity": null,
       "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "rooms"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
       "entityType": "columns",
       "schema": "public",
       "table": "rooms"
@@ -577,6 +684,32 @@
       "generated": null,
       "identity": null,
       "name": "role",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "users"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "users"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
       "entityType": "columns",
       "schema": "public",
       "table": "users"
@@ -703,27 +836,6 @@
       "method": "btree",
       "concurrently": false,
       "name": "rooms_hotel_id_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "rooms"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "booked_by",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "rooms_booked_by_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "rooms"
@@ -880,18 +992,20 @@
       "table": "rooms"
     },
     {
-      "nameExplicit": false,
+      "nameExplicit": true,
       "columns": [
-        "booked_by"
+        "hotel_id",
+        "room_type"
       ],
       "schemaTo": "public",
-      "tableTo": "users",
+      "tableTo": "hotels_catalogs",
       "columnsTo": [
-        "id"
+        "hotel_id",
+        "room_type"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "SET NULL",
-      "name": "rooms_booked_by_users_id_fkey",
+      "onDelete": "CASCADE",
+      "name": "rooms_hotel_id_room_type_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "rooms"
@@ -968,12 +1082,36 @@
       "entityType": "pks"
     },
     {
+      "nameExplicit": true,
+      "columns": [
+        "hotel_id",
+        "room_type"
+      ],
+      "nullsNotDistinct": false,
+      "name": "hotel_catalog_hotel_room_type_unique",
+      "entityType": "uniques",
+      "schema": "public",
+      "table": "hotels_catalogs"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        "hotel_id",
+        "room_number"
+      ],
+      "nullsNotDistinct": false,
+      "name": "rooms_hotel_room_number_unique",
+      "entityType": "uniques",
+      "schema": "public",
+      "table": "rooms"
+    },
+    {
       "nameExplicit": false,
       "columns": [
         "slug"
       ],
       "nullsNotDistinct": false,
-      "name": "amenities_slag_key",
+      "name": "amenities_slug_key",
       "schema": "public",
       "table": "amenities",
       "entityType": "uniques"
@@ -988,9 +1126,14 @@
       "schema": "public",
       "table": "users",
       "entityType": "uniques"
+    },
+    {
+      "value": "\"check_in_time\" > \"check_out_time\"",
+      "name": "hotel_check_in_out_date_check",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "hotels"
     }
   ],
-  "renames": [
-    "public.hotels_catalogs.pricePerNight->public.hotels_catalogs.price_per_night"
-  ]
+  "renames": []
 }

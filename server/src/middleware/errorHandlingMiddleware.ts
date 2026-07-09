@@ -3,7 +3,8 @@ import { AppError } from "@/errors/errors";
 import { logger } from "@/utils/logger";
 
 const errorHandlingMiddleware = (err: any, req: any, res: any, next: any) => {
-    logger.debug(err.stack, { data: { errorName: err.name, ip: req.ip, path: req.path, method: req.method } });
+    console.log(err);
+    logger.debug(err, { data: { errorName: err.name, ip: req.ip, path: req.path, method: req.method } });
     logger.error(`Error occurred: ${err.message}`, { data: { errorName: err.name, ip: req.ip, path: req.path, method: req.method } });
 
     if(err instanceof AppError) {

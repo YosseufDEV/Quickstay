@@ -4,6 +4,7 @@ import {
     foreignKey,
     uuid,
     text,
+    time,
     real,
     integer,
     timestamp,
@@ -11,6 +12,7 @@ import {
     serial,
     primaryKey,
     index,
+    check
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { customType } from "drizzle-orm/pg-core";
@@ -30,15 +32,15 @@ export const checkInStatusEnum = pgEnum("check_in_status", [
     "CHECKED_OUT",
 ]);
 
-export const roomStatusEnum = pgEnum("room_status", ["AVAILABLE", "BOOKED", "MAINTENANCE"]);
+export const roomStatusEnum = pgEnum("room_status", ["READY", "CLEANING", "MAINTENANCE"]);
 
 export type UserRole = typeof roleEnum.enumValues[number];
 export type RoomStatus = typeof roomStatusEnum.enumValues[number];
 
 
-export const tstzrange = customType<{ data: { from: Date, to: Date } }>({
+export const daterange = customType<{ data: { from: Date, to: Date } }>({
     dataType() {
-        return "tstzrange";
+        return "daterange";
     },
 
     toDriver(value) {
@@ -49,13 +51,13 @@ export const tstzrange = customType<{ data: { from: Date, to: Date } }>({
 
     fromDriver(value) {
         if (typeof value !== 'string') {
-            throw new Error(`Driver return invalid type for tstzrange: ${typeof value}`);
+            throw new Error(`Driver return invalid type for daterange: ${typeof value}`);
         }
 
         const matches = value.slice(1, -1).split(",");
 
         if (matches.length !== 2) {
-            throw new Error(`Invalid tstzrange format: ${value}`);
+            throw new Error(`Invalid daterange format: ${value}`);
         }
 
         return { from: new Date(matches[0]?.slice(1, -1)!), to: new Date(matches[1]?.slice(1, -1)!) };
@@ -70,8 +72,8 @@ export const users = pgTable("users", {
     country: text("country").notNull(),
     password: text("password").notNull(),
     role: roleEnum("role").notNull().default("USER"),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 
@@ -89,10 +91,16 @@ export const hotels = pgTable(
         exactAddress: text("exact_address").notNull(),
         address: text("address").notNull(),
         imageUrl: text("image_url").notNull(),
-        createdAt: timestamp("created_at").notNull().defaultNow(),
-        updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+        checkInTime: time("check_in_time").notNull(),
+        checkOutTime: time("check_out_time").notNull(),
+        timeZone: text("time_zone").notNull().default("UTC"),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
     },
-    (table) => [index("hotel_created_at_idx").on(table.createdAt)]
+    (table) => [
+        index("hotel_created_at_idx").on(table.createdAt),
+        check("hotel_check_in_out_date_check", sql`${table.checkInTime} > ${table.checkOutTime}`),
+    ]
 );
 
 export const rooms = pgTable("rooms", {
@@ -100,15 +108,13 @@ export const rooms = pgTable("rooms", {
     hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
     roomType: text("room_type").notNull(),
     roomNumber: integer("room_number").notNull(),
-    status: roomStatusEnum("status").notNull().default("AVAILABLE"),
-    bookedBy: uuid("booked_by").references(() => users.id, { onDelete: "set null" }),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    status: roomStatusEnum("status").notNull().default("READY"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 },
 (table) => [
     foreignKey({ name: "rooms_hotel_id_room_type_fkey", columns: [table.hotelId, table.roomType], foreignColumns: [hotelsCatalogs.hotelId, hotelsCatalogs.roomType] }).onDelete("cascade"),
     index("rooms_hotel_id_idx").on(table.hotelId), 
-    index("rooms_booked_by_idx").on(table.bookedBy), 
     index("rooms_hotel_status_idx").on(table.hotelId, table.status), 
     index("rooms_room_type_idx").on(table.roomType),
     unique("rooms_hotel_room_number_unique").on(table.hotelId, table.roomNumber)
@@ -122,8 +128,8 @@ export const hotelsCatalogs = pgTable("hotels_catalogs", {
     area: integer("area").notNull(),
     numberOfGuests: integer("number_of_guests").notNull().default(1),
     pricePerNight: integer("price_per_night").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 },
 
 (table) => [
@@ -143,15 +149,15 @@ export const hotelsBookings = pgTable(
         userId: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        timeRange: tstzrange("time_range").notNull(),
+        timeRange: daterange("time_range").notNull(),
         bookingStatus: bookingStatusEnum("booking_status")
             .notNull()
             .default("PENDING"),
         checkInStatus: checkInStatusEnum("check_in_status")
             .notNull()
             .default("NOT_CHECKED_IN"),
-        createdAt: timestamp("created_at").notNull().defaultNow(),
-        updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
     },
     (table) => [
         index("hotels_bookings_room_id_idx").on(table.roomId),
@@ -199,6 +205,10 @@ export const relations = defineRelations({ hotels, rooms, hotelsBookings, hotels
             from: r.hotels.id.through(r.hotelsAmenities.hotelId),
             to: r.amenities.id.through(r.hotelsAmenities.amenityId),
         }),
+        catalog: r.many.hotelsCatalogs({
+            from: r.hotels.id,
+            to: r.hotelsCatalogs.hotelId,
+        }),
         rooms: r.many.rooms({
             from: r.hotels.id,
             to: r.rooms.hotelId,
@@ -215,10 +225,6 @@ export const relations = defineRelations({ hotels, rooms, hotelsBookings, hotels
         catalog: r.one.hotelsCatalogs({
             from: r.rooms.hotelId,
             to: r.hotelsCatalogs.hotelId,
-        }),
-        bookedUser: r.one.users({
-            from: r.rooms.bookedBy,
-            to: r.users.id,
         }),
         bookings: r.many.hotelsBookings({
             from: r.rooms.id,

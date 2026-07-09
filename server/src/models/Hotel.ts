@@ -1,8 +1,10 @@
 import { Optional } from "@/utils/optional";
-import drizzle from "../db/drizzle";
-import { hotels, rooms, amenities as s_amenities, hotelsAmenities, type RoomType, hotelsCatalogs } from "../db/schema";
+import drizzle from "@/db/drizzle";
+import { hotels, rooms, amenities as s_amenities, hotelsAmenities, hotelsCatalogs } from "../db/schema";
 import Room from "./Room";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { HotelError, isCheckInDateSmallerThanCheckOutDateError } from "@/errors/hotelErrors";
+import type { drizzle as d } from "drizzle-orm/node-postgres";
 
 const AllowedFields = new Set(["price", "createdAt", "rating"]);
 
@@ -23,40 +25,41 @@ const getSortingOptions = (sortBy: string | undefined, order: "asc" | "desc" = "
     }
 }
 
-interface HotelData {
-    name: string;
-    address: string;
-    exactAddress: string;
-    rating: number;
-    imageUrl: string;
-    amenities: { id: number }[];
-    counts: { roomType: RoomType, availableCount: number }[];
-    catalog: {
-        roomType: string;
-        imageUrl: string;
-        pricePerNight: number;
-        area: number;
+interface HotelCatalog {
+    hotelId?: string,
+    roomType: string,
+    pricePerNight: number
+    area: number
+    imageUrl: string 
+}
 
-    }[],
-    rooms: {
-        id: string;
-        roomType: string;
-        roomNumber: number;
-        status: string;
-        imageUrl: string;
-    }[];
+interface HotelRoom { 
+    id?: string
+    hotelId?: string
+    roomType: string
+    roomNumber: number
+    status?: string
+}
+
+interface HotelData {
+    id?: string
+    name: string
+    address: string
+    exactAddress: string
+    checkInTime: string,
+    checkOutTime: string,
+    timeZone: string,
+    rating: number
+    imageUrl: string
+    amenities: { id: number }[]
+    catalog: HotelCatalog[]
+    rooms: HotelRoom[]
 }
 
 interface RowHotelData {
     hotel: Omit<HotelData, "amenities" | "rooms"> & { id: string, amenities: any[] };
-    rooms: {
-        id: string;
-        pricePerNight: number;
-        roomType: RoomType;
-        status: string;
-        imageUrl: string;
-    },
-    roomsCounts?: { hotelId: string, catalog: { roomType: RoomType, available: number, pricePerNight: number }[] },
+    rooms: HotelRoom,
+    catalog: { catalog: HotelCatalog },
     amenities?: {
         hotelId: string,
         amenities: { id: number, slug: string }[]
@@ -65,30 +68,23 @@ interface RowHotelData {
 }
 
 class Hotel {
-    static roomCatalogSQ = drizzle.select({ 
-        hotelId: rooms.hotelId,
-        roomType: rooms.roomType,
-        count: sql`COUNT(${rooms.id})`.as("cnt")
-    })
-        .from(rooms)
-        .where(eq(rooms.status, "AVAILABLE"))
-        .groupBy(rooms.hotelId, rooms.roomType).as("hotelCatalog");
+    private static generateCatalogQuery = (drizzle: ReturnType<typeof d>) => {
+        const roomsCatalogQ = drizzle.select({
+            hotelId: hotelsCatalogs.hotelId,
+            catalog: 
+                sql`
+                    json_agg(json_build_object(
+                        'roomType', ${hotelsCatalogs.roomType}, 
+                        'area', ${hotelsCatalogs.area}, 
+                        'numberOfGuests', ${hotelsCatalogs.numberOfGuests}, 
+                        'imageUrl', ${hotelsCatalogs.imageUrl}, 
+                        'pricePerNight', ${hotelsCatalogs.pricePerNight}))`.as('catalog') 
+        })
+            .from(hotelsCatalogs)
+            .groupBy(hotelsCatalogs.hotelId).as("catalog");
 
-    static roomsCatalogQ = drizzle.select({
-        hotelId: this.roomCatalogSQ.hotelId,
-        catalog: 
-            sql`
-                json_agg(json_build_object(
-                    'roomType', ${this.roomCatalogSQ.roomType}, 
-                    'area', ${hotelsCatalogs.area}, 
-                    'numberOfGuests', ${hotelsCatalogs.numberOfGuests}, 
-                    'imageUrl', ${hotelsCatalogs.imageUrl}, 
-                    'available', ${this.roomCatalogSQ.count}, 
-                    'pricePerNight', ${hotelsCatalogs.pricePerNight}))`.as('catalog') 
-    })
-        .from(hotelsCatalogs)
-        .innerJoin(this.roomCatalogSQ, and(eq(hotelsCatalogs.hotelId, this.roomCatalogSQ.hotelId), eq(hotelsCatalogs.roomType, this.roomCatalogSQ.roomType)))
-        .groupBy(this.roomCatalogSQ.hotelId).as("roomsCounts");
+        return roomsCatalogQ;
+    }
 
     static processRawHotelData(rawData: RowHotelData[]) {
         const hotelMap = new Map<string, HotelData & { id: string }>();
@@ -100,7 +96,7 @@ class Hotel {
                 hotelMap.set(hotelId, {
                     ...row.hotel,
                     ...Optional("amenities", row.amenities?.amenities, row.amenities?.amenities),
-                    ...Optional("catalog", row.roomsCounts?.catalog, row.roomsCounts?.catalog),
+                    ...Optional("catalog", row.catalog?.catalog, row.catalog?.catalog),
                     rooms: []
                 })
             }
@@ -113,14 +109,21 @@ class Hotel {
         return hotelsArray.length == 1 ? hotelsArray[0] : hotelsArray;
     }
 
-    static async createCatalog(catalog: { roomType: RoomType, imageUrl: string, pricePerNight: number, hotelId: string }[]) {
+    static async createCatalog(catalog: (HotelCatalog & { hotelId: string })[]) {
         await drizzle.insert(hotelsCatalogs).values(catalog);
     }
 
     static async createHotel({ rooms, amenities, catalog, ...hotelData }: HotelData) {
         const [hotel] = await drizzle.insert(hotels).values({
             ...hotelData,
-        }).returning();
+        }).
+            returning()
+            .catch((err) => {
+                if(isCheckInDateSmallerThanCheckOutDateError(err)) {
+                    throw new HotelError("check_in_time_before_check_out_time");
+                }
+                throw err;
+            });
 
         if (!hotel) {
             throw new Error("Failed to create hotel");
@@ -145,9 +148,10 @@ class Hotel {
 
         const createdTags = await drizzle.select({ id: s_amenities.id, slug: s_amenities.slug }).from(hotelsAmenities).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).where(eq(hotelsAmenities.hotelId, hotel.id));
 
-        return { ...hotel, amenities: createdTags };
+        return { ...hotel, amenities: createdTags, catalog, rooms };
     }
 
+    // TEST: Test the sorting and pagination of the hotels list
     static async getHotels(limit?: number, offset?: number, sortBy?: string, order?: "asc" | "desc") {
         const paginatedHotels = drizzle.select()
                                 .from(hotels)
@@ -164,11 +168,13 @@ class Hotel {
         }).from(hotelsAmenities).where(inArray(hotelsAmenities.hotelId, hotelIdsSq)).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).groupBy(hotelsAmenities.hotelId).as("amenities");
 
 
+        const roomsCatalogQ = this.generateCatalogQuery(drizzle);
+
         const dbHotels = await drizzle.select()
                                     .from(paginatedHotels)
                                     .leftJoin(amenitiesQuery, eq(paginatedHotels.id, amenitiesQuery.hotelId))
                                     .leftJoin(rooms, eq(paginatedHotels.id, rooms.hotelId))
-                                    .leftJoin(this.roomsCatalogQ, eq(paginatedHotels.id, this.roomsCatalogQ.hotelId));
+                                    .leftJoin(roomsCatalogQ, eq(paginatedHotels.id, roomsCatalogQ.hotelId));
         return this.processRawHotelData(dbHotels as unknown as RowHotelData[]);
 
     }
@@ -181,12 +187,14 @@ class Hotel {
             amenities: sql`json_agg(json_build_object('id', ${s_amenities.id}, 'slug', ${s_amenities.slug}))`.as("amenities"),
         }).from(hotelsAmenities).where(eq(hotelsAmenities.hotelId, hotelId)).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).groupBy(hotelsAmenities.hotelId).as("amenities");
 
+        const roomsCatalogQ = this.generateCatalogQuery(drizzle);
+
         const hotel = await drizzle.select()
             .from(hotelSq)
             .where(eq(hotelSq.id, hotelId))
             .leftJoin(amenitiesQuery, eq(hotelSq.id, amenitiesQuery.hotelId))
             .leftJoin(rooms, eq(hotelSq.id, rooms.hotelId))
-            .leftJoin(this.roomsCatalogQ, eq(hotelSq.id, this.roomsCatalogQ.hotelId))
+            .leftJoin(roomsCatalogQ, eq(hotelSq.id, roomsCatalogQ.hotelId))
 
         return this.processRawHotelData(hotel);
     }

@@ -1,33 +1,66 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import Booking from '@/src/models/Booking';
-import Hotel from '@/src/models/Hotel';
-import { User } from '@/src/models/User';
+import Booking from '@/models/Booking';
+import Hotel from '@/models/Hotel';
+import User from '@/models/User';
 
 let hotel: Awaited<ReturnType<typeof Hotel.createHotel>>, user: Awaited<ReturnType<typeof User.createUser>>;
 
-beforeAll(async () => {
-    user = await User.createUser({
-        firstName: 'Test User',
-        lastName: 'Test User',
-        email: 'testEmail',
-        password: 'testPassword',
-        country: 'Test Country',
-    });
-
-    hotel = await Hotel.createHotel({
-        name: 'Test Hotel',
-        address: 'Test Address',
-        exactAddress: 'Test Exact Address',
-        pricePerNight: 100,
-        rating: 4.5,
-        tags: [],
-        imageUrl: 'testImage',
-    })
-});
-
 let createdBooking: Awaited<ReturnType<typeof Booking.createBooking>>;
 
+const hotelData = {
+    name: "Test Hotel",
+    rating: 4.5,
+    address: "Test City",
+    exactAddress: "123 Test Street",
+    checkInTime: "18:00:00",
+    checkOutTime: "14:00:00",
+    imageUrl: "http://example.com/image.jpg",
+    amenities: [{ id: 1 }, { id: 2 }],
+    timeZone: "T",
+    rooms: [
+        {
+            roomType: "Standard Room",
+            roomNumber: 101,
+        },
+        {
+            roomType: "Standard Room",
+            roomNumber: 102,
+        },
+        {
+            roomType: "Standard Room 2",
+            roomNumber: 69,
+        },
+    ],
+    catalog: [
+        {
+            roomType: "Standard Room",
+            pricePerNight: 100,
+            numberOfGuests: 2,
+            area: 20,
+            imageUrl: "http://example.com/room1.jpg",
+        },
+        {
+            roomType: "Standard Room 2",
+            pricePerNight: 192,
+            numberOfGuests: 4,
+            area: 39,
+            imageUrl: "http://example.com/room2.jpg",
+        }
+    ]
+};
+
 describe('Booking Model Test', () => {
+    beforeAll(async () => {
+        user = await User.createUser({
+            firstName: 'Test User',
+            lastName: 'Test User',
+            email: 'testEmail',
+            password: 'testPassword',
+            country: 'Test Country',
+        });
+
+        hotel = await Hotel.createHotel(hotelData)
+    });
     it('should create a booking', async () => {
         const fromDate = new Date(Date.UTC(2023, 0, 1)); 
         const toDate = new Date(Date.UTC(2023, 0, 5));

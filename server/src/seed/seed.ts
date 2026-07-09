@@ -65,16 +65,16 @@ await drizzle.insert(u).values(users);
 console.log("Seeded users successfully");
 
 const allUsers = await drizzle.query.users.findMany();
-const rr = await drizzle.query.rooms.findMany();
+const hh = await drizzle.query.hotels.findMany({ with: { catalog: true } });
 
 const bookedRooms = new Map<string, boolean>();
 const bookings = [];
 
 for (let i = 0; i < SEED_SIZE/3; i++) {
     const user = allUsers[getRandomInt(0, allUsers.length)]!;
-    const room = rr[getRandomInt(0, rr.length)]!;
+    const rc = hh[getRandomInt(0, hh.length)]!.rooms;
 
-    if(bookedRooms.has(room.id) || room.status != 'AVAILABLE') { i--; continue };
+    if(bookedRooms.has(room.id) || room.status != 'READY') { i--; continue };
 
     bookedRooms.set(room.id, true);
 
@@ -85,7 +85,6 @@ for (let i = 0; i < SEED_SIZE/3; i++) {
 
     bookings.push({
         userId: user.id,
-        roomId: room.id,
         from,
         to,
     })

@@ -1,7 +1,7 @@
 import type { PgAsyncTransaction } from "drizzle-orm/pg-core";
 import drizzle from "../db/drizzle";
-import { eq } from "drizzle-orm";
-import { hotelsBookings, hotels, rooms } from "../db/schema";
+import { eq, sql, and, not } from "drizzle-orm";
+import { hotelsBookings, rooms } from "../db/schema";
 import { logger } from "../utils/logger";
 
 interface BookingData {
@@ -23,37 +23,38 @@ class Booking {
         }).returning().then(([booking]) => booking)!;
     }
 
-    // static async book({ roomType, userId, from, to }: { roomType: string, userId: string, from: Date, to: Date }) {
-    //     return await drizzle.transaction(async (tx) => {
-    //             const [room] = await tx.select().from(rooms).where(eq(rooms.roomType, roomType)).for('update', { noWait: true }).execute().catch((err) => {
-    //                 if(err.code === '55P03') {
-    //                     logger.error(`Room is locked by another transaction`);
-    //                     throw new Error('Room is currently locked under another transaction.');
-    //                 }
-    //                 throw new Error('Failed to select row for update');
-    //             });
-    //
-    //             if(room!.status === 'BOOKED') {
-    //                 throw new Error('Room is already booked');
-    //             }
-    //
-    //             if(room!.status === 'MAINTENANCE') {
-    //                 throw new Error('Room is under maintenance');
-    //             }
-    //
-    //             const booking = await Booking.createBooking({
-    //                 roomId: room!.id,
-    //                 userId,
-    //                 from,
-    //                 to
-    //             }, tx).catch((err) => {
-    //                 logger.error(`Failed to create booking: ${err.message}`);
-    //                 throw new Error('Failed to create booking');
-    //             });
-    //
-    //             return booking;
-    //     })
-    // }
+    static async book({ roomType, userId, from, to }: { roomType: string, userId: string, from: Date, to: Date }) {
+        return await drizzle.transaction(async (tx) => {
+            const [room] = await tx.select({ id: rooms.id })
+                                    .from(rooms)
+                                    .where(eq(rooms.roomType, roomType))
+                                    .innerJoin(hotelsBookings, and(eq(rooms.id, hotelsBookings.roomId), not(sql`${hotelsBookings.timeRange} && tstzrange(${from}, ${to})`)))
+                                    .groupBy(rooms.id)
+                                    .orderBy(sql`RANDOM()`)
+                                    .limit(1)
+                                    .execute();
+
+            if (!room) {
+                logger.error(`Room ${room!.id} is not available for the given time range`);
+                throw new Error('Room is not available for the current time range');
+            }
+
+            // TODO: Room booking logic. 
+
+            const booking = await Booking.createBooking({
+                roomId: room!.id,
+                userId,
+                from,
+                to
+            }, tx).catch((err) => {
+                logger.error(`Failed to create booking: ${err.message}`);
+                logger.debug(err);
+                throw new Error('Failed to create booking');
+            });
+
+            return booking;
+        })
+    }
 
     static async  getBookingById(id: string) {
         return await drizzle.query.hotelsBookings.findFirst({

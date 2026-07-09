@@ -9,7 +9,7 @@ import { insertSession, invalidateSession, isSessionValid } from "./sessionContr
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
 import { sendResponse, StatusCode } from "../utils/response";
-import { User } from "../models/User";
+import User from "../models/User";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;

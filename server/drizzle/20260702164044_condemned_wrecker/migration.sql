@@ -1,1 +1,0 @@
-ALTER TABLE "rooms" ADD CONSTRAINT "rooms_hotel_id_room_type_fkey" FOREIGN KEY ("hotel_id","room_type") REFERENCES "hotels_catalogs"("hotel_id","room_type") ON DELETE CASCADE;

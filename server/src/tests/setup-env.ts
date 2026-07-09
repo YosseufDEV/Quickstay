@@ -1,4 +1,4 @@
-import {  afterAll, beforeAll, vi } from "vitest";
+import { afterAll, beforeAll, vi } from "vitest";
 import { type StartedTestContainer, GenericContainer } from "testcontainers";
 import { createClient } from "redis";
 import { drizzle } from 'drizzle-orm/node-postgres';
@@ -38,7 +38,6 @@ beforeAll(async () => {
         .withEnvironment({
             POSTGRES_PASSWORD: "admin",
         })
-        .withStartupTimeout(60000)
         .withExposedPorts(5432)
         .start();
 
@@ -54,6 +53,8 @@ beforeAll(async () => {
     vi.stubEnv("DATABASE_URL", `postgresql://postgres:admin@${postgresContainer.getHost()}:${postgresContainer.getMappedPort(5432)}/postgres`);
         
     mocks.drizzle = drizzle(process.env.DATABASE_URL!, { schema, relations: { ...schema.relations }});
+
+    console.log("OK");
 
     await migrate(mocks.drizzle, { migrationsFolder: "./drizzle" })
 

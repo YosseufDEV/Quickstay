@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { sendResponse, StatusCode } from '../utils/response';
 import type { AuthenticatedRequest } from '../types/auth';
-import { User } from '../models/User';
+import User from '../models/User';
 import { logger } from '@/utils/logger';
 
 const getUserById = async (req: Request, res: Response) => {
