@@ -2,7 +2,7 @@ import { Optional } from "@/utils/optional";
 import drizzle from "@/db/drizzle";
 import { hotels, rooms, amenities as s_amenities, hotelsAmenities, hotelsCatalogs } from "../db/schema";
 import Room from "./Room";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { HotelError, isCheckInDateSmallerThanCheckOutDateError } from "@/errors/hotelErrors";
 import type { drizzle as d } from "drizzle-orm/node-postgres";
 
@@ -25,6 +25,11 @@ const getSortingOptions = (sortBy: string | undefined, order: "asc" | "desc" = "
     }
 }
 
+interface HotelAmenity {
+    id: number,
+    slug: string
+}
+
 interface HotelCatalog {
     hotelId?: string,
     roomType: string,
@@ -35,10 +40,10 @@ interface HotelCatalog {
 
 interface HotelRoom { 
     id?: string
-    hotelId?: string
+    hotelId: string
     roomType: string
     roomNumber: number
-    status?: string
+    status: string
 }
 
 interface HotelData {
@@ -51,28 +56,28 @@ interface HotelData {
     timeZone: string,
     rating: number
     imageUrl: string
-    amenities: { id: number }[]
-    catalog: HotelCatalog[]
-    rooms: HotelRoom[]
+    amenities?: { id: number }[]
+    catalog?: HotelCatalog[]
+    rooms?: HotelRoom[]
 }
 
 interface RowHotelData {
-    hotel: Omit<HotelData, "amenities" | "rooms"> & { id: string, amenities: any[] };
-    rooms: HotelRoom,
-    catalog: { catalog: HotelCatalog },
-    amenities?: {
+    hotel: Omit<HotelData, "rooms"> & { id: string };
+    rooms: HotelRoom | null,
+    catalog: { hotelId: string, catalog: HotelCatalog[] } | null,
+    amenities: {
         hotelId: string,
-        amenities: { id: number, slug: string }[]
-    }
+        amenities: HotelAmenity[]
+    } | null
     // amenities: { id: number, slug: string }[]
 }
 
 class Hotel {
     private static generateCatalogQuery = (drizzle: ReturnType<typeof d>) => {
-        const roomsCatalogQ = drizzle.select({
+        const catalogQuery = drizzle.select({
             hotelId: hotelsCatalogs.hotelId,
             catalog: 
-                sql`
+                sql<HotelCatalog[]>`
                     json_agg(json_build_object(
                         'roomType', ${hotelsCatalogs.roomType}, 
                         'area', ${hotelsCatalogs.area}, 
@@ -83,7 +88,7 @@ class Hotel {
             .from(hotelsCatalogs)
             .groupBy(hotelsCatalogs.hotelId).as("catalog");
 
-        return roomsCatalogQ;
+        return catalogQuery;
     }
 
     static processRawHotelData(rawData: RowHotelData[]) {
@@ -101,7 +106,7 @@ class Hotel {
                 })
             }
 
-            hotelMap.get(hotelId)!.rooms.push(row.rooms);
+            if(row.rooms) hotelMap.get(hotelId)!.rooms?.push(row.rooms);
         }
 
         const hotelsArray = Array.from(hotelMap.values());
@@ -129,7 +134,7 @@ class Hotel {
             throw new Error("Failed to create hotel");
         }
 
-        if (amenities.length !== 0) {
+        if (amenities && amenities.length !== 0) {
             await drizzle.insert(hotelsAmenities).values(
                 amenities.map(amentiy => ({
                     hotelId: hotel.id,
@@ -164,18 +169,18 @@ class Hotel {
 
         const amenitiesQuery = drizzle.select({
             hotelId: hotelsAmenities.hotelId,
-            amenities: sql`json_agg(json_build_object('id', ${s_amenities.id}, 'slug', ${s_amenities.slug}))`.as("amenities"),
+            amenities: sql<HotelAmenity[]>`json_agg(json_build_object('id', ${s_amenities.id}, 'slug', ${s_amenities.slug}))`.as("amenities"),
         }).from(hotelsAmenities).where(inArray(hotelsAmenities.hotelId, hotelIdsSq)).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).groupBy(hotelsAmenities.hotelId).as("amenities");
 
 
-        const roomsCatalogQ = this.generateCatalogQuery(drizzle);
+        const catalogQuery = this.generateCatalogQuery(drizzle);
 
         const dbHotels = await drizzle.select()
                                     .from(paginatedHotels)
                                     .leftJoin(amenitiesQuery, eq(paginatedHotels.id, amenitiesQuery.hotelId))
                                     .leftJoin(rooms, eq(paginatedHotels.id, rooms.hotelId))
-                                    .leftJoin(roomsCatalogQ, eq(paginatedHotels.id, roomsCatalogQ.hotelId));
-        return this.processRawHotelData(dbHotels as unknown as RowHotelData[]);
+                                    .leftJoin(catalogQuery, eq(paginatedHotels.id, catalogQuery.hotelId));
+        return this.processRawHotelData(dbHotels);
 
     }
 
@@ -184,20 +189,26 @@ class Hotel {
 
         const amenitiesQuery = drizzle.select({
             hotelId: hotelsAmenities.hotelId,
-            amenities: sql`json_agg(json_build_object('id', ${s_amenities.id}, 'slug', ${s_amenities.slug}))`.as("amenities"),
-        }).from(hotelsAmenities).where(eq(hotelsAmenities.hotelId, hotelId)).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).groupBy(hotelsAmenities.hotelId).as("amenities");
+            amenities: sql<HotelAmenity[]>`json_agg(json_build_object('id', ${s_amenities.id}, 'slug', ${s_amenities.slug}))`.as("amenities"),
+        })
+            .from(hotelsAmenities)
+            .where(eq(hotelsAmenities.hotelId, hotelId))
+            .innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id))
+            .groupBy(hotelsAmenities.hotelId)
+            .as("amenities");
 
-        const roomsCatalogQ = this.generateCatalogQuery(drizzle);
+        const catalogQuery = this.generateCatalogQuery(drizzle);
 
         const hotel = await drizzle.select()
             .from(hotelSq)
             .where(eq(hotelSq.id, hotelId))
             .leftJoin(amenitiesQuery, eq(hotelSq.id, amenitiesQuery.hotelId))
             .leftJoin(rooms, eq(hotelSq.id, rooms.hotelId))
-            .leftJoin(roomsCatalogQ, eq(hotelSq.id, roomsCatalogQ.hotelId))
+            .leftJoin(catalogQuery, eq(hotelSq.id, catalogQuery.hotelId))
 
         return this.processRawHotelData(hotel);
-    }
+     }
+
 }
 
 export default Hotel;
