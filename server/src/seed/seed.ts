@@ -1,11 +1,11 @@
 import drizzle from "@/db/drizzle";
-import { hotelsBookings, hotels as h, rooms as r, hotelsAmenities, amenities as a, users as u, hotelsCatalogs } from "../db/schema.ts";
-import Booking from "../models/Booking.ts";
+import { hotels as h, rooms as r, hotelsAmenities, amenities as a, users as u, hotelsCatalogs } from "../db/schema.ts";
 import { sql } from "drizzle-orm";
-import { generateRandomHotel, generateUser, getRandomInt } from "./generate.ts";
+import Booking from "@/models/Booking.ts";
+import { generateRandomHotel, getRandomInt, generateUser, getRandomDate } from "./generate.ts";
 
 const SEED_SIZE = 10_000;
-const BATCH_SIZE = 10_000;
+const BATCH_SIZE = 1_000;
 
 const batch = (arr: any[], size=BATCH_SIZE) => {
     const batches = [];
@@ -67,24 +67,20 @@ console.log("Seeded users successfully");
 const allUsers = await drizzle.query.users.findMany();
 const hh = await drizzle.query.hotels.findMany({ with: { catalog: true } });
 
-const bookedRooms = new Map<string, boolean>();
 const bookings = [];
 
-for (let i = 0; i < SEED_SIZE/3; i++) {
+for (let i = 0; i < SEED_SIZE; i++) {
     const user = allUsers[getRandomInt(0, allUsers.length)]!;
-    const rc = hh[getRandomInt(0, hh.length)]!.rooms;
+    const h = hh[getRandomInt(0, hh.length)]!;
+    const rt = h.catalog[getRandomInt(0, h.catalog.length)]!;
 
-    if(bookedRooms.has(room.id) || room.status != 'READY') { i--; continue };
-
-    bookedRooms.set(room.id, true);
-
-    let from = new Date();
-    let to = new Date();
-    from.setDate(from.getDate() - i -1);
-    to.setDate(to.getDate() - i);
+    let from = getRandomDate(new Date(2020, 0, 1), new Date(2024, 11, 30));
+    let to = getRandomDate(from, new Date(2024, 11, 31));
 
     bookings.push({
         userId: user.id,
+        roomType: rt.roomType,
+        hotelId: h.id,
         from,
         to,
     })

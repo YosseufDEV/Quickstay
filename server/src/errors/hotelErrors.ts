@@ -11,8 +11,8 @@ export const isCheckInDateSmallerThanCheckOutDateError = (err: unknown): boolean
 }
 
 export class HotelError extends AppError {
-    constructor(message: string, statusCode?: number) {
-        super(message, statusCode || 400);
+    constructor(message: string, statusCode?: number, originalError?: Error) {
+        super(message, statusCode || 400, originalError);
         this.name = "HotelError";
     }
 

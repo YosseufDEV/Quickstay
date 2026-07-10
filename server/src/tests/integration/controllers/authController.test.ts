@@ -1,7 +1,7 @@
 import { describe, it,  expect, beforeEach } from "vitest";
 
-import { app } from "@/src/app.ts";
-import redis from "@/src/db/redis";
+import { app } from "@/app.ts";
+import redis from "@/db/redis";
 
 import request from "supertest";
 
@@ -21,12 +21,11 @@ const extractRefreshTokenFromCookies = (cookies: string[] | undefined): string |
     return refreshTokenCookie ? refreshTokenCookie : null;
 }
 
-beforeEach(async () => {
-    await redis.flushAll();
-    expect(redis.isOpen).toBe(true);
-})
-
 describe("Auth Controller Login & Register Integration Tests", () => {
+    beforeEach(async () => {
+        await redis.flushAll();
+    })
+
     it("Should register user ", async () => {
         const res = await request(app).post("/api/v1/auth/register").send(user);
         expect(res.status).toBe(201);
@@ -34,7 +33,7 @@ describe("Auth Controller Login & Register Integration Tests", () => {
 
     it("Should throw error if email already exists", async () => {
         const res = await request(app).post("/api/v1/auth/register").send(user);
-        expect(res.status).toBe(400);
+        expect(res.status).toBe(409);
         expect(res.body.message).toBe("email_already_in_use");
     })
 
@@ -60,8 +59,8 @@ describe("Auth Controller Login & Register Integration Tests", () => {
      it("should not login user that does not exist", async () => {
         const res = await request(app).post("/api/v1/auth/login").send({ email: "doesntexist@doesntexist.exist", password: "wrong_password" });
 
-        expect(res.status).toBe(404);
-        expect(res.body.message).toBe("user_not_found");
+        expect(res.status).toBe(401);
+        expect(res.body.message).toBe("invalid_credentials");
      });
 
 

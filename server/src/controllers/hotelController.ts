@@ -97,4 +97,20 @@ const getHotelRoomById = async (req: Request, res: Response) => {
     return sendResponse(res, StatusCode.OK, "", { room });
 }
 
-export { addHotel, getHotels, getHotelById, getHotelRoomsById, getHotelRoomById };
+const getHotelCatalogById = async (req: Request, res: Response) => {
+    const hotelId = req.params.hotelId;
+
+    if(!hotelId || typeof hotelId !== "string") {
+        return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
+    }
+
+    const catalog = await Hotel.getHotelCatalogById(hotelId);
+
+    if(!catalog) {
+        return sendResponse(res, StatusCode.NOT_FOUND, "hotel_catalog_not_found");
+    }
+
+    return sendResponse(res, StatusCode.OK, "", { catalog });
+}
+
+export { addHotel, getHotels, getHotelById, getHotelRoomsById, getHotelRoomById, getHotelCatalogById };

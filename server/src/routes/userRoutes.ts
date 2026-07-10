@@ -1,10 +1,10 @@
-import express, { type Request } from 'express';
+import { type Request, Router } from 'express';
 import { getAllUsers, getUserById, getCurrentUser } from '../controllers/userController';
 import { checkAuthentication } from '../middleware/authenticationMiddleware';
 import { checkAuthorization } from '../middleware/authorizationMiddleware';
 import { canGetAllUsers, canGetUser } from '../policies/userPolicies';
 
-const router = express.Router();
+const router: Router = Router();
 
 router.get("/", checkAuthentication, checkAuthorization(canGetAllUsers), getAllUsers);
 router.get("/me", checkAuthentication, getCurrentUser);

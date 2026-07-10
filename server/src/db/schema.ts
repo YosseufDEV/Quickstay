@@ -38,9 +38,9 @@ export type UserRole = typeof roleEnum.enumValues[number];
 export type RoomStatus = typeof roomStatusEnum.enumValues[number];
 
 
-export const daterange = customType<{ data: { from: Date, to: Date } }>({
+export const tstzrange = customType<{ data: { from: Date, to: Date } }>({
     dataType() {
-        return "daterange";
+        return "tstzrange";
     },
 
     toDriver(value) {
@@ -51,13 +51,13 @@ export const daterange = customType<{ data: { from: Date, to: Date } }>({
 
     fromDriver(value) {
         if (typeof value !== 'string') {
-            throw new Error(`Driver return invalid type for daterange: ${typeof value}`);
+            throw new Error(`Driver return invalid type for tstzrange: ${typeof value}`);
         }
 
         const matches = value.slice(1, -1).split(",");
 
         if (matches.length !== 2) {
-            throw new Error(`Invalid daterange format: ${value}`);
+            throw new Error(`Invalid tstzrange format: ${value}`);
         }
 
         return { from: new Date(matches[0]?.slice(1, -1)!), to: new Date(matches[1]?.slice(1, -1)!) };
@@ -149,7 +149,7 @@ export const hotelsBookings = pgTable(
         userId: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        timeRange: daterange("time_range").notNull(),
+        timeRange: tstzrange("time_range").notNull(),
         bookingStatus: bookingStatusEnum("booking_status")
             .notNull()
             .default("PENDING"),
@@ -176,7 +176,9 @@ export const hotelsAmenities = pgTable(
             .notNull()
             .references(() => amenities.id, { onDelete: "cascade" }),
     },
-    (table) => [primaryKey({ columns: [table.hotelId, table.amenityId] })]
+    (table) => [
+        primaryKey({ columns: [table.hotelId, table.amenityId] })
+    ]
 );
 
 export const relations = defineRelations({ hotels, rooms, hotelsBookings, hotelsCatalogs, users, amenities, hotelsAmenities }, (r) => ({

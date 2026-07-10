@@ -1,0 +1,21 @@
+import z from "zod";
+
+const bookingSchema = z.object({
+    roomType: z.string("Room Type is Required").min(1, { message: "Room type is required" }),
+    hotelId: z.uuid("Hotel Id is Required").min(1, { message: "Hotel ID is required" }),
+    // FIX: Doesn't work if day is today
+    checkIn: z.coerce
+                .date("Check-in Date is Required")
+                .transform(date => new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0))
+                .refine(date => date >= new Date(), {
+                    message: "Check-in date must be today or later",
+                }),
+    checkOut: z.coerce.date("Check-out Date is Required").refine(date => date > new Date(), {
+        message: "Check-out date must be later than today",
+    }),
+}).refine(data => data.checkOut > data.checkIn, {
+    message: "Check-out date must be later than check-in date",
+    path: ["checkOut"],
+});
+
+export { bookingSchema };

@@ -29,20 +29,21 @@ class User {
         });
     }
 
+    static doesUserExist = async (id: string) => {
+        const user = await drizzle.query.users.findFirst({
+            where: {
+                id,
+            },
+        });
+
+        return user !== null;
+    }
+
     static getUserByEmail = async (email: string) => {
         return await drizzle.query.users.findFirst({
             where: {
                 email: email,
             },
-            columns: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                role: true,
-                password: true,
-                country: true,
-            }
         });
     }
 

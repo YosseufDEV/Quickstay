@@ -33,7 +33,7 @@ CREATE TABLE "hotels_bookings" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"room_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
-	"time_range" daterange NOT NULL,
+	"time_range" tstzrange NOT NULL,
 	"booking_status" "booking_status" DEFAULT 'PENDING'::"booking_status" NOT NULL,
 	"check_in_status" "check_in_status" DEFAULT 'NOT_CHECKED_IN'::"check_in_status" NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,

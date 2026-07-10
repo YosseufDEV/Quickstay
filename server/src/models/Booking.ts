@@ -1,8 +1,10 @@
 import type { PgAsyncTransaction } from "drizzle-orm/pg-core";
 import drizzle from "../db/drizzle";
-import { eq, sql, and, not } from "drizzle-orm";
+import { eq, sql, and, not, exists } from "drizzle-orm";
 import { hotelsBookings, rooms } from "../db/schema";
 import { logger } from "../utils/logger";
+import { isOverlappingDatesError, BookingError } from "@/errors/bookingErrors";
+import Hotel from "./Hotel";
 
 interface BookingData {
     userId: string;
@@ -23,23 +25,37 @@ class Booking {
         }).returning().then(([booking]) => booking)!;
     }
 
-    static async book({ roomType, userId, from, to }: { roomType: string, userId: string, from: Date, to: Date }) {
+    static async book({ roomType, hotelId, userId, from, to }: { roomType: string, hotelId: string, userId: string, from: Date, to: Date }) {
         return await drizzle.transaction(async (tx) => {
-            const [room] = await tx.select({ id: rooms.id })
-                                    .from(rooms)
-                                    .where(eq(rooms.roomType, roomType))
-                                    .innerJoin(hotelsBookings, and(eq(rooms.id, hotelsBookings.roomId), not(sql`${hotelsBookings.timeRange} && tstzrange(${from}, ${to})`)))
-                                    .groupBy(rooms.id)
-                                    .orderBy(sql`RANDOM()`)
-                                    .limit(1)
-                                    .execute();
 
-            if (!room) {
-                logger.error(`Room ${room!.id} is not available for the given time range`);
-                throw new Error('Room is not available for the current time range');
+            if(!await Hotel.hasRoomType(hotelId, roomType)) {
+                throw new BookingError('invalid_room_type');
             }
 
-            // TODO: Room booking logic. 
+            const overlappingBookings = tx
+                .select()
+                .from(hotelsBookings)
+                .where(
+                    and(
+                        eq(hotelsBookings.roomId, rooms.id),
+                        sql`${hotelsBookings.timeRange} && tstzrange(${from}, ${to})`
+                ))
+
+            const [room] = await tx
+                                .select({ id: rooms.id })
+                                .from(rooms)
+                                .where(and(eq(rooms.roomType, roomType), eq(rooms.hotelId, hotelId), not(exists(overlappingBookings))))
+                                .orderBy(sql`RANDOM()`)
+                                .limit(1)
+                                .execute()
+                                .catch((err) => {
+                                    throw new BookingError('Failed to find available room', 400, err);
+                                });
+
+            if (!room) {
+                logger.error(`No available room found for roomType: ${roomType} and time range: ${from} - ${to}`);
+                throw new BookingError('no_available_room');
+            }
 
             const booking = await Booking.createBooking({
                 roomId: room!.id,
@@ -47,10 +63,17 @@ class Booking {
                 from,
                 to
             }, tx).catch((err) => {
-                logger.error(`Failed to create booking: ${err.message}`);
-                logger.debug(err);
-                throw new Error('Failed to create booking');
+                if(isOverlappingDatesError(err)) {
+                    throw new BookingError('overlapping_booking');
+                }
+
+                logger.error(`Failed to create booking`);
+                logger.debug(`BookingError: ${err}`);
+
+                throw new BookingError('Failed to create booking', 400, err);
             });
+
+            logger.info(`Booking created successfully for userId: ${userId}, roomId: ${room.id}, from: ${from}, to: ${to}`);
 
             return booking;
         })
@@ -59,10 +82,9 @@ class Booking {
     static async  getBookingById(id: string) {
         return await drizzle.query.hotelsBookings.findFirst({
             where: {
-                id
+                id: id,
             },
             with: {
-                hotel: true,
                 user: true
             }
         });

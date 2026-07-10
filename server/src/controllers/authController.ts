@@ -26,7 +26,7 @@ const refreshToken = async (req: Request, res: Response) => {
 
     try {
         const usedToken = jwt.verify(refreshToken, JWT_REFRESH_SECRET as string, { algorithms: ["HS256"] }) as jwt.JwtPayload;
-        const payload = { userId: usedToken.userId, sessionId: usedToken.sessionId };
+        const payload = { userId: usedToken.userId, sessionId: usedToken.sessionId, role: usedToken.role };
 
         const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
         const newRefreshToken = generateToken({ ... payload, exp: usedToken.exp }, JWT_REFRESH_SECRET);
@@ -80,7 +80,7 @@ const login = async (req: Request, res: Response) => {
 
     const user = await User.getUserByEmail(email);
 
-    if(!user) throw new AuthenticationError("email_not_registered");
+    if(!user) throw new AuthenticationError("invalid_credentials");
     
     if(!await bcrypt.compare(password, user.password)) throw new AuthenticationError("invalid_credentials");
     

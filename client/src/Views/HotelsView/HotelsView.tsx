@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ScrollRestoration, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 
 import { getHotels } from "@/api/hotel";
 import type { IHotel } from "@quickstay/types/Hotel.ts";
@@ -35,9 +35,6 @@ const HotelsView = () => {
                 </div>
                 <FilterHotels />
             </div>
-
-            <ScrollRestoration />
-
             <Pagination beforeAndAfter={2} page={page} />
 
         </>

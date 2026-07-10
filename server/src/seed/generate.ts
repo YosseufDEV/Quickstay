@@ -6,16 +6,27 @@ export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
 
-const roomTypes = ["Single Standard Room", "Double Standard Room", "Comfort Room", "Deluxe Room", "Suite", "Presidential Suite"];
-const roomStatus = [{ weight: 7, id: "AVAILABLE" }, {  weight: 1, id: "MAINTENANCE" }];
+export function getRandomDate(start: Date, end: Date) {
+  const startTimestamp = start.getTime();
+  const endTimestamp = end.getTime();
+  
+  // Calculate a random time value between the two timestamps
+  const randomTimestamp = startTimestamp + Math.random() * (endTimestamp - startTimestamp);
+  
+  return new Date(randomTimestamp);
+}
+
+
+const roomStatus = [{ weight: 7, id: "READY" }, {  weight: 1, id: "MAINTENANCE" }, { weight: 2, id: "CLEANING" }];
 const roomsNumbers = new Map<number, boolean>();
+const roomTypesCatalog = ["Single Standard Room", "Double Standard Room", "Comfort Room", "Deluxe Room", "Suite", "Presidential Suite", "Single Room", "Double Room", "Triple Room", "Quadruple Room", "Family Room", "Studio Room"];
 
 export function generateRooms(count: number, hotelId: string, catalog): {}[] {
     const room = () => {
         const id = crypto.randomUUID();
         const roomType = catalog[getRandomInt(0, catalog.length)].roomType;
         const status = rwt(roomStatus);
-        const roomNumber = getRandomInt(1, 999);
+        const roomNumber = getRandomInt(1, 900);
 
         if(roomsNumbers.has(roomNumber)) {
             return room();
@@ -32,11 +43,8 @@ export function generateRooms(count: number, hotelId: string, catalog): {}[] {
 
     }
 
-
     return Array.from({ length: count }).map(() => room());
 }
-
-const roomTypesCatalog = ["Single Standard Room", "Double Standard Room", "Comfort Room", "Deluxe Room", "Suite", "Presidential Suite", "Single Room", "Double Room", "Triple Room", "Quadruple Room", "Family Room", "Studio Room"];
 
 export function generateRandomHotel() {
     roomsNumbers.clear();
@@ -55,7 +63,7 @@ export function generateRandomHotel() {
         const pricePerNight = getRandomInt(50, 500);
         const imageUrl = `http://localhost:5001/rooms/${getRandomInt(1, 7)}.webp`;
         const numberOfGuests = getRandomInt(1, 5);
-        const area = getRandomInt(20, 100);
+        const area = getRandomInt(4, 20);
 
         if(typeMap.has(roomType)) {
             return f_catalog();
@@ -75,7 +83,7 @@ export function generateRandomHotel() {
 
     const catalog = Array.from({ length: getRandomInt(3, 6) }).map(f_catalog);
 
-    const rooms = generateRooms(getRandomInt(5, 20), id, catalog);
+    const rooms = generateRooms(200, id, catalog);
 
     for (let i = 0; i < 3; i++) {
         const a_id = getRandomInt(1, 6);
@@ -93,6 +101,9 @@ export function generateRandomHotel() {
         address,
         rooms,
         exactAddress: address,
+        checkInTime: "18:00:00",
+        checkOutTime: "14:00:00",
+        timeZone: faker.location.timeZone(),
         catalog,
         rating,
         imageUrl,

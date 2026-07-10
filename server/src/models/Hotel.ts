@@ -2,7 +2,7 @@ import { Optional } from "@/utils/optional";
 import drizzle from "@/db/drizzle";
 import { hotels, rooms, amenities as s_amenities, hotelsAmenities, hotelsCatalogs } from "../db/schema";
 import Room from "./Room";
-import { desc, eq, inArray, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql, exists, and } from "drizzle-orm";
 import { HotelError, isCheckInDateSmallerThanCheckOutDateError } from "@/errors/hotelErrors";
 import type { drizzle as d } from "drizzle-orm/node-postgres";
 
@@ -40,10 +40,10 @@ interface HotelCatalog {
 
 interface HotelRoom { 
     id?: string
-    hotelId: string
+    hotelId?: string
     roomType: string
     roomNumber: number
-    status: string
+    status?: string
 }
 
 interface HotelData {
@@ -115,7 +115,7 @@ class Hotel {
     }
 
     static async createCatalog(catalog: (HotelCatalog & { hotelId: string })[]) {
-        await drizzle.insert(hotelsCatalogs).values(catalog);
+        return await drizzle.insert(hotelsCatalogs).values(catalog).returning().then((catalog) => catalog)!;
     }
 
     static async createHotel({ rooms, amenities, catalog, ...hotelData }: HotelData) {
@@ -144,11 +144,11 @@ class Hotel {
         }
 
         if(catalog && catalog.length !== 0) {
-            await Hotel.createCatalog(catalog.map(room => ({...room, hotelId: hotel.id })));
+            catalog = await Hotel.createCatalog(catalog.map(room => ({...room, hotelId: hotel.id })));
         }
 
         if(rooms && rooms.length !== 0) {
-            await Room.createRoom(rooms.map(room => ({...room, hotelId: hotel.id })));
+            rooms = await Room.createRoom(rooms.map(room => ({...room, hotelId: hotel.id })));
         }
 
         const createdTags = await drizzle.select({ id: s_amenities.id, slug: s_amenities.slug }).from(hotelsAmenities).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).where(eq(hotelsAmenities.hotelId, hotel.id));
@@ -180,6 +180,7 @@ class Hotel {
                                     .leftJoin(amenitiesQuery, eq(paginatedHotels.id, amenitiesQuery.hotelId))
                                     .leftJoin(rooms, eq(paginatedHotels.id, rooms.hotelId))
                                     .leftJoin(catalogQuery, eq(paginatedHotels.id, catalogQuery.hotelId));
+
         return this.processRawHotelData(dbHotels);
 
     }
@@ -207,6 +208,25 @@ class Hotel {
             .leftJoin(catalogQuery, eq(hotelSq.id, catalogQuery.hotelId))
 
         return this.processRawHotelData(hotel);
+     }
+
+     static async getHotelCatalogById(hotelId: string) {
+        const catalogQuery = this.generateCatalogQuery(drizzle);
+        return await drizzle.select().from(catalogQuery).where(eq(catalogQuery.hotelId, hotelId)).then((result) => result[0]?.catalog || {});
+    }
+
+     static async hasRoomType(hotelId: string, roomType: string) {
+         return (
+                ( await drizzle
+                        .select()
+                        .from(hotelsCatalogs)
+                        .where(and(eq(hotelsCatalogs.hotelId, hotelId), eq(hotelsCatalogs.roomType, roomType)))
+                        .limit(1)
+                        .execute()
+                        .then((result) => result) 
+                      )
+                        .length == 1 
+         );
      }
 
 }

@@ -2,14 +2,14 @@ import { sendResponse, StatusCode } from "../utils/response";
 import { AppError } from "@/errors/errors";
 import { logger } from "@/utils/logger";
 
-const errorHandlingMiddleware = (err: any, req: any, res: any, next: any) => {
-    console.log(err);
-    logger.debug(err, { data: { errorName: err.name, ip: req.ip, path: req.path, method: req.method } });
-    logger.error(`Error occurred: ${err.message}`, { data: { errorName: err.name, ip: req.ip, path: req.path, method: req.method } });
+const errorHandlingMiddleware = (err: Error | AppError, req: any, res: any, next: any) => {
+    logger.error(`${err.name} occurred: ${err.message}`, { data: { errorName: err.name, ip: req.ip, path: req.path, method: req.method } });
 
     if(err instanceof AppError) {
+        logger.debug(`${err.originalError ?? err.message}`, { data: { errorName: err.name, ip: req.ip, path: req.path, method: req.method } });
         return sendResponse(res, err.statusCode, err.message);
     }
+    logger.debug(`${err}`, { data: { ip: req.ip, path: req.path, method: req.method } });
     return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "internal_server_error");
 }
 

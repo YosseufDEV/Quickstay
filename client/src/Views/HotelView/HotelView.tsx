@@ -1,26 +1,39 @@
 import { getHotelById } from "@/api/hotel";
 import { useQuery } from "@tanstack/react-query";
-import { ScrollRestoration, useLocation } from "react-router";
-import type { IHotel } from "@quickstay/types/Hotel";
+import { useLocation, useNavigate } from "react-router";
+import type { IHotel, slug } from "@quickstay/types/Hotel";
 import HotelAmenity from "../HotelsView/Components/HotelAmenity/HotelAmenity.tsx";
 import StarsRating from "@/Components/StarsRating/StarsRating";
 import Location from "@/Components/Location/Location";
 import SkeletonHotelView from "./Components/SkeletonHotelsView";
 import RoomCard from "./Components/RoomCard.tsx";
+import Arrow from "@/assets/arrowLeft.svg?react"
+
+interface Hotel {
+    id: string;
+    name: string;
+    address: string;
+    exactAddress: string;
+    rating: number;
+    imageUrl: string;
+    amenities: { id: number; slug: slug }[];
+    catalog: { id: string; roomType: string, pricePerNight: number; imageUrl: string, area: number, numberOfGuests: number }[];
+}
 
 const HotelView = () => {
     const { hotelId } = useLocation().state;
+    const navigate = useNavigate();
 
     const { data: hotel, status } = useQuery({
         queryKey: ["hotel", hotelId],
-        queryFn: (): Promise<IHotel> => getHotelById(hotelId)
+        queryFn: (): Promise<Hotel> => getHotelById(hotelId)
     });
-
-    console.log(hotel);
     
     return ( status=="success" ?
         <div className="min-h-screen">
             <div className="bg-[#fdfdfd] pt-30! mb-10 content-container flex flex-col gap-5">
+                <Arrow className="fill-gray-800 w-6 h-6 cursor-pointer" onClick={ () => navigate(-1) }/>
+
                 <p className="font-Playfair text-3xl font-medium">{hotel.name}</p>
 
                 <StarsRating rating={hotel.rating} showRating categorized />

@@ -12,7 +12,6 @@ const SkeletonHotelView = () => {
                     <Skeleton count={4} className="w-70! aspect-3/2" />
                 </div>
                 <Skeleton className="h-8 w-120!" />
-                <ScrollRestoration />
         </div>
     )
 }

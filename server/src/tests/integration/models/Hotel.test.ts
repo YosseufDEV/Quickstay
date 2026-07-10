@@ -59,7 +59,7 @@ describe("Hotel Model Test", () => {
     let hotelId: string;
 
     it("Should create a hotel object with the correct properties", async () => {
-        const hotel = await Hotel.createHotel(hotelData as any);
+        const hotel = await Hotel.createHotel(hotelData);
 
         hotelId = hotel.id;
 
@@ -94,8 +94,8 @@ describe("Hotel Model Test", () => {
         hd.checkInTime = "12:00:00";
         hd.checkOutTime = "14:00:00";
 
-        await expect(async () => await Hotel.createHotel(hd as any)).rejects.toThrow(HotelError);
-        await expect(async () => await Hotel.createHotel(hd as any)).rejects.toThrow("check_in_time_before_check_out_time");
+        await expect(async () => await Hotel.createHotel(hd)).rejects.toThrow(HotelError);
+        await expect(async () => await Hotel.createHotel(hd)).rejects.toThrow("check_in_time_before_check_out_time");
     });
 
     it("Should get an hotel by id", async () => {

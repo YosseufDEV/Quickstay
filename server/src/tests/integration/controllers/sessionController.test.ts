@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createHash } from 'crypto';
 
-import redis from '@/src/db/redis';
-import { insertSession, invalidateSession, isSessionValid } from '@/src/controllers/sessionController';
+import redis from '@/db/redis';
+import { insertSession, invalidateSession, isSessionValid } from '@/controllers/sessionController';
 
 describe('Session Controller Test', () => {
     const token = "testToken";

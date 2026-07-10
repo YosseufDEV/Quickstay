@@ -4,13 +4,13 @@ import { execSync } from "node:child_process";
 import jwt from "jsonwebtoken";
 import { createHash } from "crypto";
 
-import redis from "@/src/db/redis";
+import redis from "@/db/redis";
 
 import request from "supertest";
 
 vi.stubEnv("JWT_REFRESH_EXPIRATION_TIME", "10m");
 
-const app = (await import("@/src/app")).app;
+const app = (await import("@/app")).app;
 const agent = request.agent(app);
 
 const user = {

@@ -1,5 +1,6 @@
 import { describe, vi, it, expect, beforeEach } from "vitest";
 import { checkAuthorization } from "./authorizationMiddleware";
+import { AuthenticationError, AuthorizationError } from "@/errors/errors";
 
 let mockRequest = {
     headers: {
@@ -61,17 +62,16 @@ describe("Authorization Middleware Tests", () => {
         expect(mockNext).toHaveBeenCalled();
     })
 
-    it("Should NOT call next if user is not Authenticated & return 401", () => {   
+    it("Should NOT call next if user is not authenticated and throws an AuthorizationError", () => {   
         mockRequest.user = null;
 
-        checkAuthorization(mockResourcelessPolicy)(mockRequest as any, mockResponse as any, mockNext);
-
-        expect(mockResponse.status).toHaveBeenCalledWith(401);
-        expect(mockResponse.json).toHaveBeenCalledWith({ message: "Unauthenticated" });
+        expect(() => checkAuthorization(mockResourcelessPolicy)(mockRequest as any, mockResponse as any, mockNext))
+            .toThrow(AuthorizationError);
     })
 
-    it("Should NOT call next if user is not authorized and return 403", () => {   
-        checkAuthorization(() => false)(mockRequest as any, mockResponse as any, mockNext);
+    it("Should NOT call next if user is not authorized and throws an AuthorizationError", () => {   
+        expect(checkAuthorization(() => false)(mockRequest as any, mockResponse as any, mockNext))
+            .toThrow(AuthorizationError);
 
         expect(mockResponse.sendStatus).toHaveBeenCalledWith(403);
     })
