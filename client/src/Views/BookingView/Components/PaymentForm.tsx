@@ -1,9 +1,6 @@
-import s from "stripe";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe, type Appearance } from "@stripe/stripe-js";
 import SpringyButton from "@/Components/SpringyButton/SpringyButton";
-import type { SubmitEventHandler } from "react";
-
 
 const stripePromise = loadStripe("pk_test_51TtLIcREY4j73Lc7VaiHYg7EjMiEWBLKk8fBmekoGRDKCUPiOF6PkwxueoxAzV6At26m03JLXXpIUr5xGWqkU1yF0062iKjEWp");
 
@@ -40,7 +37,7 @@ const PaymentForm = ({ formId }) => {
     )
 }
 
-const PaymentContainer = ({ formId }) => {
+const PaymentContainer = ({ formId, clientSecret }) => {
     const appearance: Appearance = {
         theme: 'stripe',
         variables: {
@@ -48,12 +45,14 @@ const PaymentContainer = ({ formId }) => {
         }
     }
 
+    console.log(clientSecret);
+
     return (
         <Elements 
             stripe={stripePromise} 
             options={
             { 
-                // clientSecret: ps.client_secret,
+                clientSecret,
                 appearance: appearance
             }}>
                 <PaymentForm formId={formId} />

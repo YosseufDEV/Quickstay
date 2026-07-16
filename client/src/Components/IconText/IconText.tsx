@@ -1,7 +1,7 @@
 interface IconTextProps {
     Icon: React.ElementType;
     text: string;
-    iconSize: number;
+    iconSize?: number;
     fontSize?: number;
     textColor?: string;
     iconColor?: string;
@@ -10,7 +10,7 @@ interface IconTextProps {
     containerClassName?: string;
 }
 
-const IconText = ({ Icon, text, iconSize, fontSize=12, textColor, iconColor, iconClassName, textClassName, containerClassName }: IconTextProps) => {
+const IconText = ({ Icon, text, iconSize=1.5, fontSize=12, textColor, iconColor, iconClassName, textClassName, containerClassName }: IconTextProps) => {
     return ( 
         <div style={{ fontSize: `${fontSize}px` }} className={`${containerClassName} flex flex-row items-center gap-2`}>
             <Icon className={`${iconClassName}`} style={{ width: `${iconSize}em`, height: `${iconSize}em`, stroke: iconColor }} />

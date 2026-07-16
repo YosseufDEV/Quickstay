@@ -1,9 +1,14 @@
+import api from "@/api/client";
+import DatePicker from "@/Components/DatePicker/DatePicker";
 import IconText from "@/Components/IconText/IconText";
 import SpringyButton from "@/Components/SpringyButton/SpringyButton";
 import { Building2, UsersRound } from "lucide-react";
+import { useContext } from "react";
 import { useNavigate } from "react-router";
+import { HotelContext } from "../HotelView";
 
 interface RoomCardProps {
+    hotelId: string,
     imageUrl: string,
     pricePerNight: number,
     area: number,
@@ -13,6 +18,11 @@ interface RoomCardProps {
 
 const RoomCard = (props: RoomCardProps) => {
     const navigate = useNavigate();
+    const range = useContext(HotelContext).range;
+
+    const handleBooking = () => {
+        navigate("/booking", { state: { hotelId: props.hotelId, roomType: props.roomType, from: range?.from, to: range?.to } });
+    }
 
     return (
         <div className="bg-white min-h-100 p-2 font-[Inter] items-start flex flex-col justify-between rounded-xl shadow-md">
@@ -25,7 +35,7 @@ const RoomCard = (props: RoomCardProps) => {
                 </div>
             </div>
             <div className="text-sm mt-3 w-full">
-                <SpringyButton onClick={() => navigate("/booking")} className="text-white rounded-xl self-center text-lg w-full! bg-blue-700">
+                <SpringyButton onClick={handleBooking} className="text-white rounded-xl self-center text-lg w-full! bg-blue-700">
                     <p className="text-blue-50">Book Now for ${props.pricePerNight}<span className="text-blue-200 text-sm font-medium">/night</span></p>
                 </SpringyButton>
             </div>

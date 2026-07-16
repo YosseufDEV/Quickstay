@@ -79,7 +79,7 @@ class Booking {
                                     numberOfNights: sql<number>`${numberOfNights}`,
                                     basePrice: sql<number>`${hotelsCatalogs.pricePerNight} * ${numberOfNights}`,
                                     fees: sql<{ type: string, percentage: number }>`json_agg(json_build_object('type', ${hotelsFees.feeType}, 'amount', ${hotelsFees.percentage}))`,
-                                    totalPrice: sql<number>`CEIL(${hotelsCatalogs.pricePerNight}*${numberOfNights} * EXP(SUM(LN(1+ ${hotelsFees.percentage}::FLOAT /100 ))))`
+                                    totalPrice: sql<number>`CEIL( ${hotelsCatalogs.pricePerNight}*${numberOfNights} * EXP(SUM(LN(1+ ${hotelsFees.percentage}::FLOAT /100 ))) )`,
                                 })                
                                 .from(hotelsCatalogs)
                                 .where(and(eq(hotelsCatalogs.hotelId, hotelId), eq(hotelsCatalogs.roomType, roomType)))
