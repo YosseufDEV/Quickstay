@@ -86,7 +86,6 @@ export function generateRandomHotel() {
     const generateFee = () => {
         const feeType = faker.commerce.product();
         const amount = getRandomInt(5, 50);
-        const isPercentage = Math.random() < 0.5;
 
         if(feesMap.has(feeType)) {
             return generateFee();
@@ -97,7 +96,6 @@ export function generateRandomHotel() {
             hotelId: id,
             feeType,
             amount,
-            isPercentage,
         }
     }
 

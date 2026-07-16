@@ -11,6 +11,7 @@ interface PaymentIntentData {
     currency: string;
 }
 
+// TODO: Implement Idempotency key for payment intent creation to avoid duplicate charges in case of network issues or retries.
 class Payment {
     static createPaymentIntent = async (paymentIntentData: PaymentIntentData) => {
         const paymentIntent = await stripe.paymentIntents.create({

@@ -6,13 +6,6 @@ import type { SubmitEventHandler } from "react";
 
 
 const stripePromise = loadStripe("pk_test_51TtLIcREY4j73Lc7VaiHYg7EjMiEWBLKk8fBmekoGRDKCUPiOF6PkwxueoxAzV6At26m03JLXXpIUr5xGWqkU1yF0062iKjEWp");
-const ss = new s("sk_test_51TtLIcREY4j73Lc71idH1iThqoKn39aXom51CxbRWGB84DAG1kbr0DwtkQMufh7zEip0mFbquU6n7ICjQunH0gIk00l00ygudl")
-
-const ps = await ss.paymentIntents.create({
-    amount: 6920,
-    payment_method_types: ["card"],
-    currency: "USD",
-})
 
 const PaymentButton = ({ formId }) => {
     return (
@@ -60,7 +53,7 @@ const PaymentContainer = ({ formId }) => {
             stripe={stripePromise} 
             options={
             { 
-                clientSecret: ps.client_secret,
+                // clientSecret: ps.client_secret,
                 appearance: appearance
             }}>
                 <PaymentForm formId={formId} />
