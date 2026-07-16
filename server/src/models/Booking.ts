@@ -1,7 +1,7 @@
 import type { PgAsyncTransaction } from "drizzle-orm/pg-core";
 import drizzle from "../db/drizzle";
 import { eq, sql, and, not, exists } from "drizzle-orm";
-import { hotelsBookings, hotelsCatalogs, rooms } from "../db/schema";
+import { hotelsBookings, hotelsCatalogs, hotelsFees, rooms } from "../db/schema";
 import { logger } from "../utils/logger";
 import { isOverlappingDatesError, BookingError } from "@/errors/bookingErrors";
 import Hotel from "./Hotel";
@@ -68,9 +68,27 @@ class Booking {
                     throw new BookingError('Failed to create booking', 400, err);
                 });
 
+            const numberOfNights = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+
+            // TODO: This feels out of place here, maybe move it to a separate function or service
+            const [receipt] = await tx.
+                                select({
+                                    hotelId: hotelsCatalogs.hotelId,
+                                    roomType: hotelsCatalogs.roomType,
+                                    pricePerNight: hotelsCatalogs.pricePerNight,
+                                    numberOfNights: sql<number>`${numberOfNights}`,
+                                    basePrice: sql<number>`${hotelsCatalogs.pricePerNight} * ${numberOfNights}`,
+                                    fees: sql<{ type: string, percentage: number }>`json_agg(json_build_object('type', ${hotelsFees.feeType}, 'amount', ${hotelsFees.percentage}))`,
+                                    totalPrice: sql<number>`CEIL(${hotelsCatalogs.pricePerNight}*${numberOfNights} * EXP(SUM(LN(1+ ${hotelsFees.percentage}::FLOAT /100 ))))`
+                                })                
+                                .from(hotelsCatalogs)
+                                .where(and(eq(hotelsCatalogs.hotelId, hotelId), eq(hotelsCatalogs.roomType, roomType)))
+                                .leftJoin(hotelsFees, eq(hotelsCatalogs.hotelId, hotelsFees.hotelId))
+                                .groupBy(hotelsCatalogs.id, hotelsFees.id)
+
             logger.info(`Booking created successfully for userId: ${userId}, roomId: ${room.id}, from: ${from}, to: ${to}`);
 
-            return booking;
+            return { booking, receipt };
         })
     }
 

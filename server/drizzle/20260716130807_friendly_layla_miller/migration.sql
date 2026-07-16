@@ -1,0 +1,1 @@
+ALTER TYPE "payment_status" ADD VALUE 'FAILED' BEFORE 'CANCELLED';

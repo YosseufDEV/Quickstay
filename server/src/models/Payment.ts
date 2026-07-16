@@ -15,7 +15,6 @@ class Payment {
     static createPaymentIntent = async (paymentIntentData: PaymentIntentData) => {
         const paymentIntent = await stripe.paymentIntents.create({
             amount: paymentIntentData.amount,
-            customer: paymentIntentData.userId,
             automatic_payment_methods: {
                 enabled: true,
             },

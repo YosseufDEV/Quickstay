@@ -3,6 +3,7 @@ import type { Response, Request } from "express";
 import Booking from "@/models/Booking";
 import type { AuthenticatedRequest } from "../types/auth";
 import { sendResponse, StatusCode } from "@/helpers/response";
+import BookingService from "@/services/bookingService";
 
 const book = async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user!.id;
@@ -16,21 +17,7 @@ const book = async (req: AuthenticatedRequest, res: Response) => {
         to: new Date(checkOut),
     };
 
-    const booking = await Booking.book(bookingData);
-
-    logger.info(`
-        Created booking for user ${userId} in room ${booking.roomId} from ${checkIn} to ${checkOut} with booking id ${booking.id} for ip ${req.ip}`, 
-        { 
-            data: 
-                { 
-                userId, 
-                hotelId, 
-                checkIn, 
-                checkOut, 
-                roomType,
-                bookingId: booking.id 
-            } 
-        });
+    const booking = await BookingService.createBooking(bookingData);
 
     return sendResponse(res, StatusCode.ACCEPTED, "", { booking });
 

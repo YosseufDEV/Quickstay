@@ -13,7 +13,6 @@ import {
     primaryKey,
     index,
     check,
-    boolean
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { customType } from "drizzle-orm/pg-core";
@@ -30,7 +29,8 @@ export const bookingStatusEnum = pgEnum("booking_status", [
 export const paymentStatusEnum = pgEnum("payment_status", [
     "PENDING",
     "PAID",
-    "CANCELLED",
+    "FAILED",
+    "REFUNDED",
 ]);
 
 export const checkInStatusEnum = pgEnum("check_in_status", [
@@ -114,7 +114,7 @@ export const hotelsFees = pgTable("hotels_fees", {
     id: uuid("id").primaryKey().defaultRandom(),
     hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
     feeType: text("fee_type").notNull(),
-    amount: integer("amount").notNull(),
+    percentage: integer("percentage").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 },
@@ -174,6 +174,8 @@ export const hotelsBookings = pgTable(
         checkInStatus: checkInStatusEnum("check_in_status")
             .notNull()
             .default("NOT_CHECKED_IN"),
+        checkedInAt: timestamp("checked_in_at", { withTimezone: true }),
+        checkedOutAt: timestamp("checked_out_at", { withTimezone: true }),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
         cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
         deletedAt: timestamp("deleted_at", { withTimezone: true }),
