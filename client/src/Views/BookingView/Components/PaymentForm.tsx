@@ -27,12 +27,11 @@ const PaymentForm = ({ formId }) => {
     const elements = useElements();
 
     const confirmPayment = async (e: any) => {
-        console.log("Confirming payment...");
+        e.preventDefault();
         await stripe.confirmPayment({
             elements: elements,
             redirect: "if_required",
         });
-        console.log("Payment confirmed!");
     }
 
     return (

@@ -1,0 +1,1 @@
+ALTER TABLE "hotels_fees" ADD COLUMN "is_percentage" boolean DEFAULT false NOT NULL;

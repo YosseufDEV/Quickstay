@@ -11,6 +11,12 @@ CREATE TABLE "payments" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+ALTER TABLE "hotels_bookings" DROP CONSTRAINT "no_overlapping_bookings";--> statement-breakpoint
+ALTER TABLE "hotels_bookings"
+ADD CONSTRAINT "no_overlapping_bookings" EXCLUDE USING gist (
+    room_id WITH =,
+    time_Range WITH &&
+);--> statement-breakpoint
 ALTER TABLE "hotels_bookings" DROP COLUMN "payment_status";--> statement-breakpoint
 ALTER TABLE "hotels_bookings" DROP COLUMN "payment_due_at";--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_booking_id_hotels_bookings_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "hotels_bookings"("id") ON DELETE CASCADE;

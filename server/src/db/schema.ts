@@ -12,13 +12,20 @@ import {
     serial,
     primaryKey,
     index,
-    check
+    check,
+    boolean
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { customType } from "drizzle-orm/pg-core";
 import { defineRelations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["USER", "ADMIN", "HOTEL_OWNER", "HOTEL_STAFF", "GUEST"]);
+
+export const bookingStatus = pgEnum("booking_status", [
+    "PENDING_PAYMENT",
+    "CONFIRMED",
+    "CANCELLED",
+]);
 
 export const paymentStatusEnum = pgEnum("payment_status", [
     "PENDING",
@@ -103,6 +110,20 @@ export const hotels = pgTable(
     ]
 );
 
+export const hotelsFees = pgTable("hotels_fees", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
+    feeType: text("fee_type").notNull(),
+    amount: integer("amount").notNull(),
+    isPercentage: boolean("is_percentage").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+},
+(table) => [
+    index("hotels_fees_hotel_id_idx").on(table.hotelId),
+    unique("hotels_fees_hotel_fee_type_unique").on(table.hotelId, table.feeType)
+]);
+
 export const rooms = pgTable("rooms", {
     id: uuid("id").primaryKey().defaultRandom(),
     hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
@@ -150,6 +171,7 @@ export const hotelsBookings = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         timeRange: tstzrange("time_range").notNull(),
+        bookingStatus: text("booking_status").notNull().default("PENDING"),
         checkInStatus: checkInStatusEnum("check_in_status")
             .notNull()
             .default("NOT_CHECKED_IN"),
