@@ -54,8 +54,6 @@ beforeAll(async () => {
         
     mocks.drizzle = drizzle(process.env.DATABASE_URL!, { schema, relations: { ...schema.relations }});
 
-    console.log("OK");
-
     await migrate(mocks.drizzle, { migrationsFolder: "./drizzle" })
 
     await mocks.redis.connect();

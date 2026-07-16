@@ -13,8 +13,7 @@ import BookingRouter from "./routes/bookingRoutes.ts"
 import { loggingMiddleware } from './middleware/loggingMiddleware.ts';
 import { errorHandlingMiddleware } from './middleware/errorHandlingMiddleware.ts';
 
-
-const app = express();
+const app: ReturnType<typeof express> = express();
 const router = express.Router();
 
 app.use(express.json());
@@ -29,7 +28,5 @@ router.use("/bookings", BookingRouter);
 
 app.use("/api/v1", router);
 app.use(errorHandlingMiddleware);
-
-console.log(process.env.LOG_LEVEL);
 
 export { app };

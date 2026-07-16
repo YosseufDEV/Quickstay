@@ -41,8 +41,8 @@ interface HotelCatalog {
 interface HotelRoom { 
     id?: string
     hotelId?: string
-    roomType: string
-    roomNumber: number
+    type: string
+    number: number
     status?: string
 }
 

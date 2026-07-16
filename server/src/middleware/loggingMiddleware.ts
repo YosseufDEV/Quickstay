@@ -10,6 +10,18 @@ const loggingMiddleware = (req: Request, res: Response, next: any) => {
             `${res.statusCode} for ${req.method} ${req.originalUrl} from IP: ${req.ip}`, 
             { data: 
                 { 
+                    ...( req.statusCode && req.statusCode == 500 &&
+                        {
+                            request: {
+                                body: req.body,
+                                query: req.query,
+                                params: req.params
+                            },
+                            response: {
+                                body: res.locals.responseBody || null
+                            },
+                        }
+                    ),
                     duration: `${duration}ms`, 
                     method: req.method, 
                     url: req.originalUrl, 

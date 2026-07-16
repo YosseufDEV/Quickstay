@@ -1,4 +1,4 @@
-import { sendResponse, StatusCode } from "../utils/response";
+import { sendResponse, StatusCode } from "@/helpers/response";
 import { AppError } from "@/errors/errors";
 import { logger } from "@/utils/logger";
 

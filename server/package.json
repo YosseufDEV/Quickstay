@@ -23,9 +23,11 @@
     "drizzle-orm": "1.0.0-beta.22",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^1.20.0",
     "pg": "^8.22.0",
     "random-weighted-choice": "^0.1.4",
     "redis": "^6.0.0",
+    "stripe": "^22.3.1",
     "winston": "^3.19.0"
   },
   "devDependencies": {

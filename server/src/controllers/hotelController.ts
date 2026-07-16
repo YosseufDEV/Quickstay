@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { sendResponse, StatusCode } from '../utils/response';
+import { sendResponse, StatusCode } from '@/helpers/response';
 
 import Hotel from '../models/Hotel';
 import Room from '../models/Room';

@@ -9,6 +9,7 @@ import './index.css'
 import App from './App.tsx'
 import HotelsView from './Views/HotelsView/HotelsView.tsx'
 import HotelView from './Views/HotelView/HotelView.tsx'
+import BookingView from './Views/BookingView/BookingView.tsx'
 
 const router = createBrowserRouter([ 
     {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
             {
                 path: "/hotels",
                 Component: HotelsView
+            },
+            {
+                path: "/booking",
+                Component: BookingView
             },
             { 
                 path: "/hotels/:hotelName", 

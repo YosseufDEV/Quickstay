@@ -8,7 +8,7 @@ import { AuthenticationError, UserError, TokenRefreshError } from "@/errors/erro
 import { insertSession, invalidateSession, isSessionValid } from "./sessionController";
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
-import { sendResponse, StatusCode } from "../utils/response";
+import { sendResponse, StatusCode } from "@/helpers/response";
 import User from "../models/User";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;

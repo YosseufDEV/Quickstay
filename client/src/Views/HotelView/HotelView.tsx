@@ -8,6 +8,8 @@ import Location from "@/Components/Location/Location";
 import SkeletonHotelView from "./Components/SkeletonHotelsView";
 import RoomCard from "./Components/RoomCard.tsx";
 import Arrow from "@/assets/arrowLeft.svg?react"
+import { ArrowLeft } from "lucide-react";
+import BackwardArrow from "@/Components/BackwardArrow/BackwardArrow.tsx";
 
 interface Hotel {
     id: string;
@@ -32,8 +34,7 @@ const HotelView = () => {
     return ( status=="success" ?
         <div className="min-h-screen">
             <div className="bg-[#fdfdfd] pt-30! mb-10 content-container flex flex-col gap-5">
-                <Arrow className="fill-gray-800 w-6 h-6 cursor-pointer" onClick={ () => navigate(-1) }/>
-
+                <BackwardArrow />
                 <p className="font-Playfair text-3xl font-medium">{hotel.name}</p>
 
                 <StarsRating rating={hotel.rating} showRating categorized />

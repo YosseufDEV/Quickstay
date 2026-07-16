@@ -3,7 +3,7 @@ import { useRef, useState } from "react"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react";
 
-interface SpringyButtonProps {
+interface SpringyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     className?: string;
     children: React.ReactNode;
     onClick?: (e: any) => void;
@@ -26,7 +26,7 @@ const reverseClickAnimation = (ref: React.RefObject<any>) => {
     })
 }
 
-const SpringyButton = (props: SpringyButtonProps ) => {
+const SpringyButton = ({ ...props }: SpringyButtonProps) => {
     const gsapRef = useRef({} as HTMLButtonElement);
     const [clicked, setClicked] = useState(false);
 
@@ -42,6 +42,7 @@ const SpringyButton = (props: SpringyButtonProps ) => {
 
     return (
         <button 
+                {...props}
                 onClick={props.onClick}
                 onMouseDown={() => setClicked(true)} 
                 ref={(el) => { 

@@ -1,6 +1,7 @@
 import redis from "../db/redis.ts"
 import { createHash } from "crypto";
 import { turnIntoTimestamp } from "../utils/time.ts";
+import { logger } from "@/utils/logger.ts";
 
 type payload = {
     userId: string; 
@@ -34,7 +35,7 @@ const invalidateSession = async (payload: payload) => {
     try {
         await redis.set(`rt:${userId}:${sessionId}`, 1);
     } catch(error) {
-        console.error("Error invalidating session in Redis: ", error);
+        logger.debug("Error invalidating session in Redis: ", { error });
     }
 }
 
@@ -52,7 +53,7 @@ const isSessionValid = async (token: string, payload: payload) => {
         }
 
         if(revokedToken && revokedToken == "1") {
-            await invalidateSession(payload).then(() => console.log(`All sessions for user ${userId} invalidated due to token reuse`)).catch((error) => console.error('Error invalidating sessions in Redis: ', error));
+            await invalidateSession(payload).then(() => logger.info(`All sessions for user ${userId} invalidated due to token reuse`)).catch((error) => logger.debug('Error invalidating sessions in Redis: ', { error }));
             return { valid: false, reason: "token_reuse" };
         }
 
@@ -63,7 +64,7 @@ const isSessionValid = async (token: string, payload: payload) => {
         return { valid: true };
 
     } catch(error) {
-        console.error("Error validating session in Redis: ", error);
+        logger.debug("Error validating session in Redis: ", { error });
         return { valid: false, reason: "redis_error" };
     }
 }

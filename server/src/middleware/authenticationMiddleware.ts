@@ -17,8 +17,6 @@ const checkAuthentication = (req: AuthenticatedRequest, _: Response, next: any) 
     try {
         const decodedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string) as jwt.JwtPayload;
 
-        console.log(decodedToken);
-
         if(!decodedToken || !decodedToken.userId || !decodedToken.sessionId || !decodedToken.role) {
             throw new AuthenticationError("invalid_token_payload");
         }

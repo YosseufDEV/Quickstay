@@ -20,9 +20,9 @@ import { defineRelations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["USER", "ADMIN", "HOTEL_OWNER", "HOTEL_STAFF", "GUEST"]);
 
-export const bookingStatusEnum = pgEnum("booking_status", [
+export const paymentStatusEnum = pgEnum("payment_status", [
     "PENDING",
-    "CONFIRMED",
+    "PAID",
     "CANCELLED",
 ]);
 
@@ -106,18 +106,18 @@ export const hotels = pgTable(
 export const rooms = pgTable("rooms", {
     id: uuid("id").primaryKey().defaultRandom(),
     hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
-    roomType: text("room_type").notNull(),
-    roomNumber: integer("room_number").notNull(),
+    type: text("type").notNull(),
+    number: integer("number").notNull(),
     status: roomStatusEnum("status").notNull().default("READY"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 },
 (table) => [
-    foreignKey({ name: "rooms_hotel_id_room_type_fkey", columns: [table.hotelId, table.roomType], foreignColumns: [hotelsCatalogs.hotelId, hotelsCatalogs.roomType] }).onDelete("cascade"),
+    foreignKey({ name: "rooms_hotel_id_room_type_fkey", columns: [table.hotelId, table.type], foreignColumns: [hotelsCatalogs.hotelId, hotelsCatalogs.roomType] }).onDelete("cascade"),
     index("rooms_hotel_id_idx").on(table.hotelId), 
     index("rooms_hotel_status_idx").on(table.hotelId, table.status), 
-    index("rooms_room_type_idx").on(table.roomType),
-    unique("rooms_hotel_room_number_unique").on(table.hotelId, table.roomNumber)
+    index("rooms_room_type_idx").on(table.type),
+    unique("rooms_hotel_room_number_unique").on(table.hotelId, table.number)
 ]);
 
 export const hotelsCatalogs = pgTable("hotels_catalogs", {
@@ -150,13 +150,12 @@ export const hotelsBookings = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         timeRange: tstzrange("time_range").notNull(),
-        bookingStatus: bookingStatusEnum("booking_status")
-            .notNull()
-            .default("PENDING"),
         checkInStatus: checkInStatusEnum("check_in_status")
             .notNull()
             .default("NOT_CHECKED_IN"),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+        deletedAt: timestamp("deleted_at", { withTimezone: true }),
         updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
     },
     (table) => [
@@ -180,6 +179,21 @@ export const hotelsAmenities = pgTable(
         primaryKey({ columns: [table.hotelId, table.amenityId] })
     ]
 );
+
+export const payments = pgTable("payments", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bookingId: uuid("booking_id").notNull().references(() => hotelsBookings.id, { onDelete: "cascade" }),
+    stripePaymentIntentId: text("stripe_payment_intent_id").notNull().unique(),
+    // stripeChargeId: text("stripe_charge_id").notNull().unique(),
+    // stripeRefundId: text("stripe_refund_id").unique(),
+    amount: integer("amount").notNull(),
+    currency: text("currency").notNull().default("USD"),
+    status: paymentStatusEnum("payment_status").notNull().default("PENDING"),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    refundedAt: timestamp("refunded_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
 
 export const relations = defineRelations({ hotels, rooms, hotelsBookings, hotelsCatalogs, users, amenities, hotelsAmenities }, (r) => ({
     hotelsBookings: {
