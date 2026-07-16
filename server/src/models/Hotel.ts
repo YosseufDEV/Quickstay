@@ -1,6 +1,6 @@
 import { Optional } from "@/utils/optional";
 import drizzle from "@/db/drizzle";
-import { hotels, rooms, amenities as s_amenities, hotelsAmenities, hotelsCatalogs } from "../db/schema";
+import { hotels, rooms, amenities as s_amenities, hotelsAmenities, hotelsCatalogs, hotelsFees } from "../db/schema";
 import Room from "./Room";
 import { desc, eq, inArray, sql, exists, and } from "drizzle-orm";
 import { HotelError, isCheckInDateSmallerThanCheckOutDateError } from "@/errors/hotelErrors";
@@ -23,6 +23,12 @@ const getSortingOptions = (sortBy: string | undefined, order: "asc" | "desc" = "
         default:
             return orderBy(hotels.createdAt);
     }
+}
+
+interface HotelFee {
+    feeType: string
+    amount: number
+    isPercentage: boolean
 }
 
 interface HotelAmenity {
@@ -56,6 +62,7 @@ interface HotelData {
     timeZone: string,
     rating: number
     imageUrl: string
+    fees?: HotelFee[]
     amenities?: { id: number }[]
     catalog?: HotelCatalog[]
     rooms?: HotelRoom[]
@@ -118,7 +125,7 @@ class Hotel {
         return await drizzle.insert(hotelsCatalogs).values(catalog).returning().then((catalog) => catalog)!;
     }
 
-    static async createHotel({ rooms, amenities, catalog, ...hotelData }: HotelData) {
+    static async createHotel({ fees, rooms, amenities, catalog, ...hotelData }: HotelData) {
         const [hotel] = await drizzle.insert(hotels).values({
             ...hotelData,
         }).
@@ -143,12 +150,23 @@ class Hotel {
             )
         }
 
-        if(catalog && catalog.length !== 0) {
+        if(catalog?.length) {
             catalog = await Hotel.createCatalog(catalog.map(room => ({...room, hotelId: hotel.id })));
         }
 
-        if(rooms && rooms.length !== 0) {
+        if(rooms?.length) {
             rooms = await Room.createRoom(rooms.map(room => ({...room, hotelId: hotel.id })));
+        }
+
+        if(fees?.length) {
+            await drizzle.insert(hotelsFees).values(
+                fees.map(fee => ({
+                    hotelId: hotel.id,
+                    feeType: fee.feeType,
+                    amount: fee.amount,
+                    isPercentage: fee.isPercentage
+                }))
+            );
         }
 
         const createdTags = await drizzle.select({ id: s_amenities.id, slug: s_amenities.slug }).from(hotelsAmenities).innerJoin(s_amenities, eq(hotelsAmenities.amenityId, s_amenities.id)).where(eq(hotelsAmenities.hotelId, hotel.id));

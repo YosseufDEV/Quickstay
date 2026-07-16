@@ -1,0 +1,1 @@
+ALTER TABLE "hotels_fees" DROP COLUMN "is_percentage";

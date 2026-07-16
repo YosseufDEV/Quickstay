@@ -32,11 +32,11 @@ class User {
     static doesUserExist = async (id: string) => {
         const user = await drizzle.query.users.findFirst({
             where: {
-                id,
+                id: id,
             },
         });
 
-        return user !== null;
+        return !!user;
     }
 
     static getUserByEmail = async (email: string) => {

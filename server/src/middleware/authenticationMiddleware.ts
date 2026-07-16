@@ -5,7 +5,7 @@ import { type AuthenticatedRequest } from "@/types/auth";
 import { logger } from "../utils/logger";
 import User from "@/models/User";
 
-const checkAuthentication = (req: AuthenticatedRequest, _: Response, next: any) => {
+const checkAuthentication = async (req: AuthenticatedRequest, _: Response, next: any) => {
     const authHeader = req.headers.authorization;
 
     const token = authHeader?.split(" ")[1];
@@ -21,12 +21,14 @@ const checkAuthentication = (req: AuthenticatedRequest, _: Response, next: any) 
             throw new AuthenticationError("invalid_token_payload");
         }
 
-        if(!User.doesUserExist(decodedToken.userId)) {
+        if(!await User.doesUserExist(decodedToken.userId)) {
             throw new AuthenticationError("user_not_found");
         }
 
         req.user = { id: decodedToken.userId, sessionId: decodedToken.sessionId, role: decodedToken.role };
+
         logger.info(`User ${decodedToken.userId} authenticated successfully from IP ${req.ip}`);
+
         next();
     } catch (err) {
         if(err instanceof jwt.JsonWebTokenError || err instanceof jwt.TokenExpiredError) {

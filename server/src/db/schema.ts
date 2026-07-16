@@ -21,7 +21,7 @@ import { defineRelations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["USER", "ADMIN", "HOTEL_OWNER", "HOTEL_STAFF", "GUEST"]);
 
-export const bookingStatus = pgEnum("booking_status", [
+export const bookingStatusEnum = pgEnum("booking_status", [
     "PENDING_PAYMENT",
     "CONFIRMED",
     "CANCELLED",
@@ -115,7 +115,6 @@ export const hotelsFees = pgTable("hotels_fees", {
     hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
     feeType: text("fee_type").notNull(),
     amount: integer("amount").notNull(),
-    isPercentage: boolean("is_percentage").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 },
@@ -171,7 +170,7 @@ export const hotelsBookings = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         timeRange: tstzrange("time_range").notNull(),
-        bookingStatus: text("booking_status").notNull().default("PENDING"),
+        bookingStatus: bookingStatusEnum("booking_status").notNull().default("PENDING_PAYMENT"),
         checkInStatus: checkInStatusEnum("check_in_status")
             .notNull()
             .default("NOT_CHECKED_IN"),

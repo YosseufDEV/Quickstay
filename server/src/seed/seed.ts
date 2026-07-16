@@ -1,10 +1,10 @@
 import drizzle from "@/db/drizzle";
-import { hotels as h, rooms as r, hotelsAmenities, amenities as a, users as u, hotelsCatalogs } from "../db/schema.ts";
+import { hotels as h, rooms as r, hotelsAmenities, amenities as a, users as u, hotelsCatalogs, hotelsFees } from "../db/schema.ts";
 import { sql } from "drizzle-orm";
 import Booking from "@/models/Booking.ts";
 import { generateRandomHotel, getRandomInt, generateUser, getRandomDate } from "./generate.ts";
 
-const SEED_SIZE = 10_000;
+const SEED_SIZE = 1_000;
 const BATCH_SIZE = 1_000;
 
 const batch = (arr: any[], size=BATCH_SIZE) => {
@@ -44,6 +44,7 @@ const batchedHotels = batch(hotels);
 
 const users = Array.from({ length: SEED_SIZE }).map(() => generateUser());
 const catalogs = batch(hotels.flatMap(hotel => hotel.catalog));
+const fees = batch(hotels.flatMap(hotel => hotel.fees));
 
 const hr = batch(hotels.flatMap(hotel => hotel.rooms));
 
@@ -54,6 +55,9 @@ console.log("Seeded hotels successfully");
 
 await insertBatches(hotelsCatalogs, catalogs, 5);
 console.log("Seeded catalogs successfully");
+
+await insertBatches(hotelsFees, fees, 5);
+console.log("Seeded fees successfully");
 
 await insertBatches(r, hr, 5);
 console.log("Seeded rooms successfully");
@@ -67,25 +71,33 @@ console.log("Seeded users successfully");
 const allUsers = await drizzle.query.users.findMany();
 const hh = await drizzle.query.hotels.findMany({ with: { catalog: true } });
 
-const bookings = [];
-
-for (let i = 0; i < SEED_SIZE; i++) {
-    const user = allUsers[getRandomInt(0, allUsers.length)]!;
-    const h = hh[getRandomInt(0, hh.length)]!;
-    const rt = h.catalog[getRandomInt(0, h.catalog.length)]!;
-
-    let from = getRandomDate(new Date(2020, 0, 1), new Date(2024, 11, 30));
-    let to = getRandomDate(from, new Date(2024, 11, 31));
-
-    bookings.push({
-        userId: user.id,
-        roomType: rt.roomType,
-        hotelId: h.id,
-        from,
-        to,
-    })
-}
-
-await Promise.all(bookings.map(b => Booking.book(b)));
+// const bookings = [];
+//
+// for (let i = 0; i < SEED_SIZE; i++) {
+//     const user = allUsers[getRandomInt(0, allUsers.length)]!;
+//     const h = hh[getRandomInt(0, hh.length)]!;
+//     const rt = h.catalog[getRandomInt(0, h.catalog.length)]!;
+//
+//     let from = getRandomDate(new Date(2020, 0, 1), new Date(2024, 11, 30));
+//     let to = getRandomDate(from, new Date(2024, 11, 31));
+//
+//     bookings.push({
+//         userId: user.id,
+//         roomType: rt.roomType,
+//         hotelId: h.id,
+//         from,
+//         to,
+//     })
+//
+//     console.log({
+//         userId: user.id,
+//         roomType: rt.roomType,
+//         hotelId: h.id,
+//         from,
+//         to,
+//     })
+// }
+//
+// await Promise.all(bookings.map(b => Booking.book(b)));
 
 console.log("Seeded bookings successfully");

@@ -26,16 +26,16 @@ describe("Hotel Model Test", () => {
         timeZone: "T",
         rooms: [
             {
-                roomType: "Standard Room",
-                roomNumber: 101,
+                type: "Standard Room",
+                number: 101,
             },
             {
-                roomType: "Standard Room",
-                roomNumber: 102,
+                type: "Standard Room",
+                number: 102,
             },
             {
-                roomType: "Standard Room 2",
-                roomNumber: 69,
+                type: "Standard Room 2",
+                number: 69,
             },
         ],
         catalog: [

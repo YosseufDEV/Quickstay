@@ -22,16 +22,16 @@ const hotelData = {
     timeZone: "T",
     rooms: [
         {
-            roomType: "Standard Room",
-            roomNumber: 101,
+            type: "Standard Room",
+            number: 101,
         },
         {
-            roomType: "Standard Room",
-            roomNumber: 102,
+            type: "Standard Room",
+            number: 102,
         },
         {
-            roomType: "Standard Room 2",
-            roomNumber: 69,
+            type: "Standard Room 2",
+            number: 69,
         },
     ],
     catalog: [
@@ -63,6 +63,8 @@ describe('Booking Model Test', () => {
         });
 
         hotel = await Hotel.createHotel(structuredClone(hotelData))
+
+        console.log(hotel);
     });
 
     it('should create a booking', async () => {
@@ -84,7 +86,7 @@ describe('Booking Model Test', () => {
             }
         });
 
-        expect(hotel.rooms!.some(room => room.id === booking.roomId && room.roomType == "Standard Room")).toBe(true);
+        expect(hotel.rooms!.some(room => room.id === booking.roomId && room.type == "Standard Room")).toBe(true);
 
     });
 

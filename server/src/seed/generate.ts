@@ -36,8 +36,8 @@ export function generateRooms(count: number, hotelId: string, catalog): {}[] {
         return {
             id,
             hotelId,
-            roomType,
-            roomNumber,
+            type: roomType,
+            number: roomNumber,
             status,
         }
 
@@ -81,6 +81,27 @@ export function generateRandomHotel() {
         }
     }
 
+    const feesMap = new Map<string, boolean>();
+
+    const generateFee = () => {
+        const feeType = faker.commerce.product();
+        const amount = getRandomInt(5, 50);
+        const isPercentage = Math.random() < 0.5;
+
+        if(feesMap.has(feeType)) {
+            return generateFee();
+        }
+        feesMap.set(feeType, true);
+
+        return {
+            hotelId: id,
+            feeType,
+            amount,
+            isPercentage,
+        }
+    }
+
+    const fees = Array.from({ length: getRandomInt(1, 4) }).map(generateFee);
     const catalog = Array.from({ length: getRandomInt(3, 6) }).map(f_catalog);
 
     const rooms = generateRooms(200, id, catalog);
@@ -100,6 +121,7 @@ export function generateRandomHotel() {
         name,
         address,
         rooms,
+        fees,
         exactAddress: address,
         checkInTime: "18:00:00",
         checkOutTime: "14:00:00",

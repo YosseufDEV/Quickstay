@@ -5,8 +5,8 @@ import { AppError } from "@/errors/errors";
 
 interface RoomData {
     hotelId: string
-    roomNumber: number
-    roomType: string
+    number: number
+    type: string
 }
 
 class Room {
@@ -22,11 +22,10 @@ class Room {
         });
     }
 
-    static getRoomsByHotelId = async (hotelId: string, availableOnly?: boolean) => {
+    static getRoomsByHotelId = async (hotelId: string) => {
         const allRooms =  drizzle.query.rooms.findMany({
             where: {
                 hotelId: hotelId,
-                ...(availableOnly ? { status: 'AVAILABLE' } : {})
             },
             // with: {
             //     hotel: true
