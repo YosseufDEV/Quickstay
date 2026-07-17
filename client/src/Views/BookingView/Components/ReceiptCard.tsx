@@ -19,7 +19,7 @@ interface ReceiptCardProps {
     }
 }
 
-const ReceiptCard = ({ booking, receipt, paymentIntentClientSecret }: BookingResponse) => {
+const ReceiptCard = ({ booking, receipt }: BookingResponse) => {
     console.log("Recieved Booking", booking);
     console.log("Recieved Receipt", receipt);
     const formattingOptions: Intl.DateTimeFormatOptions = { weekday: "long", month: 'long', day: '2-digit', year: 'numeric' };
@@ -46,9 +46,15 @@ const ReceiptCard = ({ booking, receipt, paymentIntentClientSecret }: BookingRes
                     <p>{receipt?.numberOfNights} Nights:</p>
                     <p>${receipt?.pricePerNight * receipt?.numberOfNights}</p>
 
-                    <p>Fees:</p>
+                </div>
+
+                <div className="mb-7 gap-3 grid grid-cols-[auto_auto]">
+                    <p className="col-span-2 w-full row-span-2">Fees:</p>
                     {receipt?.fees.map((fee, index) => (
-                        <p key={index}>{fee.type}: {fee.amount}%</p>
+                        <>
+                            <p key={receipt.hotelId + fee.type}>{fee.type} Fee: </p>
+                            <p key={receipt.hotelId+fee.amount}>%{fee.amount}</p>
+                        </>
                     ))}
                 </div>
 

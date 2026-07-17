@@ -3,7 +3,6 @@ import ReceiptCard from "./Components/ReceiptCard";
 import { useEffect, useId, useState } from "react";
 import * as Payment from "./Components/PaymentForm";
 import { useLocation } from "react-router";
-import api from "@/api/client";
 import useAuthStore from "@/stores/authStore";
 import { useMutation } from "@tanstack/react-query";
 import { createBooking as apiCreateBooking } from "@/api/booking";
