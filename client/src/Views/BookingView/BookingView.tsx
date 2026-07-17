@@ -6,6 +6,7 @@ import { useLocation } from "react-router";
 import api from "@/api/client";
 import useAuthStore from "@/stores/authStore";
 import { useMutation } from "@tanstack/react-query";
+import { createBooking as apiCreateBooking } from "@/api/booking";
 
 const BookingView = () => {
     const { hotelId, roomType, from, to } = useLocation().state;
@@ -34,16 +35,18 @@ const BookingView = () => {
 
     const { mutate: createBooking } = useMutation({
         mutationFn: async () => {
-            console.log(useAuthStore.getState().user);
-            const response = await api.post("/bookings", {
-                userId: useAuthStore.getState().user,
+            const booking = await apiCreateBooking({
+                userId: useAuthStore.getState().user.id,
                 hotelId: hotelId,
                 roomType: roomType,
-                checkIn: from,
+                checkIn:from,
                 checkOut: to
             });
-            setCreatedBooking(response.data.payload.booking);
-            console.log("Booking created:", response);
+
+            setCreatedBooking(booking.booking);
+
+            console.log("Booking created:", booking.booking);
+            return booking.booking;
         },
         onSuccess: (data) => {
             console.log("Booking created successfully:", data);
@@ -57,23 +60,22 @@ const BookingView = () => {
         createBooking();
     }, []);
 
-    return (
+    if(createdBooking) {
+        return (
         <div className="mt-30 grid grid-cols-[2fr_1fr] min-h-screen w-screen">
             <div className="p-10 flex flex-col gap-5">
                 <BackwardArrow />
                 <p className="font-bold text-xl">Book {receipt.hotel.name}</p>
                 <div className="w-full h-full">
-                    { createdBooking && 
-                        <Payment.PaymentContainer clientSecret={createdBooking.paymentIntentClientSecret} formId={formId} />
-                    }
+                    <Payment.PaymentContainer clientSecret={createdBooking.paymentIntentClientSecret} formId={formId} />
                 </div>
             </div>
             <div className="p-10 flex justify-start flex-col gap-10">
-                <ReceiptCard hotel={receipt.hotel} room={receipt.room} booking={receipt.booking} />
+                { createdBooking && <ReceiptCard booking={createdBooking.booking} receipt={createdBooking.receipt} paymentIntentClientSecret={createdBooking.paymentIntentClientSecret} /> }
                 <Payment.PaymentButton formId={formId} />
             </div>
-        </div>
-    )
+        </div> );
+    }
 }
 
 export default BookingView;
