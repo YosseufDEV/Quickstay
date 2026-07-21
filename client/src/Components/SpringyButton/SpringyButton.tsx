@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 
 interface SpringyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     className?: string;
+    disabledClassName?: string;
     children: React.ReactNode;
     onClick?: (e: any) => void;
     ref?: React.RefObject<any>;
@@ -26,7 +27,7 @@ const reverseClickAnimation = (ref: React.RefObject<any>) => {
     })
 }
 
-const SpringyButton = ({ ...props }: SpringyButtonProps) => {
+const SpringyButton = ({ disabledClassName, className, ref, ...props }: SpringyButtonProps) => {
     const gsapRef = useRef({} as HTMLButtonElement);
     const [clicked, setClicked] = useState(false);
 
@@ -48,10 +49,14 @@ const SpringyButton = ({ ...props }: SpringyButtonProps) => {
                 ref={(el) => { 
                     if(el) {
                         gsapRef.current = el; 
-                        if(props.ref) props.ref.current = el; 
+                        if(ref) ref.current = el; 
                     }
                 }} 
-                className={`cursor-pointer font-[Outfit] bg-black px-5 py-2 rounded-sm ${props.className}`}>
+                className={`cursor-pointer font-[Outfit] bg-black px-5 py-2 rounded-sm ${props.disabled ? className.concat(` ${disabledClassName}`) || "" : className || ""}`}
+                style={{ 
+                    cursor: props.disabled ? "not-allowed" : "pointer"
+                }}
+            >
             { props.children }
         </button>
     )

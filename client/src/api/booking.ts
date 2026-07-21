@@ -1,7 +1,6 @@
 import api from "./client"
 
 interface BookingData {
-    userId: string
     roomType: string
     hotelId: string
     checkIn: Date,
@@ -10,36 +9,38 @@ interface BookingData {
 
 export interface BookingResponse {
     booking: {
-        id: string
-        userId: string
-        roomId: string
-        timeRange: {
-            from: Date,
-            to: Date
-        }
-        bookingStatus: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED"
-        checkInStatus: "NOT_CHECKED_IN" | "CHECKED_IN" | "CHECKED_OUT"
-    },
-    receipt: {
-        id: string
-        hotelId: string,
-        bookingId: string
-        roomType: string,
-        pricePerNight: number
-        numberOfNights: number
-        basePrice: number
-        fees: { type: string, amount: number }[]
-        hotel: {
+        details: {
             id: string
-            name: string
-            address: string
-            rating: number
-            checkInTime: string
-            checkOutTime: string
+            userId: string
+            roomId: string
+            timeRange: {
+                from: Date,
+                to: Date
+            }
+            bookingStatus: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED"
+            checkInStatus: "NOT_CHECKED_IN" | "CHECKED_IN" | "CHECKED_OUT"
+        },
+        receipt: {
+            id: string
+            hotelId: string,
+            bookingId: string
+            roomType: string,
+            pricePerNight: number
+            numberOfNights: number
+            basePrice: number
+            fees: { type: string, amount: number }[]
+            hotel: {
+                id: string
+                name: string
+                address: string
+                rating: number
+                checkInTime: string
+                checkOutTime: string
+            }
+            totalPrice: number
         }
-        totalPrice: number
+        paymentIntentClientSecret: string
     }
-    paymentIntentClientSecret: string
 }
 
 

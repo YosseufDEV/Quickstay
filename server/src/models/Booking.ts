@@ -47,7 +47,7 @@ class Booking {
                 throw new BookingError('no_available_room');
             }
 
-            const booking = await tx.insert(hotelsBookings).values({
+            const details = await tx.insert(hotelsBookings).values({
                 roomId: room.id,
                 userId: userId,
                 timeRange: {
@@ -99,7 +99,7 @@ class Booking {
 
             logger.info(`Booking created successfully for userId: ${userId}, roomId: ${room.id}, from: ${from}, to: ${to}`);
 
-            return { booking, receipt };
+            return { details, receipt };
         })
     }
 

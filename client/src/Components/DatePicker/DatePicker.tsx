@@ -1,5 +1,5 @@
 import { Calendar as C } from '@/Components/ui/calendar';
-import { CalendarArrowDown, CalendarArrowUp } from 'lucide-react';
+import { CalendarArrowDown, CalendarArrowUp, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import IconText from '../IconText/IconText';
 
@@ -93,8 +93,8 @@ const DatePicker = ({ ref, range, setRange }: { range: { from: Date, to: Date },
     }, []);
 
     return (
-        <div ref={ref} className="w-full px-20 py-7 font-[Outfit] inset-shadow-sm shadow-md rounded-xl flex justify-between items-center">
-            <div ref={pickersRefs[0]} className="relative flex space-y-2 flex-col w-full" onClick={() => setVisible({ to: false, from: true })}>
+        <div ref={ref} className="w-full text-nowrap px-20 py-7 font-[Outfit] inset-shadow-sm shadow-md rounded-xl flex justify-around items-center">
+            <div ref={pickersRefs[0]} className="cursor-pointer relative flex w-fit space-y-2 flex-col" onClick={() => setVisible({ to: false, from: true })}>
                 <IconText Icon={CalendarArrowUp} fontSize={15} text="Check-in" iconClassName="stroke-gray-700" />
                 <p className="text-gray-700 m-0">{range?.from ? range?.from.toLocaleDateString('en-US', dateOpts) : "Pick Date"}</p>
 
@@ -108,7 +108,7 @@ const DatePicker = ({ ref, range, setRange }: { range: { from: Date, to: Date },
                         onSelect={(data) => setRange(prev => ({ ...prev, from: data }))}
                   /> }
             </div>
-            <div ref={pickersRefs[1]} className="relative w-full space-y-2 flex flex-col" onClick={() => setVisible({ from: false, to: true })}>
+            <div ref={pickersRefs[1]} className="cursor-pointer relative w-fit nowrap space-y-2 flex flex-col" onClick={() => setVisible({ from: false, to: true })}>
                 <IconText Icon={CalendarArrowDown} fontSize={15} text="Check-out" iconClassName="stroke-gray-700" />
                 <p className="text-gray-700 m-0">{range?.to ? range?.to.toLocaleDateString('en-US', dateOpts) : "Pick Date"}</p>
                 { visible.to && 
@@ -119,6 +119,10 @@ const DatePicker = ({ ref, range, setRange }: { range: { from: Date, to: Date },
                         selected={range?.to}
                         onSelect={(data) => setRange(prev => ({ ...prev, to: data }))}
                   /> }
+            </div>
+            <div className="relative w-fit nowrap space-y-2 flex flex-col">
+                <IconText Icon={Users} fontSize={15} text="Guests" iconClassName="stroke-gray-700" />
+                <p className="text-gray-700 m-0">{1}</p>
             </div>
         </div>
     )

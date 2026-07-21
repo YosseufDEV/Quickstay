@@ -1,5 +1,3 @@
-import api from "@/api/client";
-import DatePicker from "@/Components/DatePicker/DatePicker";
 import IconText from "@/Components/IconText/IconText";
 import SpringyButton from "@/Components/SpringyButton/SpringyButton";
 import { Building2, UsersRound } from "lucide-react";
@@ -8,6 +6,7 @@ import { useNavigate } from "react-router";
 import { HotelContext } from "../HotelView";
 
 interface RoomCardProps {
+    available?: boolean,
     hotelId: string,
     imageUrl: string,
     pricePerNight: number,
@@ -39,7 +38,11 @@ const RoomCard = (props: RoomCardProps) => {
                 </div>
             </div>
             <div className="text-sm mt-3 w-full">
-                <SpringyButton onClick={handleBooking} className="text-white rounded-xl self-center text-lg w-full! bg-blue-700">
+                <SpringyButton disabled={ props.available || false }
+                               onClick={handleBooking} 
+                               className="text-white rounded-xl self-center text-lg w-full! bg-blue-700"
+                               disabledClassName="bg-gray-300 opacity-80 [&>p]:text-gray-600 [&_span]:text-gray-400!"
+                >
                     <p className="text-blue-50">Book Now for ${props.pricePerNight}<span className="text-blue-200 text-sm font-medium">/night</span></p>
                 </SpringyButton>
             </div>

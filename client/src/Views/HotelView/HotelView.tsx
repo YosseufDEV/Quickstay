@@ -72,7 +72,7 @@ const HotelView = () => {
         setSearchParams({
             ...(range.from ? { checkin: formatDate(range.from, 'yyyy-MM-dd') } : {} ),
             ...(range.to ? { checkout: formatDate(range.to, 'yyyy-MM-dd') } : {} ),
-        });
+        }, { preventScrollReset: true });
 
     }, [range]);
 
@@ -116,7 +116,8 @@ const HotelView = () => {
                 <div className="bg-secondary flex flex-col items-center content-container">
                     <p className="font-Playfair text-3xl mb-10">Rooms</p>
                     <div className="flex items-center justify-start gap-5">
-                        {hotel.catalog.map((room) => <RoomCard {...room} hotelId={hotel.id} />)}
+                    { /* TODO: Implement availability logic */ }
+                        {hotel.catalog.map((room) => <RoomCard available={Math.random() > 0.5} {...room} hotelId={hotel.id} />)}
                     </div>
                 </div>
             </div>

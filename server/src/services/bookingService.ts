@@ -12,30 +12,30 @@ interface BookingData {
 
 class BookingService {
     static async createBooking(bookingData: BookingData) {
-        const { booking, receipt } = await Booking.book(bookingData);
+        const { details, receipt } = await Booking.book(bookingData);
 
-        if(!booking || !receipt) {
+        if(!details || !receipt) {
             logger.error(`Failed to create booking for user ${bookingData.userId} in room ${bookingData.roomType} from ${bookingData.from} to ${bookingData.to}`, { data: bookingData });
             throw new Error("Failed to create booking");
         }
 
         const paymentIntent = await Payment.createPaymentIntent({
-            bookingId: booking.id,
-            userId: booking.userId,
+            bookingId: details.id,
+            userId: details.userId,
             amount: receipt.totalPrice*100, 
             // TODO: Make currency dynamic based on hotel location or user preference
             currency: "usd"
         });
 
         logger.info(`
-            Created booking for user ${bookingData.userId} in room ${booking.roomId} from ${bookingData.from} to ${bookingData.to} with booking id ${booking.id}`, 
+            Created booking for user ${bookingData.userId} in room ${details.roomId} from ${bookingData.from} to ${bookingData.to} with id ${details.id}`, 
             { 
                 data: {
                     ...bookingData,
-                    bookingId: booking.id
+                    bookingId: details.id
                 } 
             });
-        return { booking, receipt, paymentIntentClientSecret: paymentIntent.clientSecret };
+        return { details, receipt, paymentIntentClientSecret: paymentIntent.clientSecret };
     }
 }
 

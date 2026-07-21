@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { parse } from "date-fns";
 import { CalendarArrowDown, CalendarArrowUp, Check } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
@@ -5,11 +7,12 @@ import ReceiptCard from "./Components/ReceiptCard";
 import IconText from "@/Components/IconText/IconText";
 import type { BookingResponse } from "@/api/booking";
 
-const SuccessBookingView = () => {
-    const { booking } = useLocation()?.state as { booking: BookingResponse } ?? { booking: null };
+const SuccessBookingView = () => { 
+    const { booking } = useLocation()?.state as { booking: BookingResponse["booking"], fromRedirect?: true } ?? { booking: null, fromRedirect: false };
+    const navigate = useNavigate();
 
-    const checkInDate = new Date(booking?.booking.timeRange.from);
-    const checkOutDate = new Date(booking?.booking.timeRange.to);
+    const checkInDate = new Date(booking?.details.timeRange.from);
+    const checkOutDate = new Date(booking?.details.timeRange.to);
 
     const dateOpts: Intl.DateTimeFormatOptions = { weekday: "long", month: 'long', day: '2-digit', year: 'numeric' };
 
@@ -17,10 +20,6 @@ const SuccessBookingView = () => {
     const formattedCheckOutDate = Intl.DateTimeFormat('en-US', dateOpts).format(checkOutDate);
     const formattedCheckInTime = parse(booking.receipt.hotel.checkInTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
     const formattedCheckOutTime = parse(booking.receipt.hotel.checkOutTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
-
-    console.log(formattedCheckInTime);
-
-    const navigate = useNavigate();
 
     if(!booking) {
         navigate("/");
@@ -30,7 +29,7 @@ const SuccessBookingView = () => {
         <div className="ignore-safe-area-top px-10 space-y-7">
             <div className="grid font-[Inter] grid-cols-[1fr_1fr]">
                 <div className="safe-area-top flex w-full flex-col items-baseline justify-center gap-11">
-                    <ReceiptCard showCostBreakdown={false} receipt={booking.receipt} booking={booking.booking} />
+                    <ReceiptCard showCostBreakdown={false} receipt={booking.receipt} details={booking.details} />
                     <div className="flex flex-col gap-7">
                         <h1 className="text-lg font-semibold">Your trip starts {formattedCheckInDate}</h1>
                         <div className="grid grid-cols-[auto_auto] gap-x-10 gap-y-3 grid-rows-2">

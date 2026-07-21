@@ -11,6 +11,8 @@ import HotelsView from './Views/HotelsView/HotelsView.tsx'
 import HotelView from './Views/HotelView/HotelView.tsx'
 import BookingView from './Views/BookingView/BookingView.tsx'
 import SuccessBookingView from './Views/BookingView/SuccessBookingView.tsx'
+import ProtectedRoute from './routes/ProtectedRoute.tsx'
+import RedirectOnly from './routes/RedirectOnly.tsx'
 
 const router = createBrowserRouter([ 
     {
@@ -27,11 +29,17 @@ const router = createBrowserRouter([
             },
             {
                 path: "/booking",
-                Component: BookingView
+                element: 
+                    <ProtectedRoute>
+                        <BookingView />
+                    </ProtectedRoute>
             },
             {
                 path: "/booking/confirmation",
-                Component: SuccessBookingView
+                element: 
+                    <RedirectOnly>
+                        <SuccessBookingView />
+                    </RedirectOnly>
             },
             { 
                 path: "/hotels/:hotelId", 
@@ -42,7 +50,5 @@ const router = createBrowserRouter([
 ])
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
     <RouterProvider useTransitions router={router} />
-  </StrictMode>,
 )

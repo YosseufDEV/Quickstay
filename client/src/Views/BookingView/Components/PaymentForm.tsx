@@ -30,7 +30,7 @@ const PaymentForm = ({ formId, booking }) => {
 
         if(r.paymentIntent?.status === "succeeded") {
             console.log("Payment succeeded!");
-            navigate("/booking/confirmation", { state: { booking } });
+            navigate("/booking/confirmation", { state: { booking, fromRedirect: true } });
         }
     }
 

@@ -1,15 +1,15 @@
-import type { BookingResponse } from "@/api/booking";
+import type { BookingResponse } from "@/api/details";
 
 interface ReceiptCardProps {
-    booking: BookingResponse["booking"];
-    receipt: BookingResponse["receipt"];
+    details: BookingResponse["booking"]["details"];
+    receipt: BookingResponse["booking"]["receipt"];
     showCostBreakdown?: boolean;
 }
 
-const ReceiptCard = ({ booking, receipt, showCostBreakdown=true }: ReceiptCardProps) => {
+const ReceiptCard = ({ details, receipt, showCostBreakdown=true }: ReceiptCardProps) => {
     const formattingOptions: Intl.DateTimeFormatOptions = { weekday: "long", month: 'long', day: '2-digit', year: 'numeric' };
-    const formattedCheckInDate = Intl.DateTimeFormat('en-US', formattingOptions).format(new Date(booking.timeRange?.from));
-    const formattedCheckOutDate = Intl.DateTimeFormat('en-US', formattingOptions).format(new Date(booking.timeRange?.to));
+    const formattedCheckInDate = Intl.DateTimeFormat('en-US', formattingOptions).format(new Date(details.timeRange?.from));
+    const formattedCheckOutDate = Intl.DateTimeFormat('en-US', formattingOptions).format(new Date(details.timeRange?.to));
 
     return (
         <div className="min-w-100 w-150 bg-white space-y-5 font-[Inter] shadow-lg rounded-xl p-4" >
