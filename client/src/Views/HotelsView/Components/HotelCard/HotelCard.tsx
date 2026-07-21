@@ -33,9 +33,9 @@ const HotelCard = (props: HotelCardProps) => {
                     <p className="text-sm text-gray-500">{props.exactAddress}</p>
 
                     { /* TODO:: Make it not depended on this state instead depended on the url */ }
-                    <NavLink state={{ hotelId: props.id }} 
+                    <NavLink 
                     // TODO : fix this regex
-                             to={`/hotels/${props.name.toLowerCase().replace(/(\W)/g, "-")}`} 
+                             to={`/hotels/${props.id}`} 
                              className="no-underline! text-black! font-normal!">
                         <p className="text-2xl font-Playfair">{props.name}</p>
                     </NavLink>
@@ -44,12 +44,12 @@ const HotelCard = (props: HotelCardProps) => {
                         <StarsRating showRating categorized rating={Math.max(props.rating)} />
                         <p className="text-sm font-[Outfit]">200+ reviews</p>
                     </div>
-                    <Location address={props.address} />
+                    <Location address={ props.address } />
                     <div className="grid grid-cols-[auto_auto_auto] gap-x-3 gap-y-3 full max-2xl:grid-cols-[auto_auto] max-2xl:grids-rows-2">
-                        {props.amenities.map((amenity, index) => <HotelAmenity key={index} slug={amenity.slug} />)}
+                        { props.amenities.map((amenity, index) => <HotelAmenity key={index} slug={amenity.slug} />) }
                     </div>
                     <div className="flex flex-row gap-0.5 items-center mb-2">
-                        <p className="text-lg font-medium">${lowestPrice} /night</p>
+                        <p className="text-lg font-medium font-[Outfit]">from ${lowestPrice}/night</p>
                     </div>
                 </div>
             </div>

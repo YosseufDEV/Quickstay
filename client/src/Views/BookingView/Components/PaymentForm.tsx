@@ -1,6 +1,9 @@
+import { useContext } from "react";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe, type Appearance } from "@stripe/stripe-js";
 import SpringyButton from "@/Components/SpringyButton/SpringyButton";
+import { useNavigate } from "react-router";
+import { BookingContext } from "../BookingView";
 
 const stripePromise = loadStripe("pk_test_51TtLIcREY4j73Lc7VaiHYg7EjMiEWBLKk8fBmekoGRDKCUPiOF6PkwxueoxAzV6At26m03JLXXpIUr5xGWqkU1yF0062iKjEWp");
 
@@ -12,16 +15,23 @@ const PaymentButton = ({ formId }) => {
     )
 }
 
-const PaymentForm = ({ formId }) => {
+const PaymentForm = ({ formId, booking }) => {
     const stripe = useStripe();
     const elements = useElements();
+    const navigate = useNavigate();
 
     const confirmPayment = async (e: any) => {
         e.preventDefault();
-        await stripe.confirmPayment({
+
+        const r = await stripe.confirmPayment({
             elements: elements,
             redirect: "if_required",
         });
+
+        if(r.paymentIntent?.status === "succeeded") {
+            console.log("Payment succeeded!");
+            navigate("/booking/confirmation", { state: { booking } });
+        }
     }
 
     return (
@@ -37,15 +47,15 @@ const PaymentForm = ({ formId }) => {
     )
 }
 
-const PaymentContainer = ({ formId, clientSecret }) => {
-    const appearance: Appearance = {
-        theme: 'stripe',
-        variables: {
-            fontFamily: 'Inter',
-        }
+const appearance: Appearance = {
+    theme: 'stripe',
+    variables: {
+        fontFamily: 'Inter',
     }
+}
 
-    console.log(clientSecret);
+const PaymentContainer = ({ clientSecret }) => {
+    const { formId, booking } = useContext(BookingContext);
 
     return (
         <Elements 
@@ -55,7 +65,7 @@ const PaymentContainer = ({ formId, clientSecret }) => {
                 clientSecret,
                 appearance: appearance
             }}>
-                <PaymentForm formId={formId} />
+                <PaymentForm booking={booking} formId={formId} />
         </Elements>
     )
 }

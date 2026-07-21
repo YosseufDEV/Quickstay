@@ -1,3 +1,4 @@
+import { createContext } from "react";
 import BackwardArrow from "@/Components/BackwardArrow/BackwardArrow";
 import ReceiptCard from "./Components/ReceiptCard";
 import { useEffect, useId, useState } from "react";
@@ -5,7 +6,9 @@ import * as Payment from "./Components/PaymentForm";
 import { useLocation } from "react-router";
 import useAuthStore from "@/stores/authStore";
 import { useMutation } from "@tanstack/react-query";
-import { createBooking as apiCreateBooking } from "@/api/booking";
+import { createBooking as apiCreateBooking, type BookingResponse } from "@/api/booking";
+
+export const BookingContext = createContext({ booking: null as BookingResponse | null, formId: null as string | null });
 
 const BookingView = () => {
     const { hotelId, roomType, from, to } = useLocation().state;
@@ -46,6 +49,7 @@ const BookingView = () => {
 
             console.log("Booking created:", booking.booking);
             return booking.booking;
+            f
         },
         onSuccess: (data) => {
             console.log("Booking created successfully:", data);
@@ -61,19 +65,22 @@ const BookingView = () => {
 
     if(createdBooking) {
         return (
-        <div className="mt-30 grid grid-cols-[2fr_1fr] min-h-screen w-screen">
-            <div className="p-10 flex flex-col gap-5">
-                <BackwardArrow />
-                <p className="font-bold text-xl">Book {receipt.hotel.name}</p>
-                <div className="w-full h-full">
-                    <Payment.PaymentContainer clientSecret={createdBooking.paymentIntentClientSecret} formId={formId} />
+        <BookingContext.Provider value={{ booking: createdBooking, formId }}>
+            <div className="grid grid-cols-[2fr_1fr] min-h-screen w-screen">
+                <div className="p-10 flex flex-col gap-5">
+                    <BackwardArrow />
+                    <p className="font-bold text-xl">Book {receipt.hotel.name}</p>
+                    <div className="w-full h-full">
+                        <Payment.PaymentContainer clientSecret={createdBooking.paymentIntentClientSecret} formId={formId} />
+                    </div>
                 </div>
-            </div>
-            <div className="p-10 flex justify-start flex-col gap-10">
-                { createdBooking && <ReceiptCard booking={createdBooking.booking} receipt={createdBooking.receipt} paymentIntentClientSecret={createdBooking.paymentIntentClientSecret} /> }
-                <Payment.PaymentButton formId={formId} />
-            </div>
-        </div> );
+                <div className="p-10 flex justify-start flex-col gap-10">
+                    { createdBooking && <ReceiptCard booking={createdBooking.booking} receipt={createdBooking.receipt} paymentIntentClientSecret={createdBooking.paymentIntentClientSecret} /> }
+                    <Payment.PaymentButton formId={formId} />
+                </div>
+            </div> 
+        </BookingContext.Provider>
+        );
     }
 }
 

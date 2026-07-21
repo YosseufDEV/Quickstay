@@ -1,7 +1,7 @@
 import type { PgAsyncTransaction } from "drizzle-orm/pg-core";
 import drizzle from "../db/drizzle";
 import { eq, sql, and, not, exists } from "drizzle-orm";
-import { hotelsBookings, hotelsCatalogs, hotelsFees, rooms } from "../db/schema";
+import { hotels, hotelsBookings, hotelsCatalogs, hotelsFees, rooms } from "../db/schema";
 import { logger } from "../utils/logger";
 import { isOverlappingDatesError, BookingError } from "@/errors/bookingErrors";
 import Hotel from "./Hotel";
@@ -80,11 +80,22 @@ class Booking {
                                     basePrice: sql<number>`${hotelsCatalogs.pricePerNight} * ${numberOfNights}`,
                                     fees: sql<{ type: string, percentage: number }>`json_agg(json_build_object('type', ${hotelsFees.feeType}, 'amount', ${hotelsFees.percentage}))`,
                                     totalPrice: sql<number>`CEIL( ${hotelsCatalogs.pricePerNight}*${numberOfNights} * EXP(SUM(LN(1+ ${hotelsFees.percentage}::FLOAT /100 ))) )`,
+                                    hotel: sql`
+                                        json_build_object(
+                                            'id', ${hotels.id},
+                                            'name', ${hotels.name},
+                                            'address', ${hotels.address},
+                                            'rating', ${hotels.rating},
+                                            'checkInTime', ${hotels.checkInTime},
+                                            'checkOutTime', ${hotels.checkOutTime}
+                                        )
+                                    `
                                 })                
                                 .from(hotelsCatalogs)
                                 .where(and(eq(hotelsCatalogs.hotelId, hotelId), eq(hotelsCatalogs.roomType, roomType)))
                                 .leftJoin(hotelsFees, eq(hotelsCatalogs.hotelId, hotelsFees.hotelId))
-                                .groupBy(hotelsCatalogs.id, hotelsFees.id)
+                                .leftJoin(hotels, eq(hotelsCatalogs.hotelId, hotels.id))
+                                .groupBy(hotelsCatalogs.id, hotelsFees.hotelId, hotels.id)
 
             logger.info(`Booking created successfully for userId: ${userId}, roomId: ${room.id}, from: ${from}, to: ${to}`);
 

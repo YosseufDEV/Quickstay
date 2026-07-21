@@ -18,9 +18,13 @@ interface RoomCardProps {
 
 const RoomCard = (props: RoomCardProps) => {
     const navigate = useNavigate();
-    const range = useContext(HotelContext).range;
+    const { range, datePickerRef } = useContext(HotelContext);
 
     const handleBooking = () => {
+        if(!range?.from || !range?.to) {
+            datePickerRef?.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
         navigate("/booking", { state: { hotelId: props.hotelId, roomType: props.roomType, from: range?.from, to: range?.to } });
     }
 

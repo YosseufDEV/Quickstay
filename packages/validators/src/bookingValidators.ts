@@ -1,3 +1,4 @@
+import { logger } from "@/utils/logger";
 import z from "zod";
 
 const bookingSchema = z.object({
@@ -7,12 +8,14 @@ const bookingSchema = z.object({
     checkIn: z.coerce
                 .date("Check-in Date is Required")
                 .transform(date => new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0))
-                .refine(date => date >= new Date(), {
+                .refine(date => date.getTime() >= new Date(new Date().setHours(0, 0, 0, 0)).getTime(),
+                {
                     message: "Check-in date must be today or later",
                 }),
-    checkOut: z.coerce.date("Check-out Date is Required").refine(date => date > new Date(), {
-        message: "Check-out date must be later than today",
-    }),
+    checkOut: z.coerce.date("Check-out Date is Required").refine(date => date.getTime() >= new Date(new Date().setHours(0, 0, 0, 0)).getTime() + 24 * 60 * 60 * 1000,
+                {
+                    message: "Check-out date must be at least a day later than today",
+                }),
 }).refine(data => data.checkOut > data.checkIn, {
     message: "Check-out date must be later than check-in date",
     path: ["checkOut"],

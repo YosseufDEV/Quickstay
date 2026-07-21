@@ -7,7 +7,7 @@
   "type": "module",
   "main": "server.ts",
   "scripts": {
-    "dev": "docker-compose up -d && tsx watch src/server.ts",
+    "dev": "docker-compose up -d && concurrently \"tsx watch src/server.ts\" \"stripe listen --forward-to localhost:5050/api/v1/webhook\" ",
     "test": "vitest run --silent",
     "seed": "tsx ./src/seed/seed.ts",
     "db:generate": "drizzle-kit generate",

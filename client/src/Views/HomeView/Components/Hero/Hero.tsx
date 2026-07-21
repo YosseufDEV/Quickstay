@@ -4,7 +4,8 @@ const Hero = () => {
     const description = <p className="text-white">Unparalleled luxury and comfort await at the world's most exclusive <br /> hotels and resorts. Start your journey today.</p>
 
     return (
-        <div className={`${styles.hero} h-min-full content-container`}>
+        // HACK: -mt-30 is a hack to make the hero section take up the full height of the screen, since the header is fixed and takes up some space.
+        <div className={`${styles.hero} min-h-screen! ignore-safe-area-top content-container`}>
             <div className={styles.tag}>
                 <p>The Ultimate Hotel Experience</p>
             </div>

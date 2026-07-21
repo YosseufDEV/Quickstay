@@ -9,7 +9,7 @@ function Layout() {
         <>
             <AuthenticationForm />
             <Header/>
-            <main>
+            <main className="min-h-screen safe-area-top">
                 <Outlet/>
             </main>
             <Footer />

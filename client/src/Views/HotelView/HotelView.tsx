@@ -1,6 +1,6 @@
 import { getHotelById } from "@/api/hotel";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import type { IHotel, slug } from "@quickstay/types/Hotel";
 import HotelAmenity from "../HotelsView/Components/HotelAmenity/HotelAmenity.tsx";
 import StarsRating from "@/Components/StarsRating/StarsRating";
@@ -11,7 +11,8 @@ import Arrow from "@/assets/arrowLeft.svg?react"
 import { ArrowLeft } from "lucide-react";
 import BackwardArrow from "@/Components/BackwardArrow/BackwardArrow.tsx";
 import DatePicker from "@/Components/DatePicker/DatePicker.tsx";
-import { createContext, useState } from "react";
+import { createContext, useEffect, useRef, useState, type RefObject } from "react";
+import { formatDate } from "date-fns";
 
 interface Hotel {
     id: string;
@@ -26,13 +27,56 @@ interface Hotel {
 
 export const HotelContext = createContext({
     range: null as unknown as { from: Date, to: Date } | null,
+    datePickerRef: null as unknown as RefObject<HTMLDivElement> | null
 })
 
+const isValidRangeParams = (checkinStr: string | null, checkoutStr: string | null) => {
+    if(!checkinStr || !checkoutStr) return { isCheckinValid: !!checkinStr, isCheckoutValid: !!checkoutStr };
+
+    const checkinTime = new Date(checkinStr).getTime();
+    const checkoutTime = new Date(checkoutStr).getTime();
+
+    let isCheckinValid = !isNaN(checkinTime);
+    let isCheckoutValid = !isNaN(checkoutTime);
+
+    const today = new Date().setHours(0, 0, 0, 0); // Set to midnight for comparison
+
+    if(checkinTime < today) isCheckinValid = false;
+    if(checkoutTime <= checkinTime) isCheckoutValid = false;
+    if(checkoutTime < today + (1000 * 60 * 60 * 24)) isCheckoutValid = false; // Checkout must be at least 1 day after checkin
+
+    return {
+        isCheckinValid,
+        isCheckoutValid
+    }
+}
+
 const HotelView = () => {
-    const { hotelId } = useLocation().state;
+    const { hotelId } = useParams() as { hotelId: string };
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const checkInParam = searchParams.get("checkin");
+    const checkOutParam = searchParams.get("checkout");
+
+    const { isCheckinValid, isCheckoutValid } = isValidRangeParams(checkInParam, checkOutParam);
+
     // INFO: Range for booking, checkin and checkout
-    const [range, setRange] = useState<{ from: Date, to: Date }>();
-    const navigate = useNavigate();
+    const [range, setRange] = useState<{ from: Date, to: Date }>({
+        from: isCheckinValid ? new Date(checkInParam) : null,
+        to: isCheckoutValid ? new Date(checkOutParam) : null, 
+    });
+
+    useEffect(() => {
+        if(!range.from && !range.to) return;
+
+        setSearchParams({
+            ...(range.from ? { checkin: formatDate(range.from, 'yyyy-MM-dd') } : {} ),
+            ...(range.to ? { checkout: formatDate(range.to, 'yyyy-MM-dd') } : {} ),
+        });
+
+    }, [range]);
+
+    const datePickerRef = useRef(null as unknown as HTMLDivElement | null);
 
     const { data: hotel, status } = useQuery({
         queryKey: ["hotel", hotelId],
@@ -40,9 +84,9 @@ const HotelView = () => {
     });
     
     return ( status=="success" ?
-        <HotelContext.Provider value={{ range }}>
+        <HotelContext.Provider value={{ range, datePickerRef }}>
             <div className="min-h-screen w-full">
-                <div className="bg-[#fdfdfd] pt-30! w-full mb-10 content-container flex flex-col gap-5">
+                <div className="bg-[#fdfdfd] w-full mb-10 content-container flex flex-col gap-5">
                     <BackwardArrow />
                     <p className="font-Playfair text-3xl font-medium">{hotel.name}</p>
 
@@ -62,7 +106,7 @@ const HotelView = () => {
 
                     </div>
 
-                    <DatePicker range={range} setRange={setRange}/>
+                    <DatePicker ref={datePickerRef} range={range} setRange={setRange}/>
 
                     <div className="flex flex-row items-center gap-2">
                         { hotel.amenities.map((amenity) => <HotelAmenity key={amenity.id} slug={amenity.slug} />) }

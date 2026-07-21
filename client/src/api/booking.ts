@@ -29,6 +29,14 @@ export interface BookingResponse {
         numberOfNights: number
         basePrice: number
         fees: { type: string, amount: number }[]
+        hotel: {
+            id: string
+            name: string
+            address: string
+            rating: number
+            checkInTime: string
+            checkOutTime: string
+        }
         totalPrice: number
     }
     paymentIntentClientSecret: string

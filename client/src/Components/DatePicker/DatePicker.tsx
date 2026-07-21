@@ -66,7 +66,7 @@ const Calendar = ({ selected, onSelect, disabledDates, startMonth, endMonth, def
       /> 
 }
 
-const DatePicker = ({ range, setRange }) => {
+const DatePicker = ({ ref, range, setRange }: { range: { from: Date, to: Date }, ref, setRange }) => {
     const [visible, setVisible] = useState<{ from: boolean, to: boolean}>({ from: false, to: false });
 
     const pickersRefs = [
@@ -93,27 +93,28 @@ const DatePicker = ({ range, setRange }) => {
     }, []);
 
     return (
-        <div className="w-full px-20 py-7 font-[Outfit] inset-shadow-sm shadow-md rounded-xl flex justify-between items-center">
+        <div ref={ref} className="w-full px-20 py-7 font-[Outfit] inset-shadow-sm shadow-md rounded-xl flex justify-between items-center">
             <div ref={pickersRefs[0]} className="relative flex space-y-2 flex-col w-full" onClick={() => setVisible({ to: false, from: true })}>
-                <IconText Icon={CalendarArrowUp} fontSize={15} text="Check-iIn" iconClassName="stroke-gray-700" />
+                <IconText Icon={CalendarArrowUp} fontSize={15} text="Check-in" iconClassName="stroke-gray-700" />
                 <p className="text-gray-700 m-0">{range?.from ? range?.from.toLocaleDateString('en-US', dateOpts) : "Pick Date"}</p>
 
                 {visible.from && 
                     <Calendar
                         endMonth={range?.to}
-                        defaultMonth={range?.from}
-                        disabledDates={disabledDates.afterTo}
+                        defaultMonth={range?.from ? range.from : new Date()}
+                        // FIXME: It doesn't disable the last 3 days of the past month show in calendar, need to fix that
+                        disabledDates={disabledDates.afterTo.concat(getDaysUntilMonthEnd('before', new Date()))}
                         selected={range?.from}
                         onSelect={(data) => setRange(prev => ({ ...prev, from: data }))}
                   /> }
             </div>
             <div ref={pickersRefs[1]} className="relative w-full space-y-2 flex flex-col" onClick={() => setVisible({ from: false, to: true })}>
-                <IconText Icon={CalendarArrowDown} fontSize={15} text="Check-Out" iconClassName="stroke-gray-700" />
+                <IconText Icon={CalendarArrowDown} fontSize={15} text="Check-out" iconClassName="stroke-gray-700" />
                 <p className="text-gray-700 m-0">{range?.to ? range?.to.toLocaleDateString('en-US', dateOpts) : "Pick Date"}</p>
                 { visible.to && 
                     <Calendar
                         startMonth={range?.from}
-                        defaultMonth={range?.to}
+                        defaultMonth={range?.to ? range.to : new Date()}
                         disabledDates={disabledDates.beforeFrom}
                         selected={range?.to}
                         onSelect={(data) => setRange(prev => ({ ...prev, to: data }))}
