@@ -8,6 +8,7 @@ const ProtectedRoute = ({ children }) => {
 
     useEffect(() => {
         if (!user) {
+            console.log("No user found, redirecting to home page...");
             navigate("/");
         }
     }, [user, navigate]);

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 import Layout from "./Layout"
 import { getCurrentUser } from "./api/auth"
@@ -8,9 +8,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const queryClient = new QueryClient();
 
 const App = () => {
-    const [userLoading, setUserLoading] = useState(false);
+    const [userLoading, setUserLoading] = useState(true);
 
-    useLayoutEffect(() => {
+    // INFO: This to ensure that the user is fetched before rendering the app, preventing flickering of the UI when the user state is not yet available.
+    useEffect(() => {
         console.log("Fetching current user...");
         setUserLoading(true);
         getCurrentUser().then((res) => {
