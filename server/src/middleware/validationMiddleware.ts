@@ -10,7 +10,7 @@ export const validateRequest = (schema: ZodObject) => {
                 const issues = error.issues.reduce(((acc: any, issue) => ( { ...acc, [issue.path[0] as string]: issue.message } )), {});
                 console.log(error);
 
-                res.status(400).json({ issues });
+                res.status(422).json({ issues });
             } else {
                 res.status(400).json({ message: "Unknown validation error" });
             }

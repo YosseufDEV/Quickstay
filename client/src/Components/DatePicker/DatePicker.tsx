@@ -81,7 +81,6 @@ const DatePicker = ({ ref, range, setRange }: { range: { from: Date, to: Date },
 
     const dateOpts = { year: 'numeric', month: 'short', day: 'numeric' } as const;
 
-    // FIXME: Correct the logic for closing the calendar when clicking outside of it, it currently doesn't work in container, and the contaienr itself takes a lot of space.
     const handleClickOutside = (e: MouseEvent) => {
         if (pickersRefs.every(r => r.current && !r.current.contains(e.target as Node))) {
             setVisible({ from: false, to: false });

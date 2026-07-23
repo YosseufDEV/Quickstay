@@ -97,7 +97,6 @@ const login = async (req: Request, res: Response) => {
 }
 
 const logout = async (req: AuthenticatedRequest, res: Response) => {
-    // TODO: Invalidate the session in Redis when logging out
     await invalidateSession({ userId: req.user!.id, sessionId: req.user!.sessionId });
 
     res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV == "production" });

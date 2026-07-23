@@ -67,37 +67,3 @@ console.log("Seeded amenities successfully");
 
 await drizzle.insert(u).values(users);
 console.log("Seeded users successfully");
-
-const allUsers = await drizzle.query.users.findMany();
-const hh = await drizzle.query.hotels.findMany({ with: { catalog: true } });
-
-// const bookings = [];
-//
-// for (let i = 0; i < SEED_SIZE; i++) {
-//     const user = allUsers[getRandomInt(0, allUsers.length)]!;
-//     const h = hh[getRandomInt(0, hh.length)]!;
-//     const rt = h.catalog[getRandomInt(0, h.catalog.length)]!;
-//
-//     let from = getRandomDate(new Date(2020, 0, 1), new Date(2024, 11, 30));
-//     let to = getRandomDate(from, new Date(2024, 11, 31));
-//
-//     bookings.push({
-//         userId: user.id,
-//         roomType: rt.roomType,
-//         hotelId: h.id,
-//         from,
-//         to,
-//     })
-//
-//     console.log({
-//         userId: user.id,
-//         roomType: rt.roomType,
-//         hotelId: h.id,
-//         from,
-//         to,
-//     })
-// }
-//
-// await Promise.all(bookings.map(b => Booking.book(b)));
-
-console.log("Seeded bookings successfully");

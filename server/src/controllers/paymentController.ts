@@ -5,6 +5,7 @@ import type { Request, Response } from "express";
 import s from "stripe";
 import { eq } from "drizzle-orm";
 import Payment from "@/models/Payment";
+import BookingService from "@/services/bookingService";
 
 const stripe = new s(process.env.STRIPE_SECRET_KEY as string);
 
@@ -34,10 +35,13 @@ const handleWebHook = async (req: Request, res: Response) => {
       // Handle the event
       switch (event.type) {
         case 'payment_intent.succeeded': {
-            const { id: stripePaymentIntentId } = event.data.object;
-            await Payment.confirmPaymentIntent(stripePaymentIntentId);
+            const { id: paymentIntentId } = event.data.object;
 
-            return;
+            logger.info(`Payment intent ${paymentIntentId} succeeded. Confirming booking...`);
+
+            await BookingService.confirmBooking({ paymentIntentId });
+
+            break;
         }
 
         default:

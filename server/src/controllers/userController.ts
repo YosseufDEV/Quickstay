@@ -27,7 +27,6 @@ const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
         if(!user) {
             logger.error(`Authenticated user with id ${req.user!.id} not found in database`, { data: { userId: req.user!.id } });
             return sendResponse(res, StatusCode.NOT_FOUND, "user_not_found");
-
         }
 
         return sendResponse(res, StatusCode.OK, "", { user });

@@ -2,9 +2,9 @@ ALTER TABLE "hotels_bookings" ADD COLUMN "payment_status" "booking_status" DEFAU
 ALTER TABLE "hotels_bookings" ADD COLUMN "payment_due_at" timestamp with time zone DEFAULT now() + interval '15 minutes' NOT NULL;--> statement-breakpoint
 ALTER TABLE "hotels_bookings" ADD COLUMN "cancelled_at" timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "hotels_bookings" ADD COLUMN "deleted_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "hotels_bookings" DROP CONSTRAINT "no_overlapping_bookings";--> statement-breakpoint
 ALTER TYPE "booking_status" RENAME TO "payment_status";
 ALTER TABLE "hotels_bookings" DROP COLUMN "booking_status";--> statement-breakpoint
-ALTER TABLE "hotels_bookings" DROP CONSTRAINT "no_overlapping_bookings";--> statement-breakpoint
 ALTER TABLE "hotels_bookings"
 ADD CONSTRAINT no_overlapping_bookings
 EXCLUDE USING gist (

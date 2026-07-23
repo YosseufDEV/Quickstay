@@ -14,7 +14,6 @@
     "@fontsource-variable/geist": "^5.2.9",
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.4.0",
-    "@quickstay/types": "workspace:*",
     "@quickstay/validators": "workspace:*",
     "@stripe/react-stripe-js": "^6.7.0",
     "@stripe/stripe-js": "^9.9.0",

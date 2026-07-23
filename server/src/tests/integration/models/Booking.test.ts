@@ -3,6 +3,7 @@ import Booking from '@/models/Booking';
 import Hotel from '@/models/Hotel';
 import User from '@/models/User';
 import { BookingError } from '@/errors/bookingErrors';
+import drizzle from '@/db/drizzle';
 
 let hotel: Awaited<ReturnType<typeof Hotel.createHotel>>, user: Awaited<ReturnType<typeof User.createUser>>;
 
@@ -11,6 +12,7 @@ const toDate = new Date(Date.UTC(2023, 0, 5));
 
 let createdBooking: Awaited<ReturnType<typeof Booking.createBooking>>;
 
+const randomUUIDS = Array.from({ length: 2 }, () => crypto.randomUUID()!);
 const hotelData = {
     name: "Test Hotel",
     rating: 4.5,
@@ -22,20 +24,21 @@ const hotelData = {
     timeZone: "T",
     rooms: [
         {
-            type: "Standard Room",
+            typeId: randomUUIDS[0]!,
             number: 101,
         },
         {
-            type: "Standard Room",
+            typeId: randomUUIDS[0]!,
             number: 102,
         },
         {
-            type: "Standard Room 2",
+            typeId: randomUUIDS[1]!,
             number: 69,
         },
     ],
     catalog: [
         {
+            id: randomUUIDS[0]!,
             roomType: "Standard Room",
             pricePerNight: 100,
             numberOfGuests: 2,
@@ -43,6 +46,7 @@ const hotelData = {
             imageUrl: "http://example.com/room1.jpg",
         },
         {
+            id: randomUUIDS[1]!,
             roomType: "Standard Room 2",
             pricePerNight: 192,
             numberOfGuests: 4,
@@ -68,8 +72,8 @@ describe('Booking Model Test', () => {
     });
 
     it('should create a booking', async () => {
-        const booking = await Booking.book({
-            roomType: "Standard Room",
+        const booking = await Booking.createBooking({
+            roomTypeId: hotel.catalog![0]?.id!,
             hotelId: hotel.id,
             userId: user.id,
             from: fromDate,
@@ -78,7 +82,7 @@ describe('Booking Model Test', () => {
 
         createdBooking = booking;
 
-        expect(booking).toMatchObject({
+        expect(booking.details).toMatchObject({
             userId: user.id,
             timeRange: {
                 from: fromDate,
@@ -86,7 +90,7 @@ describe('Booking Model Test', () => {
             }
         });
 
-        expect(hotel.rooms!.some(room => room.id === booking.roomId && room.type == "Standard Room")).toBe(true);
+        expect(hotel.rooms!.some(room => room.id === booking.details.roomId)).toBe(true);
 
     });
 
@@ -94,15 +98,15 @@ describe('Booking Model Test', () => {
         const from = new Date(Date.UTC(2023, 0, 6));
         const to = new Date(Date.UTC(2023, 0, 10));
 
-        const booking = await Booking.book({
-            roomType: "Standard Room",
+        const booking = await Booking.createBooking({
+            roomTypeId: hotel.catalog![0]?.id!,
             hotelId: hotel.id,
             userId: user.id,
             from,
             to
         })
 
-        expect(booking).toMatchObject({
+        expect(booking.details).toMatchObject({
             userId: user.id,
             timeRange: {
                 from,
@@ -116,18 +120,8 @@ describe('Booking Model Test', () => {
         const toDate = new Date(Date.UTC(2023, 0, 8));
 
         await expect(async () => {
-            await Booking.book({
-                roomType: hotel.catalog![0]?.roomType!,
-                userId: user.id,
-                hotelId: hotel.id,
-                from: fromDate,
-                to: toDate,
-            })
-        }).rejects.toThrow(BookingError);
-
-        await expect(async () => {
-            await Booking.book({
-                roomType: "Standard Room",
+            await Booking.createBooking({
+                roomTypeId: hotel.catalog![0]?.id!,
                 hotelId: hotel.id,
                 userId: user.id,
                 from: fromDate,
@@ -137,7 +131,7 @@ describe('Booking Model Test', () => {
     });
 
     it("Should get booking by id", async () => {
-        const booking = await Booking.getBookingById(createdBooking.id);
+        const booking = await Booking.getBookingById(createdBooking.details.id);
 
         expect(booking).toMatchObject({
             userId: user.id,
@@ -147,6 +141,16 @@ describe('Booking Model Test', () => {
             },
             user
         });
+    })
+
+    it("Should confirm booking", async () => {
+        await Booking.confirmBooking(createdBooking.details.id);
+
+        const booking = await Booking.getBookingById(createdBooking.details.id);
+
+        expect(booking).toMatchObject({
+            bookingStatus: "CONFIRMED"
+        })
     })
 })
 

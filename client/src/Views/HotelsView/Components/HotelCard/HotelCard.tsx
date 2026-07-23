@@ -32,9 +32,7 @@ const HotelCard = (props: HotelCardProps) => {
                 <div className= "flex flex-col gap-3 justify-between items-start">
                     <p className="text-sm text-gray-500">{props.exactAddress}</p>
 
-                    { /* TODO:: Make it not depended on this state instead depended on the url */ }
                     <NavLink 
-                    // TODO : fix this regex
                              to={`/hotels/${props.id}`} 
                              className="no-underline! text-black! font-normal!">
                         <p className="text-2xl font-Playfair">{props.name}</p>

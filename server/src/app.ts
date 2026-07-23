@@ -3,6 +3,7 @@ config();
 
 import express from 'express';
 
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from "cors";
 
@@ -22,6 +23,7 @@ const router = express.Router();
 app.use("/api/v1/webhook", webhookRouter);
 
 app.use(express.json());
+app.use(compression());
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CLIENT_URL, methods: "GET,POST,PUT,DELETE", credentials: true }));
 app.use(loggingMiddleware);

@@ -1,0 +1,1 @@
+ALTER TABLE "hotels_bookings" RENAME CONSTRAINT "hotels_bookings_room_time_range_user_id_unique" TO "hotels_bookings_room_type_time_range_user_id_unique";

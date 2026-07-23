@@ -6,7 +6,7 @@ import { AppError } from "@/errors/errors";
 interface RoomData {
     hotelId: string
     number: number
-    type: string
+    typeId: string
 }
 
 class Room {

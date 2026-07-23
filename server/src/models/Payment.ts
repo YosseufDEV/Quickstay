@@ -1,5 +1,5 @@
 import s from "stripe";
-import drizzle from "@/db/drizzle";
+import drizzle, { type Transaction } from "@/db/drizzle";
 import { hotelsBookings, payments } from "@/db/schema";
 import { and, eq, not } from "drizzle-orm";
 import { logger } from "@/utils/logger";
@@ -15,14 +15,29 @@ interface PaymentIntentData {
 
 // TODO: Implement Idempotency key for payment intent creation to avoid duplicate charges in case of network issues or retries.
 class Payment {
-    static createPaymentIntent = async (paymentIntentData: PaymentIntentData) => {
+    static getOrCreatePaymentIntent = async (paymentIntentData: PaymentIntentData, tx?: Transaction) => {
+        const existingPayment = await (tx ?? drizzle).query.payments.findFirst({
+            where: {
+                bookingId: paymentIntentData.bookingId,
+            },
+        });
+        
+        if(existingPayment) {
+            const paymentIntent = await this.getPaymentIntent(existingPayment.stripePaymentIntentId);
+            return { clientSecret: paymentIntent.client_secret };
+        }
+        
+        return await this.createPaymentIntent(paymentIntentData, tx);
+    }
+
+    static createPaymentIntent = async (paymentIntentData: PaymentIntentData, tx?: Transaction) => {
         const paymentIntent = await stripe.paymentIntents.create({
             amount: paymentIntentData.amount,
             payment_method_types: ['card'],
             currency: paymentIntentData.currency,
         })
 
-        await drizzle.insert(payments).values({
+        await (tx ?? drizzle).insert(payments).values({
             bookingId: paymentIntentData.bookingId,
             stripePaymentIntentId: paymentIntent.id,
             amount: paymentIntentData.amount,
@@ -34,19 +49,25 @@ class Payment {
 
     }
 
-    static confirmPaymentIntent = async (stripePaymentIntentId: string) => {
-        await drizzle.transaction(async (tx) => {
-            const [updatedPayment] = await tx.update(payments).set({ status: "PAID", paidAt: new Date() }).where(and(eq(payments.stripePaymentIntentId, stripePaymentIntentId), not(eq(payments.status, 'PAID')))).returning();
+    static getPaymentIntent = async (stripePaymentIntentId: string) => {
+        const paymentIntent =  await stripe.paymentIntents.retrieve(stripePaymentIntentId);
 
-            if(!updatedPayment) {
-                throw new Error("Payment intent not found or already confirmed");
-            }
+        if(!paymentIntent) {
+            throw new Error(`Payment intent ${stripePaymentIntentId} not found`);
+        }
+        
+        return paymentIntent;
+    }
 
-            await tx.update(hotelsBookings).set({ bookingStatus: "CONFIRMED" }).where(eq(hotelsBookings.id, updatedPayment.bookingId));
+    static confirmPaymentIntent = async (stripePaymentIntentId: string, tx: Transaction) => {
+        const [updatedPayment] = await (tx ?? drizzle).update(payments).set({ status: "PAID", paidAt: new Date() }).where(and(eq(payments.stripePaymentIntentId, stripePaymentIntentId), not(eq(payments.status, 'PAID')))).returning();
 
-            logger.info(`Payment intent ${stripePaymentIntentId} confirmed and booking ${updatedPayment.bookingId} status updated to CONFIRMED`);
+        if(!updatedPayment) {
+            throw new Error("Payment intent not found or already confirmed");
+        }
 
-        })
+        logger.info(`Payment intent ${stripePaymentIntentId} confirmed and booking ${updatedPayment.bookingId} status updated to CONFIRMED`);
+        return updatedPayment;
     }
 }
 

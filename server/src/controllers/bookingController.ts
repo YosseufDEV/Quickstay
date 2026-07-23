@@ -1,4 +1,3 @@
-import { logger } from "../utils/logger";
 import type { Response, Request } from "express";
 import Booking from "@/models/Booking";
 import type { AuthenticatedRequest } from "../types/auth";
@@ -7,11 +6,11 @@ import BookingService from "@/services/bookingService";
 
 const book = async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user!.id;
-    const { roomType, hotelId, checkIn, checkOut } = req.body;
+    const { roomTypeId, hotelId, checkIn, checkOut } = req.body;
 
     const bookingData = {
         userId,
-        roomType,
+        roomTypeId,
         hotelId,
         from: new Date(checkIn),
         to: new Date(checkOut),

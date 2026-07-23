@@ -2,17 +2,17 @@ import { logger } from "@/utils/logger";
 import z from "zod";
 
 const bookingSchema = z.object({
-    roomType: z.string("Room Type is Required").min(1, { message: "Room type is required" }),
-    hotelId: z.uuid("Hotel Id is Required").min(1, { message: "Hotel ID is required" }),
+    roomTypeId: z.uuid("Please enter a valid Room-Type Id").min(1, { message: "Room type is required" }),
+    hotelId: z.uuid("Please enter a valid Hotel Id").min(1, { message: "Hotel ID is required" }),
     // FIX: Doesn't work if day is today
     checkIn: z.coerce
-                .date("Check-in Date is Required")
+                .date("Please Enter a valid Check-in Date")
                 .transform(date => new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0))
                 .refine(date => date.getTime() >= new Date(new Date().setHours(0, 0, 0, 0)).getTime(),
                 {
                     message: "Check-in date must be today or later",
                 }),
-    checkOut: z.coerce.date("Check-out Date is Required").refine(date => date.getTime() >= new Date(new Date().setHours(0, 0, 0, 0)).getTime() + 24 * 60 * 60 * 1000,
+    checkOut: z.coerce.date("Please Enter a valid Check-out Date").refine(date => date.getTime() >= new Date(new Date().setHours(0, 0, 0, 0)).getTime() + 24 * 60 * 60 * 1000,
                 {
                     message: "Check-out date must be at least a day later than today",
                 }),

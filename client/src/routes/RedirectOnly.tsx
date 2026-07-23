@@ -8,6 +8,7 @@ const RedirectOnly = ({ children }) => {
         return <Navigate to="/" replace />;
     }
     return children
+
 }
 
 export default RedirectOnly;

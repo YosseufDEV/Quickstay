@@ -126,17 +126,15 @@ export const hotelsFees = pgTable("hotels_fees", {
 export const rooms = pgTable("rooms", {
     id: uuid("id").primaryKey().defaultRandom(),
     hotelId: uuid("hotel_id").notNull().references(() => hotels.id, { onDelete: "cascade" }),
-    type: text("type").notNull(),
+    typeId: uuid("type_id").notNull().references(() => hotelsCatalogs.id, { onDelete: "cascade" }),
     number: integer("number").notNull(),
     status: roomStatusEnum("status").notNull().default("READY"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 },
 (table) => [
-    foreignKey({ name: "rooms_hotel_id_room_type_fkey", columns: [table.hotelId, table.type], foreignColumns: [hotelsCatalogs.hotelId, hotelsCatalogs.roomType] }).onDelete("cascade"),
     index("rooms_hotel_id_idx").on(table.hotelId), 
     index("rooms_hotel_status_idx").on(table.hotelId, table.status), 
-    index("rooms_room_type_idx").on(table.type),
     unique("rooms_hotel_room_number_unique").on(table.hotelId, table.number)
 ]);
 
@@ -163,6 +161,7 @@ export const hotelsBookings = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`gen_random_uuid()`),
+        roomTypeId: uuid("room_type_id").notNull().references(() => hotelsCatalogs.id, { onDelete: "cascade" }),
         roomId: uuid("room_id")
             .notNull()
             .references(() => rooms.id, { onDelete: "cascade" }),
@@ -218,7 +217,7 @@ export const payments = pgTable("payments", {
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
-export const relations = defineRelations({ hotels, rooms, hotelsBookings, hotelsCatalogs, users, amenities, hotelsAmenities }, (r) => ({
+export const relations = defineRelations({ payments, hotels, rooms, hotelsBookings, hotelsCatalogs, users, amenities, hotelsAmenities }, (r) => ({
     hotelsBookings: {
         room: r.one.rooms({
             from: r.hotelsBookings.roomId,

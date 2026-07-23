@@ -10,15 +10,14 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "allowImportingTsExtensions": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "target": "ES2023",
+    "target": "ESNext",
     "esModuleInterop": true,
-    "ignoreDeprecations": "6.0",
     "types": ["jest"],
     // For nodejs:
-    // "lib": ["esnext"],
+    "allowImportingTsExtensions": true,
+    "lib": ["ESNext"],
     // "types": ["node"],
     // and npm install -D @types/node
 

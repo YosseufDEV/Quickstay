@@ -19,12 +19,21 @@ export function getRandomDate(start: Date, end: Date) {
 
 const roomStatus = [{ weight: 7, id: "READY" }, {  weight: 1, id: "MAINTENANCE" }, { weight: 2, id: "CLEANING" }];
 const roomsNumbers = new Map<number, boolean>();
-const roomTypesCatalog = ["Single Standard Room", "Double Standard Room", "Comfort Room", "Deluxe Room", "Suite", "Presidential Suite", "Single Room", "Double Room", "Triple Room", "Quadruple Room", "Family Room", "Studio Room"];
+const roomTypesCatalog = [
+            "Single Standard Room", 
+            "Double Standard Room", 
+            "Comfort Room", 
+            "Deluxe Room", 
+            "Suite", 
+            "Presidential Suite", 
+            "Single Room", 
+            "Double Room", "Triple Room", "Quadruple Room", "Family Room", "Studio Room"];
+const roomTypesCatalogIds = roomTypesCatalog.map((type) => ({ id: crypto.randomUUID(), roomType: type }));
 
 export function generateRooms(count: number, hotelId: string, catalog): {}[] {
     const room = () => {
         const id = crypto.randomUUID();
-        const roomType = catalog[getRandomInt(0, catalog.length)].roomType;
+        const typeId = catalog[getRandomInt(0, catalog.length)].id;
         const status = rwt(roomStatus);
         const roomNumber = getRandomInt(1, 900);
 
@@ -36,7 +45,7 @@ export function generateRooms(count: number, hotelId: string, catalog): {}[] {
         return {
             id,
             hotelId,
-            type: roomType,
+            typeId,
             number: roomNumber,
             status,
         }
@@ -59,6 +68,7 @@ export function generateRandomHotel() {
     const typeMap = new Map<string, boolean>();
 
     const f_catalog = () => {
+        const f_id = crypto.randomUUID();
         const roomType = roomTypesCatalog[getRandomInt(0, roomTypesCatalog.length)]!;
         const pricePerNight = getRandomInt(50, 500);
         const imageUrl = `http://localhost:5001/rooms/${getRandomInt(1, 7)}.webp`;
@@ -72,6 +82,7 @@ export function generateRandomHotel() {
         typeMap.set(roomType, true);
 
         return {
+            id: f_id,
             hotelId: id,
             roomType,
             pricePerNight,
@@ -95,11 +106,11 @@ export function generateRandomHotel() {
         return {
             hotelId: id,
             feeType,
-            amount,
+            percentage: amount,
         }
     }
 
-    const fees = Array.from({ length: getRandomInt(1, 4) }).map(generateFee);
+    const fees = Array.from({ length: getRandomInt(2, 4) }).map(generateFee);
     const catalog = Array.from({ length: getRandomInt(3, 6) }).map(f_catalog);
 
     const rooms = generateRooms(200, id, catalog);
