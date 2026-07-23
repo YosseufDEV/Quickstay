@@ -15,7 +15,7 @@ const duration = 0.15;
 
 const animateClick = (ref: React.RefObject<any>) => {
     gsap.to(ref.current, {
-        scale: 0.95,
+        scale: 0.97,
         duration,
     })
 }

@@ -13,6 +13,7 @@ interface RoomCardProps {
     area: number,
     numberOfGuests: number,
     roomType: string,
+    roomTypeId: string
 }
 
 const RoomCard = (props: RoomCardProps) => {
@@ -24,7 +25,7 @@ const RoomCard = (props: RoomCardProps) => {
             datePickerRef?.current?.scrollIntoView({ behavior: "smooth", block: "center" });
             return;
         }
-        navigate("/booking", { state: { hotelId: props.hotelId, roomType: props.roomType, from: range?.from, to: range?.to } });
+        navigate("/booking", { state: { hotelId: props.hotelId, roomTypeId: props.roomTypeId, from: range?.from, to: range?.to } });
     }
 
     return (

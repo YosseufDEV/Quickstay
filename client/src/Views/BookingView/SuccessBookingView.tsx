@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { parse } from "date-fns";
 import { CalendarArrowDown, CalendarArrowUp, Check } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
-import ReceiptCard from "./Components/ReceiptCard";
+import InvoiceCard from "./Components/InvoiceCard";
 import IconText from "@/Components/IconText/IconText";
 import type { BookingResponse } from "@/api/booking";
 
@@ -18,8 +18,8 @@ const SuccessBookingView = () => {
 
     const formattedCheckInDate = Intl.DateTimeFormat('en-US', dateOpts).format(checkInDate);
     const formattedCheckOutDate = Intl.DateTimeFormat('en-US', dateOpts).format(checkOutDate);
-    const formattedCheckInTime = parse(booking.receipt.hotel.checkInTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
-    const formattedCheckOutTime = parse(booking.receipt.hotel.checkOutTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
+    const formattedCheckInTime = parse(booking.invoice.hotel.checkInTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
+    const formattedCheckOutTime = parse(booking.invoice.hotel.checkOutTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
 
     if(!booking) {
         navigate("/");
@@ -29,7 +29,7 @@ const SuccessBookingView = () => {
         <div className="ignore-safe-area-top px-10 space-y-7">
             <div className="grid font-[Inter] grid-cols-[1fr_1fr]">
                 <div className="safe-area-top flex w-full flex-col items-baseline justify-center gap-11">
-                    <ReceiptCard showCostBreakdown={false} receipt={booking.receipt} details={booking.details} />
+                    <InvoiceCard showCostBreakdown={false} invoice={booking.invoice} details={booking.details} />
                     <div className="flex flex-col gap-7">
                         <h1 className="text-lg font-semibold">Your trip starts {formattedCheckInDate}</h1>
                         <div className="grid grid-cols-[auto_auto] gap-x-10 gap-y-3 grid-rows-2">
@@ -40,7 +40,7 @@ const SuccessBookingView = () => {
 
                             <hr className="col-span-2"/>
                             <p>Total Price</p>
-                            <p>${booking.receipt.totalPrice}</p>
+                            <p>${booking.invoice.totalPrice}</p>
 
                         </div>
                     </div>

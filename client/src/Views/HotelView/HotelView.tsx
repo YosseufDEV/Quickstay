@@ -117,7 +117,7 @@ const HotelView = () => {
                     <p className="font-Playfair text-3xl mb-10">Rooms</p>
                     <div className="flex items-center justify-start gap-5">
                     { /* TODO: Implement availability logic */ }
-                        {hotel.catalog.map((room) => <RoomCard available={Math.random() > 0.5} {...room} hotelId={hotel.id} />)}
+                        {hotel.catalog.map((room) => <RoomCard roomTypeId={room.id} available={Math.random() > 0.5} {...room} hotelId={hotel.id} />)}
                     </div>
                 </div>
             </div>

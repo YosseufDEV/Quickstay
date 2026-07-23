@@ -1,7 +1,7 @@
 import api from "./client"
 
 interface BookingData {
-    roomType: string
+    roomTypeId: string
     hotelId: string
     checkIn: Date,
     checkOut: Date
@@ -20,7 +20,7 @@ export interface BookingResponse {
             bookingStatus: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED"
             checkInStatus: "NOT_CHECKED_IN" | "CHECKED_IN" | "CHECKED_OUT"
         },
-        receipt: {
+        invoice: {
             id: string
             hotelId: string,
             bookingId: string
