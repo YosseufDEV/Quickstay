@@ -16,8 +16,6 @@ const BookingView = () => {
     const { hotelId, roomTypeId, from, to } = useLocation()?.state || {};
     const [processing, setProcessing] = useState(false);
 
-    const formattingOptions: Intl.DateTimeFormatOptions = { weekday: "long", month: 'long', day: '2-digit', year: 'numeric' };
-
     const formId = useId();
 
     const { data: booking, mutate: createBooking, isSuccess } = useMutation({
@@ -57,6 +55,7 @@ const BookingView = () => {
                                 <Payment.PaymentContainer clientSecret={booking.paymentIntentClientSecret} />
                             </div>
                         </div>
+                        <hr className="my-4"/>
                         <div className="flex justify-start flex-col gap-10 w-full">
                             <p className="text-xl font-semibold">House rules</p>
                             <div className="flex gap-25">

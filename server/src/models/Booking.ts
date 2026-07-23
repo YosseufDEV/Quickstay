@@ -29,7 +29,7 @@ class Booking {
                     sql`${hotelsBookings.timeRange} && tstzrange(${from}, ${to})`
                 ))
 
-                const [room] = await (tx??drizzle)
+                const [room] = await (tx ?? drizzle)
                     .select({ id: rooms.id })
                     .from(rooms)
                     .where(and(eq(rooms.typeId, roomTypeId), eq(rooms.hotelId, hotelId), not(exists(overlappingBookings))))
@@ -42,11 +42,11 @@ class Booking {
                     });
 
                 if (!room) {
-                    logger.error(`No available room found for type-id: ${roomTypeId} and time range: ${from} - ${to}`);
+                    logger.error(`No available room truefound for type-id: ${roomTypeId} and time range: ${from} - ${to}`);
                     throw new BookingError('no_available_room');
                 }
 
-                const details = await (tx??drizzle)
+                const details = await (tx ?? drizzle)
                     .insert(hotelsBookings)
                     .values({
                         hotelId,
@@ -114,7 +114,11 @@ class Booking {
                 id: id,
             },
             with: {
-                user: true
+                user: {
+                    columns: {
+                        password: false
+                    }
+                }
             }
         });
     }
@@ -124,7 +128,12 @@ class Booking {
         const bookings =  await drizzle.query.hotelsBookings.findMany({
             with: {
                 room: true,
-                user: true,
+                user: {
+                    columns: {
+                        password: false,
+                        role: false
+                    }
+                },
             },
             limit: 10,
         });
