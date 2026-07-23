@@ -33,7 +33,17 @@ class BookingService {
                                                 timeRange: hotelsBookings.timeRange,
                                                 bookingStatus: hotelsBookings.bookingStatus,
                                                 stripePaymentIntentId: payments.stripePaymentIntentId,
-                                                checkInStatus: hotelsBookings.checkInStatus
+                                                checkInStatus: hotelsBookings.checkInStatus,
+                                                hotel: sql`
+                                                    json_build_object(
+                                                        'id', ${hotels.id},
+                                                        'name', ${hotels.name},
+                                                        'address', ${hotels.address},
+                                                        'rating', ${hotels.rating},
+                                                        'checkInTime', ${hotels.checkInTime},
+                                                        'checkOutTime', ${hotels.checkOutTime}
+                                                    )
+                                                `
                                             })
                                             .from(hotelsBookings)
                                             .where(
@@ -42,6 +52,7 @@ class BookingService {
                                                     eq(hotelsBookings.userId, userId), eq(hotelsBookings.roomTypeId, roomTypeId), 
                                                     eq(hotelsBookings.bookingStatus, 'PENDING_PAYMENT')))
                                             .leftJoin(payments, eq(payments.bookingId, hotelsBookings.id))
+                                            .leftJoin(hotels, eq(hotelsBookings.hotelId, hotels.id))
                                             .then(([booking]) => booking)
                                             .catch((err) => {
                                                 console.log(err);
@@ -123,16 +134,6 @@ class BookingService {
                                 basePrice: sql<number>`${hotelsCatalogs.pricePerNight} * ${numberOfNights}`,
                                 fees: sql<{ type: string, percentage: number }>`json_agg(json_build_object('type', ${hotelsFees.feeType}, 'amount', ${hotelsFees.percentage}))`,
                                 totalPrice: sql<number>`CEIL( ${hotelsCatalogs.pricePerNight}*${numberOfNights} * EXP(SUM(LN(1+ ${hotelsFees.percentage}::FLOAT /100 ))) )`,
-                                hotel: sql`
-                                    json_build_object(
-                                        'id', ${hotels.id},
-                                        'name', ${hotels.name},
-                                        'address', ${hotels.address},
-                                        'rating', ${hotels.rating},
-                                        'checkInTime', ${hotels.checkInTime},
-                                        'checkOutTime', ${hotels.checkOutTime}
-                                    )
-                                `
                             })                
                             .from(hotelsCatalogs)
                             .where(and(eq(hotelsCatalogs.hotelId, hotelId), eq(hotelsCatalogs.id, roomTypeId)))

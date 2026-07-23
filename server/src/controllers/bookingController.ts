@@ -2,7 +2,7 @@ import type { Response, Request } from "express";
 import Booking from "@/models/Booking";
 import type { AuthenticatedRequest } from "../types/auth";
 import { sendResponse, StatusCode } from "@/helpers/response";
-import BookingService from "@/services/bookingService";
+import BookingService from "@/services/BookingService";
 
 const book = async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user!.id;

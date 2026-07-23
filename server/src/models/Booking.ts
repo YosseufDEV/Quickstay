@@ -49,6 +49,7 @@ class Booking {
                 const details = await (tx??drizzle)
                     .insert(hotelsBookings)
                     .values({
+                        hotelId,
                         roomId: room.id,
                         roomTypeId,
                         userId: userId,
@@ -78,6 +79,13 @@ class Booking {
                         throw new BookingError('Failed to create booking', 400, err);
                     });
 
+                const hotel = await Hotel.getHotelById(hotelId, tx);
+
+                if(!hotel) {
+                    logger.error(`Hotel with id: ${hotelId} not found`);
+                    throw new BookingError('Hotel not found', 404);
+                }
+
                 logger.info(`Booking created successfully for 
                             userId: ${userId}, 
                         roomId: ${room.id}, 
@@ -85,7 +93,19 @@ class Booking {
                         to: ${to}
                         `);
 
-            return { details };
+            return { 
+                details: {
+                    ...details,
+                    hotel: {
+                        id: hotel.id,
+                        name: hotel.name,
+                        address: hotel.address,
+                        rating: hotel.rating,
+                        checkInTime: hotel.checkInTime,
+                        checkOutTime: hotel.checkOutTime,
+                    }
+                },
+            }
     }
 
     static async  getBookingById(id: string) {

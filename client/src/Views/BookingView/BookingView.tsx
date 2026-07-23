@@ -1,18 +1,22 @@
-import { createContext, useState } from "react";
+import { useState } from "react";
+import dayjs from "dayjs";
 import BackwardArrow from "@/Components/BackwardArrow/BackwardArrow";
 import InvoiceCard from "./Components/InvoiceCard";
 import { useEffect, useId } from "react";
 import * as Payment from "./Components/PaymentForm";
 import { useLocation } from "react-router";
 import { useMutation } from "@tanstack/react-query";
-import { createBooking as apiCreateBooking, type BookingResponse } from "@/api/booking";
+import { createBooking as apiCreateBooking } from "@/api/booking";
 import LoadingOverlay from "@/Components/LoadingOverlay/LoadingOverlay";
-
-export const BookingContext = createContext({ booking: null as BookingResponse["booking"] | null, formId: null as string | null, setProcessing: null as ((processing: boolean) => void) | null });
+import BookingProvider from "@/providers/BookingProvider";
+import { ClockArrowDown, ClockArrowUp } from "lucide-react";
+import IconText from "@/Components/IconText/IconText";
 
 const BookingView = () => {
     const { hotelId, roomTypeId, from, to } = useLocation()?.state || {};
     const [processing, setProcessing] = useState(false);
+
+    const formattingOptions: Intl.DateTimeFormatOptions = { weekday: "long", month: 'long', day: '2-digit', year: 'numeric' };
 
     const formId = useId();
 
@@ -41,15 +45,30 @@ const BookingView = () => {
 
     if(isSuccess && booking) {
         return (
-            <BookingContext.Provider value={{ booking, formId, setProcessing }}>
+            <BookingProvider booking={booking} formId={formId} setProcessing={setProcessing}>
                 <LoadingOverlay isVisible={processing} />
                 <div className="grid grid-cols-[2fr_1fr] min-h-screen w-screen font-[Inter]">
                     <div className="p-10 flex flex-col gap-5">
                         <BackwardArrow />
-                        <p className="font-bold text-2xl">Book {booking.invoice.hotel.name}</p>
-                        <label htmlFor={formId} className="text-xl font-semibold">Step 3: Payment</label>
-                        <div className="w-full h-full">
-                            <Payment.PaymentContainer clientSecret={booking.paymentIntentClientSecret} />
+                        <p className="font-bold text-2xl">Book {booking.details.hotel.name}</p>
+                        <div>
+                            <label htmlFor={formId} className="text-xl font-semibold">Step 3: Payment</label>
+                            <div className="w-full h-full mt-5">
+                                <Payment.PaymentContainer clientSecret={booking.paymentIntentClientSecret} />
+                            </div>
+                        </div>
+                        <div className="flex justify-start flex-col gap-10 w-full">
+                            <p className="text-xl font-semibold">House rules</p>
+                            <div className="flex gap-25">
+                                <div className="flex flex-col gap-3 items-start">
+                                    <IconText fontSize={16} textClassName="text-gray-800 font-medium" Icon={ClockArrowDown} text="Check-in Time" />
+                                    <p>From { dayjs(`2026-07-23 ${booking.details.hotel.checkInTime}`).format(`h:mm A`) }</p>
+                                </div>
+                                <div className="flex flex-col gap-3 items-start">
+                                    <IconText fontSize={16} textClassName="text-gray-800 font-medium" Icon={ClockArrowUp} text="Check-out Time" />
+                                    <p>Until { dayjs(`2026-07-23 ${booking.details.hotel.checkOutTime}`).format("h:mm A")  }</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div className="p-10 flex justify-start flex-col gap-10">
@@ -57,7 +76,7 @@ const BookingView = () => {
                         <Payment.PaymentButton formId={formId} />
                     </div>
                 </div> 
-            </BookingContext.Provider>
+            </BookingProvider>
         );
     }
 }

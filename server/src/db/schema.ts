@@ -165,6 +165,9 @@ export const hotelsBookings = pgTable(
         roomId: uuid("room_id")
             .notNull()
             .references(() => rooms.id, { onDelete: "cascade" }),
+        hotelId: uuid("hotel_id")
+            .notNull()
+            .references(() => hotels.id, { onDelete: "cascade" }),
         userId: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),

@@ -16,7 +16,7 @@ const InvoiceCard = ({ details, invoice, showCostBreakdown=true }: InvoiceCardPr
 
             <img src="http://localhost:5001/rooms/4.webp" alt={invoice?.roomType} className="w-full h-60 object-cover rounded-xl" />
 
-            <p className="text-lg font-medium mt-2">{invoice.hotel?.name || "Placeholder" }</p>
+            <p className="text-lg font-medium mt-2">{details.hotel?.name || "Placeholder" }</p>
             <div className="text-sm">
                 <div className="grid grid-cols-[auto_auto] grid-rows-2">
                     <p className="font-medium">Check-in</p>
@@ -44,8 +44,8 @@ const InvoiceCard = ({ details, invoice, showCostBreakdown=true }: InvoiceCardPr
                         <p className="col-span-2 w-full row-span-2">Fees:</p>
                         {invoice?.fees.map((fee, index) => (
                             <>
-                                <p key={invoice.hotelId + fee.type}>{fee.type} Fee: </p>
-                                <p key={invoice.hotelId+fee.amount}>%{fee.amount}</p>
+                                <p key={details.hotelId + fee.type}>{fee.type} Fee: </p>
+                                <p key={details.hotelId +fee.amount}>%{fee.amount}</p>
                             </>
                         ))}
                     </div>

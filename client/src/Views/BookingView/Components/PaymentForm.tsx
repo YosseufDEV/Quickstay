@@ -3,7 +3,7 @@ import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-
 import { loadStripe, type Appearance } from "@stripe/stripe-js";
 import SpringyButton from "@/Components/SpringyButton/SpringyButton";
 import { useNavigate } from "react-router";
-import { BookingContext } from "../BookingView";
+import { useBooking } from "@/hooks/useBooking";
 
 const stripePromise = loadStripe("pk_test_51TtLIcREY4j73Lc7VaiHYg7EjMiEWBLKk8fBmekoGRDKCUPiOF6PkwxueoxAzV6At26m03JLXXpIUr5xGWqkU1yF0062iKjEWp");
 
@@ -19,7 +19,7 @@ const PaymentForm = ({ formId, booking }) => {
     const stripe = useStripe();
     const elements = useElements();
     const navigate = useNavigate();
-    const { setProcessing } = useContext(BookingContext);
+    const { setProcessing } = useBooking();
 
     const confirmPayment = async (e: any) => {
         e.preventDefault();
@@ -58,24 +58,18 @@ const appearance: Appearance = {
 }
 
 const PaymentContainer = ({ clientSecret }: { clientSecret: string }) => {
-    useEffect(() => {
-        console.log("I have re-rendered because the clientSecret has changed:", clientSecret);
-    }, [clientSecret]);
-
-    const { formId, booking } = useContext(BookingContext);
-    const stripeInstance = useMemo(() => loadStripe("pk_test_51TtLIcREY4j73Lc7VaiHYg7EjMiEWBLKk8fBmekoGRDKCUPiOF6PkwxueoxAzV6At26m03JLXXpIUr5xGWqkU1yF0062iKjEWp"), []);
-    const options = useMemo(() => ({
-        clientSecret: clientSecret,
-        appearance: appearance,
-    }), [clientSecret]);
+    const { formId, booking } = useBooking();
 
     return (
         <Elements 
-        stripe={stripeInstance} 
+        stripe={stripePromise} 
         options={
-            options
+            {
+                clientSecret: clientSecret,
+                appearance: appearance,
+            }
         }>
-        <PaymentForm booking={booking} formId={formId} />
+            <PaymentForm booking={booking} formId={formId} />
         </Elements>
     )
 };

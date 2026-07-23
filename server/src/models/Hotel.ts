@@ -1,29 +1,10 @@
 import { Optional } from "@/utils/optional";
-import drizzle from "@/db/drizzle";
+import drizzle, { type Transaction } from "@/db/drizzle";
 import { hotels, rooms, amenities as s_amenities, hotelsAmenities, hotelsCatalogs, hotelsFees } from "../db/schema";
 import Room from "./Room";
 import { desc, eq, inArray, sql, exists, and } from "drizzle-orm";
 import { HotelError, isCheckInDateSmallerThanCheckOutDateError } from "@/errors/hotelErrors";
 import type { drizzle as d } from "drizzle-orm/node-postgres";
-
-const AllowedFields = new Set(["price", "createdAt", "rating"]);
-
-const getSortingOptions = (sortBy: string | undefined, order: "asc" | "desc" = "desc") => {
-    if (!sortBy || !AllowedFields.has(sortBy)) return { createdAt: "desc" };
-    const orderBy = order === "desc" ? desc : (field: any) => field;
-
-
-    switch (sortBy) {
-        case "id":
-            return orderBy(hotels.id);
-        case "rating":
-            return orderBy(hotels.rating);
-        case "createdAt":
-            return orderBy(hotels.createdAt);
-        default:
-            return orderBy(hotels.createdAt);
-    }
-}
 
 interface HotelFee {
     feeType: string
@@ -53,7 +34,7 @@ interface HotelRoom {
     status?: string
 }
 
-interface HotelData {
+interface Hotel {
     id?: string
     name: string
     address: string
@@ -70,7 +51,7 @@ interface HotelData {
 }
 
 interface RowHotelData {
-    hotel: Omit<HotelData, "rooms"> & { id: string };
+    hotel: Omit<Hotel, "rooms"> & { id: string };
     rooms?: { hotelId: string, rooms: HotelRoom[] | null },
     catalog?: { hotelId: string, catalog: HotelCatalog[] } | null,
     amenities?: {
@@ -145,7 +126,7 @@ class Hotel {
         return await drizzle.insert(hotelsCatalogs).values(catalog).returning().then((catalog) => catalog)!;
     }
 
-    static async createHotel({ fees, rooms, amenities, catalog, ...hotelData }: HotelData) {
+    static async createHotel({ fees, rooms, amenities, catalog, ...hotelData }: Hotel) {
         const [hotel] = await drizzle.insert(hotels).values({
             ...hotelData,
         }).
@@ -227,10 +208,10 @@ class Hotel {
 
     }
 
-    static async getHotelById(hotelId: string, withRooms: boolean = false) {
-        const hotelSq = drizzle.select().from(hotels).where(eq(hotels.id, hotelId)).as("hotel");
+    static async getHotelById(hotelId: string, tx?: Transaction, withRooms: boolean = false): Promise<Hotel>{
+        const hotelSq = (tx ?? drizzle).select().from(hotels).where(eq(hotels.id, hotelId)).as("hotel");
 
-        const amenitiesQuery = drizzle.select({
+        const amenitiesQuery = (tx ?? drizzle).select({
             hotelId: hotelsAmenities.hotelId,
             amenities: sql<HotelAmenity[]>`json_agg(json_build_object('id', ${s_amenities.id}, 'slug', ${s_amenities.slug}))`.as("amenities"),
         })
@@ -242,7 +223,7 @@ class Hotel {
 
         const catalogQuery = this.generateCatalogQuery(drizzle);
 
-        let hotelQ = drizzle.select()
+        let hotelQ = (tx ?? drizzle).select()
             .from(hotelSq)
             .where(eq(hotelSq.id, hotelId))
             .leftJoin(amenitiesQuery, eq(hotelSq.id, amenitiesQuery.hotelId))
@@ -253,7 +234,7 @@ class Hotel {
             hotelQ = hotelQ.leftJoin(roomsQuery, eq(hotelSq.id, roomsQuery.hotelId))
         }
 
-        return this.processRawHotelData(await hotelQ);
+        return this.processRawHotelData(await hotelQ) as unknown as Hotel;
      }
 
      static async getHotelCatalogById(hotelId: string) {

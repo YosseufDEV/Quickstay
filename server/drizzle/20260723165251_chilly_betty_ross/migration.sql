@@ -1,0 +1,2 @@
+ALTER TABLE "hotels_bookings" ADD COLUMN "hotel_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "hotels_bookings" ADD CONSTRAINT "hotels_bookings_hotel_id_hotels_id_fkey" FOREIGN KEY ("hotel_id") REFERENCES "hotels"("id") ON DELETE CASCADE;

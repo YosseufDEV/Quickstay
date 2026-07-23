@@ -5,7 +5,7 @@ import type { Request, Response } from "express";
 import s from "stripe";
 import { eq } from "drizzle-orm";
 import Payment from "@/models/Payment";
-import BookingService from "@/services/bookingService";
+import BookingService from "@/services/BookingService";
 
 const stripe = new s(process.env.STRIPE_SECRET_KEY as string);
 

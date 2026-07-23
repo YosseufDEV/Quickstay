@@ -18,8 +18,8 @@ const SuccessBookingView = () => {
 
     const formattedCheckInDate = Intl.DateTimeFormat('en-US', dateOpts).format(checkInDate);
     const formattedCheckOutDate = Intl.DateTimeFormat('en-US', dateOpts).format(checkOutDate);
-    const formattedCheckInTime = parse(booking.invoice.hotel.checkInTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
-    const formattedCheckOutTime = parse(booking.invoice.hotel.checkOutTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
+    const formattedCheckInTime = parse(booking.details.hotel.checkInTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
+    const formattedCheckOutTime = parse(booking.details.hotel.checkOutTime, "HH:mm:ss", new Date()).toLocaleString('en-US', { hour: 'numeric' });
 
     if(!booking) {
         navigate("/");

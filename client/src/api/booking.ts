@@ -19,6 +19,14 @@ export interface BookingResponse {
             }
             bookingStatus: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED"
             checkInStatus: "NOT_CHECKED_IN" | "CHECKED_IN" | "CHECKED_OUT"
+            hotel: {
+                id: string
+                name: string
+                address: string
+                rating: number
+                checkInTime: string
+                checkOutTime: string
+            }
         },
         invoice: {
             id: string
@@ -29,14 +37,6 @@ export interface BookingResponse {
             numberOfNights: number
             basePrice: number
             fees: { type: string, amount: number }[]
-            hotel: {
-                id: string
-                name: string
-                address: string
-                rating: number
-                checkInTime: string
-                checkOutTime: string
-            }
             totalPrice: number
         }
         paymentIntentClientSecret: string
