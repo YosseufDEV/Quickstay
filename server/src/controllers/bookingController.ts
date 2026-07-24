@@ -37,7 +37,7 @@ const getBookingById = async (req: AuthenticatedRequest | Request, res: Response
 
 }
 
-const getAllBookings = async (req: AuthenticatedRequest | Request, res: Response) => {
+const getAllBookings = async (_: AuthenticatedRequest | Request, res: Response) => {
     const bookings = await Booking.getAllBookings();
     return sendResponse(res, StatusCode.OK, "", { bookings });
 }

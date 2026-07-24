@@ -14,6 +14,28 @@ interface BookingData {
     to: Date
 }
 
+export interface BookingResponse {
+    details: {
+        id: string
+        roomId: string
+        userId: string
+        timeRange: {
+            from: Date  
+            to: Date
+        }
+        bookingStatus: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED"
+        checkInStatus: "NOT_CHECKED_IN" | "CHECKED_IN" | "CHECKED_OUT"
+        hotel?: {
+            id: string
+            name: string
+            address: string
+            rating: number
+            checkInTime: string
+            checkOutTime: string
+        }
+    }
+}
+
 class Booking {
     static async createBooking({ roomTypeId, hotelId, userId, from, to }: BookingData, tx?: Transaction) {
         if(!await Hotel.hasRoomType(hotelId, roomTypeId)) {
@@ -104,7 +126,7 @@ class Booking {
                         checkInTime: hotel.checkInTime,
                         checkOutTime: hotel.checkOutTime,
                     }
-                },
+                }
             }
     }
 

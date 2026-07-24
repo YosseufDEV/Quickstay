@@ -1,8 +1,8 @@
 import drizzle, { type Transaction } from "@/db/drizzle";
-import { hotels, hotelsBookings, hotelsCatalogs, hotelsFees, payments } from "@/db/schema";
+import { hotels, hotelsBookings, hotelsCatalogs, hotelsFees, payments, rooms } from "@/db/schema";
 import { BookingError } from "@/errors/bookingErrors";
 import { AppError } from "@/errors/errors";
-import Booking from "@/models/Booking";
+import Booking, { type BookingResponse } from "@/models/Booking";
 import Payment from "@/models/Payment";
 import { logger } from "@/utils/logger";
 import dayjs from "dayjs";
@@ -34,16 +34,14 @@ class BookingService {
                                                 bookingStatus: hotelsBookings.bookingStatus,
                                                 stripePaymentIntentId: payments.stripePaymentIntentId,
                                                 checkInStatus: hotelsBookings.checkInStatus,
-                                                hotel: sql`
-                                                    json_build_object(
-                                                        'id', ${hotels.id},
-                                                        'name', ${hotels.name},
-                                                        'address', ${hotels.address},
-                                                        'rating', ${hotels.rating},
-                                                        'checkInTime', ${hotels.checkInTime},
-                                                        'checkOutTime', ${hotels.checkOutTime}
-                                                    )
-                                                `
+                                                hotel: {
+                                                    id: hotels.id,
+                                                    name: hotels.name,
+                                                    address: hotels.address,
+                                                    rating: hotels.rating,
+                                                    checkInTime: hotels.checkInTime,
+                                                    checkOutTime: hotels.checkOutTime
+                                                },
                                             })
                                             .from(hotelsBookings)
                                             .where(
@@ -53,15 +51,13 @@ class BookingService {
                                                     eq(hotelsBookings.bookingStatus, 'PENDING_PAYMENT')))
                                             .leftJoin(payments, eq(payments.bookingId, hotelsBookings.id))
                                             .leftJoin(hotels, eq(hotelsBookings.hotelId, hotels.id))
-                                            .then(([booking]) => booking)
+                                            .then(([booking]) => booking as BookingResponse["details"])
                                             .catch((err) => {
-                                                console.log(err);
                                                 logger.error(`Failed to retrieve existing booking for user ${userId} and room type ${roomTypeId} from ${from} to ${to}`);
                                                 throw new BookingError('Failed to retrieve existing booking', 400, err);
                                             });
 
-
-            const details: Awaited<ReturnType<typeof Booking.createBooking>>["details"] & { stripePaymentIntentId?: string | null } = existingBooking ?? ( await Booking.createBooking({ userId, roomTypeId, hotelId, from, to }, tx) ).details;
+            const details: BookingResponse["details"] & { stripePaymentIntentId?: string | null } = existingBooking ?? ( await Booking.createBooking({ userId, roomTypeId, hotelId, from, to }, tx) ).details;
             const numberOfNights = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
             const invoice = await BookingService.generateInvoice({ hotelId, roomTypeId, numberOfNights, bookingId: details.id }, tx);
 
@@ -123,6 +119,56 @@ class BookingService {
         })
     }
 
+    static async checkAvailability({ hotelId, checkIn, checkOut }: { hotelId: string, checkIn: Date, checkOut: Date }) {
+        checkIn = dayjs(checkIn).startOf("day").utc().toDate();
+        checkOut = dayjs(checkOut).startOf("day").utc().toDate();
+
+        const bookingSubQuery = drizzle
+                                    .select({
+                                        roomTypeId: hotelsBookings.roomTypeId,                                  
+                                        overlappingBookingsCount: sql<number>`COUNT(DISTINCT ${hotelsBookings.roomId})`.as("overlappingBookingsCount")
+                                    })
+                                    .from(hotelsBookings)
+                                    .where(sql`${hotelsBookings.timeRange} && tstzrange(${checkIn}, ${checkOut}, '[]')`)
+                                    .groupBy(hotelsBookings.roomTypeId)
+                                    .as("booking");
+
+        const roomsSubQuery = drizzle
+                                .select({           
+                                    typeId: rooms.typeId,
+                                    hotelId: rooms.hotelId,
+                                    roomsCounts: sql<number>`COUNT(${rooms.id})`.as("roomsCounts")
+                                })
+                                .from(rooms)
+                                .groupBy(rooms.typeId, rooms.hotelId)
+                                .as("rooms");
+
+
+        const result = await drizzle
+                            .select({
+                                hotelId: hotelsCatalogs.hotelId,
+                                catalogAvailability: sql`
+                                    json_agg(
+                                        json_build_object(
+                                            'typeId', ${hotelsCatalogs.id},
+                                            'isAvailable', COALESCE(${bookingSubQuery.overlappingBookingsCount}, 0) < COALESCE(${roomsSubQuery.roomsCounts}, 0)
+                                        )
+                                    )
+                                `
+                            })
+                            .from(hotelsCatalogs)
+                            .leftJoin(bookingSubQuery, eq(bookingSubQuery.roomTypeId, hotelsCatalogs.id))
+                            .leftJoin(roomsSubQuery, and(eq(roomsSubQuery.typeId, hotelsCatalogs.id), eq(roomsSubQuery.hotelId, hotelsCatalogs.hotelId)))
+                            .groupBy(hotelsCatalogs.hotelId)
+                            .where(eq(hotelsCatalogs.hotelId, hotelId))
+                            .then(([availability]) => availability!)
+                            .catch((err) => {
+                                logger.error(`Failed to check availability for hotel ${hotelId} from ${checkIn} to ${checkOut}`);
+                                throw new BookingError('Failed to check availability', 400, err);
+                            });
+        return result;
+    }
+
     static async generateInvoice({ hotelId, roomTypeId, numberOfNights, bookingId }: { hotelId: string, roomTypeId: string, numberOfNights: number, bookingId: string }, tx?: Transaction) { 
             return await (tx ?? drizzle).
                             select({
@@ -130,7 +176,7 @@ class BookingService {
                                 hotelId: hotelsCatalogs.hotelId,
                                 roomType: hotelsCatalogs.roomType,
                                 pricePerNight: hotelsCatalogs.pricePerNight,
-                                numberOfNights: sql<number>`${numberOfNights}`,
+                                numberOfNights: sql<number>`${numberOfNights}::INT`,
                                 basePrice: sql<number>`${hotelsCatalogs.pricePerNight} * ${numberOfNights}`,
                                 fees: sql<{ type: string, percentage: number }>`json_agg(json_build_object('type', ${hotelsFees.feeType}, 'amount', ${hotelsFees.percentage}))`,
                                 totalPrice: sql<number>`CEIL( ${hotelsCatalogs.pricePerNight}*${numberOfNights} * EXP(SUM(LN(1+ ${hotelsFees.percentage}::FLOAT /100 ))) )`,

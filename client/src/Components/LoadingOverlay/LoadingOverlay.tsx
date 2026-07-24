@@ -4,10 +4,8 @@ import gsap from "gsap";
 import { Classic } from "../classic";
 
 const LoadingOverlay = ({ isVisible=true }) => {
-    const [animationInProgress, setAnimationInProgress] = useState(false);
-
     useGSAP(() => {
-         const t = gsap.fromTo(".loading-overlay", 
+      gsap.fromTo(".loading-overlay", 
             {
                 opacity: 0,
                 duration: 0.3,
