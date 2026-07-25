@@ -23,7 +23,8 @@ const safeParseSchema = (schema: ZodSchema, params: Record<any, any>, res: Respo
     const result = schema.safeParse(params);
 
     if(!result.success) {
-        return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_hotel_id", { error: result.error });
+        const errors = result.error.issues.reduce(((acc: any, issue) => ( { ...acc, [issue.path[0] as string]: issue.message } )), {});
+        return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_request_parameters", { errors });
     }
 
     return result.data;
@@ -74,7 +75,7 @@ const getHotels = async (req: Request, res: Response) => {
 }
 
 const getHotelById = async (req: Request, res: Response) => {
-    const hotelId = safeParseSchema(hotelIdSchema, req.params, res) as string;
+    const { hotelId } = safeParseSchema(hotelIdSchema, req.params, res) as { hotelId: string };
 
     const hotel = await Hotel.getHotelById(hotelId);
 
@@ -98,8 +99,7 @@ const getHotelRoomsById = async (req: Request, res: Response) => {
 }
 
 const getHotelRoomById = async (req: Request, res: Response) => {
-    const hotelId = req.params.hotelId;
-    const roomId = req.params.roomId;
+    const { hotelId, roomId } = safeParseSchema(hotelIdRoomIdSchema, req.params, res) as { hotelId: string, roomId: string };
 
     if(!hotelId || typeof hotelId !== "string") {
         return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
@@ -131,7 +131,8 @@ const getHotelCatalogById = async (req: Request, res: Response) => {
 }
 
 const checkAvailability = async (req: Request, res: Response) => {
-    const { hotelId } = req.params as { hotelId: string };
+    const { hotelId } = safeParseSchema(hotelIdSchema, req.params, res) as { hotelId: string };
+
     const { checkIn, checkOut } = req.body;
 
     const availability = await BookingService.checkAvailability({ hotelId, checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
@@ -139,5 +140,21 @@ const checkAvailability = async (req: Request, res: Response) => {
     return sendResponse(res, StatusCode.OK, "", { availability });
 }
 
+const checkAvailabilityByRoomType = async (req: Request, res: Response) => {
+    const { typeId } = req.params as { hotelId: string, typeId: string };
+    const { checkIn, checkOut } = req.body; 
 
-export { addHotel, getHotels, getHotelById, getHotelRoomsById, getHotelRoomById, getHotelCatalogById, checkAvailability };
+    const availability = await BookingService.checkAvailabilityByTypeId({ roomTypeId: typeId, checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
+
+    return sendResponse(res, StatusCode.OK, "", { availability });
+}
+
+export { addHotel, 
+         getHotels, 
+         getHotelById, 
+         getHotelRoomsById, 
+         getHotelRoomById, 
+         getHotelCatalogById, 
+         checkAvailability,
+         checkAvailabilityByRoomType
+};

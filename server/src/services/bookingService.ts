@@ -169,6 +169,37 @@ class BookingService {
         return result;
     }
 
+    static async checkAvailabilityByTypeId({ roomTypeId, checkIn, checkOut }: { roomTypeId: string, checkIn: Date, checkOut: Date }) {
+        checkIn = dayjs(checkIn).startOf("day").utc().toDate();
+        checkOut = dayjs(checkOut).startOf("day").utc().toDate();
+
+        const roomsSubQuery = drizzle
+                                .select({           
+                                    typeId: rooms.typeId,
+                                    hotelId: rooms.hotelId,
+                                    roomsCounts: sql<number>`COUNT(${rooms.id})`.as("roomsCounts")
+                                })
+                                .from(rooms)
+                                .groupBy(rooms.typeId, rooms.hotelId)
+                                .where(eq(rooms.typeId, roomTypeId))
+                                .as("rooms");
+
+        const result = await drizzle
+                                    .select({
+                                        roomTypeId: hotelsBookings.roomTypeId,                                  
+                                        isAvailable: sql<boolean>`
+                                            COALESCE(${roomsSubQuery.roomsCounts}, 0) > COALESCE(COUNT(DISTINCT ${hotelsBookings.roomId}), 0)           
+                                        `
+
+                                    })
+                                    .from(hotelsBookings)
+                                    .where(and(sql`${hotelsBookings.timeRange} && tstzrange(${checkIn}, ${checkOut}, '[]')`, eq(hotelsBookings.roomTypeId, roomTypeId)))
+                                    .rightJoin(roomsSubQuery, eq(roomsSubQuery.typeId, hotelsBookings.roomTypeId))
+                                    .groupBy(hotelsBookings.roomTypeId, roomsSubQuery.roomsCounts)
+        console.log(result);
+        return result;
+    }
+
     static async generateInvoice({ hotelId, roomTypeId, numberOfNights, bookingId }: { hotelId: string, roomTypeId: string, numberOfNights: number, bookingId: string }, tx?: Transaction) { 
             return await (tx ?? drizzle).
                             select({
