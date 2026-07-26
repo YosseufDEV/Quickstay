@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseURL}}/users/31cc6368-eafb-4b53-949e-c75c46d703a4"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{vault:NOT-expiring JWT User 2 Token }}"
+settings: {}
+order: 1000

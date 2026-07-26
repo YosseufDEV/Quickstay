@@ -1,0 +1,55 @@
+$kind: collection
+name: Authenticated as a User
+description: ""
+variables:
+  accessToken: ""
+  hotelId: ""
+  roomId: ""
+  hotelRoomTypeId: ""
+scripts:
+  - type: http:beforeRequest
+    code: "    pm.sendRequest({\r
+
+      \        url: 'localhost:5001/api/v1/auth/refresh',\r
+
+      \        method: 'POST',\r
+
+      \        // ... (Define body with client_id, client_secret, grant_type)\r
+
+      \    }, function (err, res) {\r
+
+      \        if (!err && res.status === \"OK\") {\r
+
+      \            const response = res.json();\r
+
+      \            pm.environment.set(\"accessToken\", response.payload.accessToken);\r
+
+      \        }\r
+
+      \    });"
+    language: text/javascript
+  - type: http:afterResponse
+    code: "const responseData = pm.response.json();\r
+
+      \r
+
+      const token = responseData.payload.accessToken;\r
+
+      \r
+
+      if(token) {\r
+
+      \    pm.collectionVariables.set(\"accessToken\", token);\r
+
+      \    console.log(\"Token fetched from request\")\r
+
+      }\r
+
+      \r\n"
+    language: text/javascript
+auth:
+  - id: fe4e81fa-5143-4835-be79-154942dbf176
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{accessToken}}"

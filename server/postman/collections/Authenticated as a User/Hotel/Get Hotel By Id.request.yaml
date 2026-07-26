@@ -1,0 +1,15 @@
+$kind: http-request
+name: Get Hotel By Id
+url: "{{baseURL}}/hotels/{{hotelId}}"
+method: GET
+body:
+  type: text
+  content: "{\r
+
+    \    \"checkIn\": \"2026-7-27\",\r
+
+    \    \"checkOut\": \"2026-8-29\"\r
+
+    }"
+settings: {}
+order: 5000

@@ -11,18 +11,18 @@ const checkAuthentication = async (req: AuthenticatedRequest, _: Response, next:
     const token = authHeader?.split(" ")[1];
 
     if(!token || !authHeader.startsWith("Bearer ")) {
-        throw new AuthenticationError("token_not_provided");
+        throw new AuthenticationError({ message: "token_not_provided" });
     }
 
     try {
         const decodedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string) as jwt.JwtPayload;
 
         if(!decodedToken || !decodedToken.userId || !decodedToken.sessionId || !decodedToken.role) {
-            throw new AuthenticationError("invalid_token_payload");
+            throw new AuthenticationError({ message: "invalid_token_payload" });
         }
 
         if(!await User.doesUserExist(decodedToken.userId)) {
-            throw new AuthenticationError("user_not_found");
+            throw new AuthenticationError({ message: "user_not_found" });
         }
 
         req.user = { id: decodedToken.userId, sessionId: decodedToken.sessionId, role: decodedToken.role };
@@ -34,11 +34,11 @@ const checkAuthentication = async (req: AuthenticatedRequest, _: Response, next:
         if(err instanceof jwt.JsonWebTokenError || err instanceof jwt.TokenExpiredError) {
             switch (err.name) {
                 case "TokenExpiredError":
-                    throw new AuthenticationError("token_expired");
+                    throw new AuthenticationError({ message: "token_expired" });
                 case "JsonWebTokenError":
-                    throw new AuthenticationError("token_invalid");
+                    throw new AuthenticationError({ message: "token_invalid" });
                 default:
-                    throw new AuthenticationError("token_error");
+                    throw new AuthenticationError({ message: "token_error" });
             }
         }
         throw err;

@@ -1,0 +1,4 @@
+name: Quickstay
+values:
+  - key: baseURL
+    value: ''

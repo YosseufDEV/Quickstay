@@ -13,6 +13,7 @@ import BackwardArrow from "@/Components/BackwardArrow/BackwardArrow.tsx";
 import DatePicker from "@/Components/DatePicker/DatePicker.tsx";
 import { createContext, useEffect, useRef, useState, type RefObject } from "react";
 import { formatDate } from "date-fns";
+import { checkAvailability } from "@/api/booking.ts";
 
 interface Hotel {
     id: string;
@@ -59,6 +60,7 @@ const HotelView = () => {
     const checkOutParam = searchParams.get("checkout");
 
     const { isCheckinValid, isCheckoutValid } = isValidRangeParams(checkInParam, checkOutParam);
+    const [availability, setAvailability] = useState({});
 
     // INFO: Range for booking, checkin and checkout
     const [range, setRange] = useState<{ from: Date, to: Date }>({
@@ -74,6 +76,17 @@ const HotelView = () => {
             ...(range.to ? { checkout: formatDate(range.to, 'yyyy-MM-dd') } : {} ),
         }, { preventScrollReset: true });
 
+        if(range.from && range.to) {
+            const checkinTime = range.from;
+            const checkoutTime = range.to;
+            checkAvailability(hotelId, checkinTime, checkoutTime).then((availabilityResponse) => {
+                setAvailability(availabilityResponse);
+                console.log("Availability response:", availabilityResponse);
+            }).catch((error) => {
+                console.error("Error checking availability:", error);
+            });
+        }
+
     }, [range]);
 
     const datePickerRef = useRef(null as unknown as HTMLDivElement | null);
@@ -82,6 +95,8 @@ const HotelView = () => {
         queryKey: ["hotel", hotelId],
         queryFn: (): Promise<Hotel> => getHotelById(hotelId)
     });
+
+    console.log("HotelView: hotel data", hotel, "status", status);
     
     return ( status=="success" ?
         <HotelContext.Provider value={{ range, datePickerRef }}>

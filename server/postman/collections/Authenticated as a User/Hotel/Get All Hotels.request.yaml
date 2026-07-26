@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get All Hotels
+url: "{{baseURL}}/hotels?limit=20"
+method: GET
+queryParams:
+  limit: "20"
+scripts:
+  - type: afterResponse
+    code: "pm.collectionVariables.set(\"hotelId\", pm.response.json().payload.hotels[0].id)\r
+
+      pm.collectionVariables.set(\"hotelRoomTypeId\", pm.response.json().payload.hotels[0].catalog[0].id)\r\n"
+    language: text/javascript
+settings: {}
+order: 888

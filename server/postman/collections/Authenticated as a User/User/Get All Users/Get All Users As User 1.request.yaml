@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseURL}}/users"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{vault:NOT-expiring JWT User 1 Token}}"
+settings: {}
+order: 2000

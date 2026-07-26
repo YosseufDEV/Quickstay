@@ -1,0 +1,1 @@
+CREATE INDEX "rooms_type_id_idx" ON "rooms" ("type_id");

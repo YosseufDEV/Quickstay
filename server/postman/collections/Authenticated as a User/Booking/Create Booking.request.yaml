@@ -1,0 +1,54 @@
+$kind: http-request
+url: "{{baseURL}}/bookings"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"hotelId\": \"{{hotelId}}\",\r
+
+    \    \"roomTypeId\": \"{{hotelRoomTypeId}}\", \r
+
+    \    \"checkIn\": \"2026-7-25\",\r
+
+    \    \"checkOut\": \"2026-7-29\"\r
+
+    }"
+scripts:
+  - type: beforeRequest
+    code: "let rawBody = pm.request.body.raw;\r
+
+      \r
+
+      let bodyObject = rawBody ? JSON.parse(rawBody) : {};\r
+
+      \r
+
+      if(!bodyObject.checkIn)\r
+
+      \    bodyObject.checkIn = new Date();\r
+
+      if(!bodyObject.checkOut)\r
+
+      \    bodyObject.checkOut = new Date(bodyObject.checkIn.getTime() + 24*60*60*1001);\r
+
+      \r
+
+      // 4. Update the request body with the modified JSON string\r
+
+      pm.request.body.update({\r
+
+      \    mode: 'raw',\r
+
+      \    raw: JSON.stringify(bodyObject, null, 2),\r
+
+      \    options: {\r
+
+      \        raw: { language: 'json' }\r
+
+      \    }\r
+
+      });"
+    language: text/javascript
+settings: {}
+order: 1000

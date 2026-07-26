@@ -3,32 +3,7 @@ import { sendResponse, StatusCode } from '@/helpers/response';
 
 import Hotel from '../models/Hotel';
 import Room from '../models/Room';
-import z, { type ZodSchema } from 'zod';
-import BookingService from '@/services/BookingService';
-
-const hotelIdSchema = z.object({
-    hotelId: z.uuid("Hotel id is required")
-});
-
-const hotelIdRoomIdSchema = z.object({
-    hotelId: z.uuid("Hotel id is required"),
-    roomId: z.uuid("Room id is required")
-});
-
-const safeParseSchema = (schema: ZodSchema, params: Record<any, any>, res: Response) => {
-    if(!params) {
-        return sendResponse(res, StatusCode.BAD_REQUEST, "request_params_required");
-    }
-
-    const result = schema.safeParse(params);
-
-    if(!result.success) {
-        const errors = result.error.issues.reduce(((acc: any, issue) => ( { ...acc, [issue.path[0] as string]: issue.message } )), {});
-        return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_request_parameters", { errors });
-    }
-
-    return result.data;
-}
+import HotelService from '@/services/HotelService';
 
 // TODO: Implement this
 const addHotel = async (req: Request, res: Response) => {
@@ -51,55 +26,35 @@ const addHotel = async (req: Request, res: Response) => {
 }
 
 const getHotels = async (req: Request, res: Response) => {
-    let limit = Math.min(Math.abs(Number(req.query.limit)), 30) || 30;
-    let offset = Number(req.query.offset) || 0;
+    const query = req.query;
 
-    const sort = req.query.sort as string | undefined;
-    const order = (req.query.order as "asc" | "desc") || "asc";
-
-    if(limit <= 0 || isNaN(limit) || isNaN(offset)) {
-        return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_pagination_parameters");
-    }
-
-    if(sort && !["price", "createdAt", "rating"].includes(sort)) {
-        return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_sort_parameter");
-    }
-
-    if(order && !["asc", "desc"].includes(order)) {
-        return sendResponse(res, StatusCode.BAD_REQUEST, "invalid_order_parameter");
-    }
-
-    const hotels = await Hotel.getHotels(limit, offset > 0 ? offset : 0, sort, order);
+    const hotels = await HotelService.getHotels(query);
 
     return sendResponse(res, StatusCode.OK, "", { hotels })
 }
 
 const getHotelById = async (req: Request, res: Response) => {
-    const { hotelId } = safeParseSchema(hotelIdSchema, req.params, res) as { hotelId: string };
+    const params = req.params as { hotelId: string };
 
-    const hotel = await Hotel.getHotelById(hotelId);
+    const hotel = await HotelService.getHotelById(params);
 
-    if(!hotel) {
-        return sendResponse(res, StatusCode.NOT_FOUND, "hotel_not_found");
-    }
-
-    return sendResponse(res, StatusCode.OK, "", { hotel })
+    return sendResponse(res, StatusCode.OK, "", { hotel });
 }
 
 const getHotelRoomsById = async (req: Request, res: Response) => {
-    const id = req.params.id;
-
-    if(!id || typeof id !== "string") {
-        return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
-    }
-
-    const rooms = await Room.getRoomsByHotelId(id);
-
-    return sendResponse(res, StatusCode.OK, "", { rooms: rooms });
+    // const params = req.params;
+    //
+    // if(!id || typeof id !== "string") {
+    //     return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
+    // }
+    //
+    // const rooms = await Room.getRoomsByHotelId(id);
+    //
+    // return sendResponse(res, StatusCode.OK, "", { rooms: rooms });
 }
 
 const getHotelRoomById = async (req: Request, res: Response) => {
-    const { hotelId, roomId } = safeParseSchema(hotelIdRoomIdSchema, req.params, res) as { hotelId: string, roomId: string };
+    const { hotelId, roomId } = req.params as { hotelId: string, roomId: string };
 
     if(!hotelId || typeof hotelId !== "string") {
         return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
@@ -119,23 +74,23 @@ const getHotelRoomById = async (req: Request, res: Response) => {
 }
 
 const getHotelCatalogById = async (req: Request, res: Response) => {
-    const { hotelId } = safeParseSchema(hotelIdSchema, req.params, res) as { hotelId: string };
-
-    const catalog = await Hotel.getHotelCatalogById(hotelId);
-
-    if(!catalog) {
-        return sendResponse(res, StatusCode.NOT_FOUND, "hotel_catalog_not_found");
-    }
-
-    return sendResponse(res, StatusCode.OK, "", { catalog });
+    // const { hotelId } = safeParseSchema(hotelIdSchema, req.params, res) as { hotelId: string };
+    //
+    // const catalog = await Hotel.getHotelCatalogById(hotelId);
+    //
+    // if(!catalog) {
+    //     return sendResponse(res, StatusCode.NOT_FOUND, "hotel_catalog_not_found");
+    // }
+    //
+    // return sendResponse(res, StatusCode.OK, "", { catalog });
 }
 
 const checkAvailability = async (req: Request, res: Response) => {
-    const { hotelId } = safeParseSchema(hotelIdSchema, req.params, res) as { hotelId: string };
-
     const { checkIn, checkOut } = req.body;
 
-    const availability = await BookingService.checkAvailability({ hotelId, checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
+    const params = req.params;
+
+    const availability = await HotelService.checkAvailability(params, { checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
 
     return sendResponse(res, StatusCode.OK, "", { availability });
 }
@@ -144,7 +99,7 @@ const checkAvailabilityByRoomType = async (req: Request, res: Response) => {
     const { typeId } = req.params as { hotelId: string, typeId: string };
     const { checkIn, checkOut } = req.body; 
 
-    const availability = await BookingService.checkAvailabilityByTypeId({ roomTypeId: typeId, checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
+    const availability = await HotelService.checkAvailabilityByTypeId({ roomTypeId: typeId, checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
 
     return sendResponse(res, StatusCode.OK, "", { availability });
 }

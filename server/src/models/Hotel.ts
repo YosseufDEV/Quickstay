@@ -2,22 +2,22 @@ import { Optional } from "@/utils/optional";
 import drizzle, { type Transaction } from "@/db/drizzle";
 import { hotels, rooms, amenities as s_amenities, hotelsAmenities, hotelsCatalogs, hotelsFees } from "../db/schema";
 import Room from "./Room";
-import { desc, eq, inArray, sql, exists, and } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { HotelError, isCheckInDateSmallerThanCheckOutDateError } from "@/errors/hotelErrors";
 import type { drizzle as d } from "drizzle-orm/node-postgres";
 
-interface HotelFee {
+export interface HotelFee {
     feeType: string
+    // TODO: Rename this to percentage
     amount: number
-    isPercentage: boolean
 }
 
-interface HotelAmenity {
+export interface HotelAmenity {
     id: number,
     slug: string
 }
 
-interface HotelCatalog {
+export interface HotelCatalog {
     id?: string,
     hotelId?: string,
     roomType: string,
@@ -26,7 +26,7 @@ interface HotelCatalog {
     imageUrl: string 
 }
 
-interface HotelRoom { 
+export interface HotelRoom { 
     id?: string
     hotelId?: string
     typeId: string
@@ -62,7 +62,7 @@ interface RowHotelData {
 }
 
 class Hotel {
-    private static generateCatalogQuery = (drizzle: ReturnType<typeof d>) => {
+    private static generateCatalogQuery = (drizzle: ReturnType<typeof d> | Transaction) => {
         const catalogQuery = drizzle.select({
             hotelId: hotelsCatalogs.hotelId,
             catalog: 
@@ -85,7 +85,7 @@ class Hotel {
         return catalogQuery;
     }
 
-    private static generateRoomsQuery = (drizzle: ReturnType<typeof d>, whereClause?: any) => {
+    private static generateRoomsQuery = (drizzle: ReturnType<typeof d> | Transaction, whereClause?: any) => {
         return drizzle
                     .select({
                         hotelId: rooms.hotelId,
@@ -221,13 +221,13 @@ class Hotel {
             .groupBy(hotelsAmenities.hotelId)
             .as("amenities");
 
-        const catalogQuery = this.generateCatalogQuery(drizzle);
+        const catalogQuery = this.generateCatalogQuery(tx ?? drizzle);
 
         let hotelQ = (tx ?? drizzle).select()
             .from(hotelSq)
-            .where(eq(hotelSq.id, hotelId))
             .leftJoin(amenitiesQuery, eq(hotelSq.id, amenitiesQuery.hotelId))
             .leftJoin(catalogQuery, eq(hotelSq.id, catalogQuery.hotelId))
+            .where(eq(hotelSq.id, hotelId))
 
         if(withRooms) {
             const roomsQuery = this.generateRoomsQuery(drizzle);

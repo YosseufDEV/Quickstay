@@ -135,6 +135,7 @@ export const rooms = pgTable("rooms", {
 (table) => [
     index("rooms_hotel_id_idx").on(table.hotelId), 
     index("rooms_hotel_status_idx").on(table.hotelId, table.status), 
+    index("rooms_type_id_idx").on(table.typeId),
     unique("rooms_hotel_room_number_unique").on(table.hotelId, table.number)
 ]);
 

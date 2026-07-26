@@ -17,6 +17,7 @@
     "types": ["jest"],
     // For nodejs:
     "allowImportingTsExtensions": true,
+    "exactOptionalPropertyTypes": false,
     "lib": ["ESNext"],
     // "types": ["node"],
     // and npm install -D @types/node
@@ -28,7 +29,6 @@
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
 
     // Style Options
     // "noImplicitReturns": true,

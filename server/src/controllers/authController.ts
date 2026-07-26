@@ -49,13 +49,13 @@ const refreshToken = async (req: Request, res: Response) => {
          if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
             switch (error.name) {
                 case "TokenExpiredError":
-                    throw new TokenRefreshError("token_expired");
+                    throw new TokenRefreshError({ message: "token_expired" });
                 case "NotBeforeError":
-                    throw new TokenRefreshError("token_not_active");
+                    throw new TokenRefreshError({ message: "token_not_active" });
                 case "JsonWebTokenError":
-                    throw new TokenRefreshError("token_invalid");
+                    throw new TokenRefreshError({ message: "token_invalid" });
                 default:
-                    throw new TokenRefreshError("unknown_token_error");
+                    throw new TokenRefreshError({ message: "unknown_token_error" });
             }
         }
         throw error;
@@ -67,7 +67,7 @@ const register = async (req: Request, res: Response) => {
 
     const existingUser = await User.getUserByEmail(email);
 
-    if(existingUser) throw new UserError("email_already_in_use", StatusCode.CONFLICT);
+    if(existingUser) throw new UserError({ message: "email_already_in_use", statusCode: StatusCode.CONFLICT });
 
     const user = await User.createUser({ email, firstName, lastName, password, country });
 
@@ -80,9 +80,9 @@ const login = async (req: Request, res: Response) => {
 
     const user = await User.getUserByEmail(email);
 
-    if(!user) throw new AuthenticationError("invalid_credentials");
+    if(!user) throw new AuthenticationError({ message: "invalid_credentials" });
     
-    if(!await bcrypt.compare(password, user.password)) throw new AuthenticationError("invalid_credentials");
+    if(!await bcrypt.compare(password, user.password)) throw new AuthenticationError({ message: "invalid_credentials" });
     
     const payload = { userId: user.id, sessionId: crypto.randomUUID(), role: user.role };
 

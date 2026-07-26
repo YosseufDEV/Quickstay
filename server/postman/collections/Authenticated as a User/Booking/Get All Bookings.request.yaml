@@ -1,0 +1,5 @@
+$kind: http-request
+url: "{{baseURL}}/bookings"
+method: GET
+settings: {}
+order: 2000

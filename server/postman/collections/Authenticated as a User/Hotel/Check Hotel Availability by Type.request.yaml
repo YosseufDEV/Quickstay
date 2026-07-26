@@ -1,0 +1,21 @@
+$kind: http-request
+name: Check Hotel Availability by Type
+url: "{{baseURL}}/hotels/{{hotelId}}/rooms/{{hotelRoomTypeId}}/availability"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"checkIn\": \"2026-7-27\",\r
+
+    \    \"checkOut\": \"2026-8-29\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.collectionVariables.set(\"hotelId\", pm.response.json().payload.hotels[0].id)\r
+
+      pm.collectionVariables.set(\"hotelRoomTypeId\", pm.response.json().payload.hotels[0].catalog[0].id)\r\n"
+    language: text/javascript
+settings: {}
+order: 5124

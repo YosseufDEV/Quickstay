@@ -11,7 +11,7 @@ import { getHotelById,
 const router: Router = Router();
 
 router.get("/", getHotels);
-router.get("/:id", getHotelById);
+router.get("/:hotelId", getHotelById);
 router.get("/:id/rooms", getHotelRoomsById);
 router.post("/:hotelId/rooms/:typeId/availability", checkAvailabilityByRoomType);
 router.post("/:hotelId/rooms/:roomId", getHotelRoomById);

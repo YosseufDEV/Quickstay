@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseURL}}/auth/logout"
+method: POST
+scripts:
+  - type: afterResponse
+    code: pm.collectionVariables.set("accessToken", "")
+    language: text/javascript
+settings: {}
+order: 4000
