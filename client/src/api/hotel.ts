@@ -15,4 +15,19 @@ const getHotelById = async (id: string) => {
 
 }
 
-export { getHotels, getHotelById };
+export interface AvailabilityResponse {
+    availability: {
+        hotelId: string
+        catalogAvailability: {
+            typeId: string
+            isAvailalbe: boolean
+        }[]
+    }
+}
+
+const checkAvailability = async (hotelId: string, checkIn: Date, checkOut: Date): Promise<AvailabilityResponse> => {
+    const { data } = await api.post(`/hotels/${hotelId}/availability`, { checkIn, checkOut });
+    return data.payload;
+}
+
+export { getHotels, getHotelById, checkAvailability };

@@ -1,19 +1,17 @@
-import { getHotelById } from "@/api/hotel";
+import { getHotelById, type AvailabilityResponse } from "@/api/hotel";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import type { IHotel, slug } from "@quickstay/types/Hotel";
 import HotelAmenity from "../HotelsView/Components/HotelAmenity/HotelAmenity.tsx";
 import StarsRating from "@/Components/StarsRating/StarsRating";
 import Location from "@/Components/Location/Location";
 import SkeletonHotelView from "./Components/SkeletonHotelsView";
 import RoomCard from "./Components/RoomCard.tsx";
-import Arrow from "@/assets/arrowLeft.svg?react"
-import { ArrowLeft } from "lucide-react";
 import BackwardArrow from "@/Components/BackwardArrow/BackwardArrow.tsx";
 import DatePicker from "@/Components/DatePicker/DatePicker.tsx";
 import { createContext, useEffect, useRef, useState, type RefObject } from "react";
 import { formatDate } from "date-fns";
-import { checkAvailability } from "@/api/booking.ts";
+import { checkAvailability } from "@/api/hotel.ts";
 
 interface Hotel {
     id: string;
@@ -60,7 +58,7 @@ const HotelView = () => {
     const checkOutParam = searchParams.get("checkout");
 
     const { isCheckinValid, isCheckoutValid } = isValidRangeParams(checkInParam, checkOutParam);
-    const [availability, setAvailability] = useState({});
+    const [availability, setAvailability] = useState<AvailabilityResponse>(null as unknown as AvailabilityResponse | null);
 
     // INFO: Range for booking, checkin and checkout
     const [range, setRange] = useState<{ from: Date, to: Date }>({
@@ -132,7 +130,7 @@ const HotelView = () => {
                     <p className="font-Playfair text-3xl mb-10">Rooms</p>
                     <div className="flex items-center justify-start gap-5">
                     { /* TODO: Implement availability logic */ }
-                        {hotel.catalog.map((room) => <RoomCard roomTypeId={room.id} available={Math.random() > 0.5} {...room} hotelId={hotel.id} />)}
+                    { hotel.catalog.map((room) => <RoomCard roomTypeId={room.id} available={ availability?.availability.catalogAvailability[room.roomType] } {...room} hotelId={hotel.id} />) }
                     </div>
                 </div>
             </div>

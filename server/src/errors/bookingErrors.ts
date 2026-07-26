@@ -19,7 +19,7 @@ export const isDuplicateBookingError = (err: any): boolean => {
 
 export class BookingError extends AppError {
     constructor(message: string, code?: number, originalError?: Error) {
-        super(message, code || 400, originalError);
+        super({ message, statusCode: code || 400, originalError });
         this.name = "BookingError";
     }
 }
