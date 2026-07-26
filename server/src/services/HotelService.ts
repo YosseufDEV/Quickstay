@@ -63,7 +63,7 @@ class HotelService {
                                         overlappingBookingsCount: sql<number>`COUNT(DISTINCT ${hotelsBookings.roomId})`.as("overlappingBookingsCount")
                                     })
                                     .from(hotelsBookings)
-                                    .where(sql`${hotelsBookings.timeRange} && tstzrange(${checkIn}, ${checkOut}, '[]')`)
+                                    .where(sql`${hotelsBookings.timeRange} && tstzrange(${checkIn}, ${checkOut}, '[)')`)
                                     .groupBy(hotelsBookings.roomTypeId)
                                     .as("booking");
 

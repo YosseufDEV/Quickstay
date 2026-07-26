@@ -53,7 +53,7 @@ export const tstzrange = customType<{ data: { from: Date, to: Date } }>({
     toDriver(value) {
         const from = value.from.toISOString();
         const to = value.to.toISOString();
-        return `[${from},${to}]`;
+        return `[${from},${to})`;
     },
 
     fromDriver(value) {
