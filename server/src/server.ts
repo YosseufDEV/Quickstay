@@ -5,7 +5,6 @@ import { logger } from "./utils/logger.js";
 
 const PORT = process.env.PORT || 5050;
 
-
 await redis.connect().then(() => logger.info('Connected to Redis')).catch((error) => logger.error(`Redis connection error: ${error.message}`, { stack: error.stack }));
 await drizzle.$client.connect().then(() => logger.info('Connected to PostgreSQL')).catch((error) => logger.error(`PostgreSQL connection error: ${error.message}`, { stack: error.stack }));
 

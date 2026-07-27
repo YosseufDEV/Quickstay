@@ -1,5 +1,6 @@
 interface ErrorPayload {
   message: string;
+  name?: string;
   statusCode?: number;
   originalError?: Error;
   payload?: Record<string, any>;
@@ -12,11 +13,11 @@ export class AppError extends Error {
   payload?: Record<string, any>;
   name: string;
 
-  constructor({ message, statusCode = 500, originalError, payload }: ErrorPayload) {
+  constructor({ message, statusCode = 500, originalError, payload, name='AppError' }: ErrorPayload) {
     super(message);
     this.statusCode = statusCode;
     this.message = message;
-    this.name = "AppError";
+    this.name = name;
     this.originalError = originalError;
     this.payload = payload;
   }

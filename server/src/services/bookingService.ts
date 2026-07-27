@@ -69,7 +69,7 @@ class BookingService {
             const paymentIntent = await Payment.getOrCreatePaymentIntent({
                 bookingId: details.id,
                 userId,
-                amount: invoice.totalPrice * 100, // Convert to cents
+                amount: invoice.totalPrice * 100, // INFO: Convert to cents
                 currency: "usd"
             }, tx);
 
@@ -91,12 +91,12 @@ class BookingService {
 
             if(!payment) {
                 logger.error(`Failed to confirm payment intent ${paymentIntentId}`);
-                throw new AppError("Failed to confirm payment", 402);
+                throw new AppError({ message: "Failed to confirm payment", statusCode: 402, name: "BookingPaymentError" });
             }
 
-            const bookingId = await drizzle.query.payments.findFirst({
+            const bookingId = await tx.query.payments.findFirst({
                 where: {
-                    stripePaymentIntentId: paymentIntentId,
+                        stripePaymentIntentId: paymentIntentId,
                 },
                 columns: {
                     bookingId: true,
@@ -105,14 +105,14 @@ class BookingService {
 
             if(!bookingId) {
                 logger.error(`Failed to find booking for payment intent No booking with this payment intent exists ${paymentIntentId}`);
-                throw new AppError("Failed to find booking for payment", 404);
+                throw new AppError({ message: "Failed to find booking for payment", statusCode: 404, name: "BookingPaymentError" });
             }
 
             const booking = await Booking.confirmBooking(bookingId, tx);
 
             if(!booking || booking.bookingStatus !== "CONFIRMED") {
                 logger.error(`Failed to confirm booking ${bookingId} with payment intent ${paymentIntentId}`);
-                throw new Error("Failed to confirm booking");
+                throw new AppError({ message: "Failed to confirm booking", name: "BookingPaymentError", statusCode: 400 });
             }
 
             logger.info(`Booking ${bookingId} confirmed with payment intent ${paymentIntentId}`, { data: { bookingId, paymentIntentId } });

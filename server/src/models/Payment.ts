@@ -3,6 +3,7 @@ import drizzle, { type Transaction } from "@/db/drizzle";
 import { hotelsBookings, payments } from "@/db/schema";
 import { and, eq, not } from "drizzle-orm";
 import { logger } from "@/utils/logger";
+import { AppError } from "@/errors/errors";
 
 const stripe = new s(process.env.STRIPE_SECRET_KEY as string);
 
@@ -53,7 +54,7 @@ class Payment {
         const paymentIntent =  await stripe.paymentIntents.retrieve(stripePaymentIntentId);
 
         if(!paymentIntent) {
-            throw new Error(`Payment intent ${stripePaymentIntentId} not found`);
+            throw new AppError({ message: "Payment intent not found or already confirmed", name: "PaymentError" });
         }
         
         return paymentIntent;
@@ -63,10 +64,11 @@ class Payment {
         const [updatedPayment] = await (tx ?? drizzle).update(payments).set({ status: "PAID", paidAt: new Date() }).where(and(eq(payments.stripePaymentIntentId, stripePaymentIntentId), not(eq(payments.status, 'PAID')))).returning();
 
         if(!updatedPayment) {
-            throw new Error("Payment intent not found or already confirmed");
+            throw new AppError({ message: "Payment intent not found or already confirmed", name: "PaymentError" });
         }
 
-        logger.info(`Payment intent ${stripePaymentIntentId} confirmed and booking ${updatedPayment.bookingId} status updated to CONFIRMED`);
+        logger.info(`Payment intent ${stripePaymentIntentId} confirmed`);
+
         return updatedPayment;
     }
 }
