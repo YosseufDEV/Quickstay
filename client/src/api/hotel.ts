@@ -16,18 +16,16 @@ const getHotelById = async (id: string) => {
 }
 
 export interface AvailabilityResponse {
+    hotelId: string
     availability: {
-        hotelId: string
-        catalogAvailability: {
-            typeId: string
-            isAvailalbe: boolean
-        }[]
-    }
+        typeId: string
+        isAvailalbe: boolean
+    }[]
 }
 
 const checkAvailability = async (hotelId: string, checkIn: Date, checkOut: Date): Promise<AvailabilityResponse> => {
     const { data } = await api.post(`/hotels/${hotelId}/availability`, { checkIn, checkOut });
-    return data.payload;
+    return data.payload as AvailabilityResponse;
 }
 
 export { getHotels, getHotelById, checkAvailability };

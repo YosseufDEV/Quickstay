@@ -8,10 +8,10 @@ const errorHandlingMiddleware = (err: Error | AppError, req: any, res: any, next
 
     if(err instanceof AppError) {
         logger.debug(`${err.originalError ?? err.message}`, { data: { errorName: err.name, ip: req.ip, path: req.path, method: req.method } });
-        return sendResponse(res, err.statusCode, err.message, err.payload);
+        return sendResponse(res, { statusCode: err.statusCode, message: err.message, errors: err.payload });
     }
     logger.debug(`${err}`, { data: { ip: req.ip, path: req.path, method: req.method } });
-    return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "internal_server_error");
+    return sendResponse(res, { statusCode: StatusCode.INTERNAL_SERVER_ERROR, message: "internal_server_error" });
 }
 
 export { errorHandlingMiddleware };

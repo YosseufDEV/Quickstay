@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import { and, eq, sql } from "drizzle-orm";
 import { parseRequest } from "@/helpers/parseRequest";
 import type { RequestParamHandler } from "express";
+import { AppError } from "@/errors/errors";
 
 class HotelService {
     static async getHotels(query: { limit?: string, offset?: string, sort?: string, order?: "asc" | "desc" }) {
@@ -81,7 +82,7 @@ class HotelService {
         const result = await drizzle
                             .select({
                                 hotelId: hotelsCatalogs.hotelId,
-                                catalogAvailability: sql`
+                                availability: sql`
                                     json_agg(
                                         json_build_object(
                                             'typeId', ${hotelsCatalogs.id},
@@ -100,10 +101,17 @@ class HotelService {
                                 logger.error(`Failed to check availability for hotel ${hotelId} from ${checkIn} to ${checkOut}`);
                                 throw new BookingError('Failed to check availability', 400, err);
                             });
+
+        if(!result) {
+            throw new AppError({ message: "availability_not_found", statusCode: 404 });
+        }
+
         return result;
     }
 
-    static async checkAvailabilityByTypeId({ roomTypeId, checkIn, checkOut }: { roomTypeId: string, checkIn: Date, checkOut: Date }) {
+    static async checkAvailabilityByTypeId(params: Record<any, any>, { checkIn, checkOut }: { checkIn: Date, checkOut: Date }) {
+        const { typeId, hotelId } = parseRequest(z.object({ typeId: z.uuid(), hotelId: z.uuid() }), params) as { typeId: string, hotelId: string };
+
         checkIn = dayjs(checkIn).startOf("day").utc().toDate();
         checkOut = dayjs(checkOut).startOf("day").utc().toDate();
 
@@ -116,8 +124,12 @@ class HotelService {
                                 })
                                 .from(rooms)
                                 .leftJoin(hotelsBookings, and(eq(hotelsBookings.roomId, rooms.id), sql`${hotelsBookings.timeRange} && tstzrange(${checkIn}, ${checkOut}, '[]')`))
-                                .where(eq(rooms.typeId, roomTypeId))
+                                .where(and(eq(rooms.typeId, typeId), eq(rooms.hotelId, hotelId)))
                                 .groupBy(rooms.typeId, rooms.hotelId)
+
+        if(!result.length) {
+            throw new AppError({ message: "availability_not_found", statusCode: 404 });
+        }
 
         return result;
     }

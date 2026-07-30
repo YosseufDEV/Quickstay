@@ -1,4 +1,5 @@
 $kind: http-request
+name: Create Booking
 url: "{{baseURL}}/bookings"
 method: POST
 body:
@@ -7,11 +8,11 @@ body:
 
     \    \"hotelId\": \"{{hotelId}}\",\r
 
-    \    \"roomTypeId\": \"{{hotelRoomTypeId}}\", \r
+    \    \"roomTypeId\": \"{{hotelRoomTypeId}}\",\r
 
-    \    \"checkIn\": \"2026-7-25\",\r
+    \    \"checkIn\": \"2026-10-02\",\r
 
-    \    \"checkOut\": \"2026-7-29\"\r
+    \    \"checkOut\": \"2026-10-03\"\r
 
     }"
 scripts:

@@ -1,3 +1,4 @@
+import { Optional } from "@/utils/optional";
 import type { Response } from "express";
 
 enum StatusCode {
@@ -13,11 +14,20 @@ enum StatusCode {
     INTERNAL_SERVER_ERROR = 500,
 }
 
-const sendResponse = (res: Response, status: StatusCode, message?: string, payload?: any, meta? : any) => {
-    if(!payload && !message) {
-        return res.sendStatus(status);
+interface ResponseOptions {
+    statusCode: StatusCode;
+    message?: string;
+    payload?: any;
+    errors?: any;
+    meta?: any;
+}
+
+const sendResponse = (res: Response,  { statusCode, message, payload, errors, meta }: ResponseOptions) => {
+    if(!message && !payload && !errors && !meta) {
+        return res.sendStatus(statusCode);
     }
-    return res.status(status).json({ ...(message?.length ? { message } : {} ), payload, meta });
+
+    return res.status(statusCode).json({ ...Optional("message", message, message), payload, meta, errors });
 }
 
 export { sendResponse, StatusCode };

@@ -1,0 +1,1 @@
+ALTER TABLE "hotels" ADD COLUMN "currency" text DEFAULT 'USD' NOT NULL;

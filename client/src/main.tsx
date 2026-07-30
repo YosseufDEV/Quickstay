@@ -13,6 +13,7 @@ import BookingView from './Views/BookingView/BookingView.tsx'
 import SuccessBookingView from './Views/BookingView/SuccessBookingView.tsx'
 import ProtectedRoute from './routes/ProtectedRoute.tsx'
 import RedirectOnly from './routes/RedirectOnly.tsx'
+import MyBookings from './Views/Protected/MyBookings/MyBookings.tsx'
 
 const router = createBrowserRouter([ 
     {
@@ -22,6 +23,13 @@ const router = createBrowserRouter([
             {
                 index: true,
                 Component: HomeView
+            },
+            {
+                path: "/my-bookings",
+                element: 
+                    <ProtectedRoute>
+                        <MyBookings />
+                    </ProtectedRoute>
             },
             {
                 path: "/hotels",

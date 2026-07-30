@@ -1,6 +1,6 @@
 import s from "stripe";
 import drizzle, { type Transaction } from "@/db/drizzle";
-import { hotelsBookings, payments } from "@/db/schema";
+import { hotelsBookings, hotelsBookingsPayments, payments } from "@/db/schema";
 import { and, eq, not } from "drizzle-orm";
 import { logger } from "@/utils/logger";
 import { AppError } from "@/errors/errors";
@@ -14,17 +14,23 @@ interface PaymentIntentData {
     currency: string;
 }
 
-// TODO: Implement Idempotency key for payment intent creation to avoid duplicate charges in case of network issues or retries.
 class Payment {
     static getOrCreatePaymentIntent = async (paymentIntentData: PaymentIntentData, tx?: Transaction) => {
-        const existingPayment = await (tx ?? drizzle).query.payments.findFirst({
+        const existingPayment = await (tx ?? drizzle).query.hotelsBookingsPayments.findFirst({
             where: {
                 bookingId: paymentIntentData.bookingId,
             },
+            with: {
+                payment: {
+                    columns: {
+                        stripePaymentIntentId: true,
+                    }
+                },
+            }
         });
         
-        if(existingPayment) {
-            const paymentIntent = await this.getPaymentIntent(existingPayment.stripePaymentIntentId);
+        if(existingPayment?.payment?.stripePaymentIntentId) {
+            const paymentIntent = await this.getPaymentIntent(existingPayment.payment.stripePaymentIntentId);
             return { clientSecret: paymentIntent.client_secret };
         }
         
@@ -38,12 +44,21 @@ class Payment {
             currency: paymentIntentData.currency,
         })
 
-        await (tx ?? drizzle).insert(payments).values({
+        const payment = await (tx ?? drizzle).insert(payments).values({
+                            stripePaymentIntentId: paymentIntent.id,
+                            amount: paymentIntentData.amount,
+                            currency: paymentIntentData.currency,
+                            status: "PENDING",
+                        })
+                        .returning()
+                        .then(([payment]) => payment!);
+
+        await (tx ?? drizzle).insert(hotelsBookingsPayments).values({
             bookingId: paymentIntentData.bookingId,
-            stripePaymentIntentId: paymentIntent.id,
-            amount: paymentIntentData.amount,
-            currency: paymentIntentData.currency,
-            status: "PENDING",
+            paymentId: payment.id,
+        }).catch((err) => {
+            logger.error(`Error creating hotelsBookingsPayments record: ${err.message}`);
+            throw new AppError({ message: "Error creating hotelsBookingsPayments record", name: "DatabaseError" });
         });
 
         return { clientSecret: paymentIntent.client_secret };

@@ -22,7 +22,7 @@ const JWT_REFRESH_EXPIRATION_TIME_MS = turnIntoTimestamp(JWT_REFRESH_EXPIRATION_
 const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
 
-    if(!refreshToken) return sendResponse(res, StatusCode.BAD_REQUEST, "no_token_provided");
+    if(!refreshToken) return sendResponse(res, { statusCode: StatusCode.BAD_REQUEST, message: "no_token_provided" });
 
     try {
         const usedToken = jwt.verify(refreshToken, JWT_REFRESH_SECRET as string, { algorithms: ["HS256"] }) as jwt.JwtPayload;
@@ -34,7 +34,7 @@ const refreshToken = async (req: Request, res: Response) => {
         const sessionValid = await isSessionValid(refreshToken, payload);
 
         if(!sessionValid.valid) {
-            return sendResponse(res, StatusCode.BAD_REQUEST, sessionValid.reason || "invalid_session");
+            return sendResponse(res, { statusCode: StatusCode.BAD_REQUEST, message: sessionValid.reason || "invalid_session" });
         }
 
         const expirationTime = usedToken.exp ? (usedToken.exp - Date.now()/1000) : JWT_REFRESH_EXPIRATION_TIME_MS/1000;
@@ -43,7 +43,7 @@ const refreshToken = async (req: Request, res: Response) => {
 
         await insertSession(newRefreshToken as string, payload, expirationTime);
 
-        return sendResponse(res, StatusCode.OK, "", { accessToken });
+        return sendResponse(res, { statusCode: StatusCode.OK, payload: { accessToken } });
 
     } catch (error) {
          if(error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
@@ -71,7 +71,7 @@ const register = async (req: Request, res: Response) => {
 
     const user = await User.createUser({ email, firstName, lastName, password, country });
 
-    return sendResponse(res, StatusCode.CREATED, "", { user });
+    return sendResponse(res, { statusCode: StatusCode.CREATED, payload: { user } });
 }
 
 
@@ -93,7 +93,7 @@ const login = async (req: Request, res: Response) => {
 
     res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS, secure: process.env.NODE_ENV == "production" });
 
-    return sendResponse(res, StatusCode.OK, "", { accessToken, user: { ...user, password: undefined } });
+    return sendResponse(res, { statusCode: StatusCode.OK, payload: { accessToken, user: { ...user, password: undefined } } });
 }
 
 const logout = async (req: AuthenticatedRequest, res: Response) => {
@@ -101,7 +101,7 @@ const logout = async (req: AuthenticatedRequest, res: Response) => {
 
     res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV == "production" });
 
-    return sendResponse(res, StatusCode.OK);
+    return sendResponse(res, { statusCode: StatusCode.OK });
 }
 
 export { login, register, refreshToken, logout }

@@ -1,3 +1,4 @@
+import { sendResponse } from "@/helpers/response";
 import { ZodError, type ZodObject } from "zod"
 
 export const validateRequest = (schema: ZodObject) => {
@@ -8,11 +9,10 @@ export const validateRequest = (schema: ZodObject) => {
         } catch (error) {
             if (error instanceof ZodError) {
                 const issues = error.issues.reduce(((acc: any, issue) => ( { ...acc, [issue.path[0] as string]: issue.message } )), {});
-                console.log(error);
 
-                res.status(422).json({ issues });
+                return sendResponse(res, { statusCode: 422, errors: { issues } });
             } else {
-                res.status(400).json({ message: "Unknown validation error" });
+                return sendResponse(res, { statusCode: 400, message: "Unknown validation error" });
             }
         }
     }

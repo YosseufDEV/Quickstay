@@ -18,10 +18,10 @@ const addHotel = async (req: Request, res: Response) => {
         //     exactAddress,
         //     amenities
         // });
-        // return sendResponse(res, StatusCode.CREATED, "", { hotel });
+        // return sendResponse(res, { statusCode: StatusCode.CREATED, payload: { hotel } }) ;
     } catch (error) {
         console.log(error);
-        return sendResponse(res, StatusCode.INTERNAL_SERVER_ERROR, "An error occurred while creating the hotel");
+        return sendResponse(res, { statusCode: StatusCode.INTERNAL_SERVER_ERROR, message: "An error occurred while creating the hotel" });
     }
 }
 
@@ -30,7 +30,7 @@ const getHotels = async (req: Request, res: Response) => {
 
     const hotels = await HotelService.getHotels(query);
 
-    return sendResponse(res, StatusCode.OK, "", { hotels })
+    return sendResponse(res, { statusCode: StatusCode.OK, payload: { hotels } }) 
 }
 
 const getHotelById = async (req: Request, res: Response) => {
@@ -38,7 +38,7 @@ const getHotelById = async (req: Request, res: Response) => {
 
     const hotel = await HotelService.getHotelById(params);
 
-    return sendResponse(res, StatusCode.OK, "", { hotel });
+    return sendResponse(res, { statusCode: StatusCode.OK, payload: { hotel } }) ;
 }
 
 const getHotelRoomsById = async (req: Request, res: Response) => {
@@ -50,27 +50,27 @@ const getHotelRoomsById = async (req: Request, res: Response) => {
     //
     // const rooms = await Room.getRoomsByHotelId(id);
     //
-    // return sendResponse(res, StatusCode.OK, "", { rooms: rooms });
+    // return sendResponse(res, { statusCode: StatusCode.OK, payload: { rooms: rooms } }) ;
 }
 
 const getHotelRoomById = async (req: Request, res: Response) => {
     const { hotelId, roomId } = req.params as { hotelId: string, roomId: string };
 
     if(!hotelId || typeof hotelId !== "string") {
-        return sendResponse(res, StatusCode.BAD_REQUEST, "hotel_id_required");
+        return sendResponse(res, { statusCode: StatusCode.BAD_REQUEST, message: "hotel_id_required" });
     }
 
     if(!roomId || typeof roomId !== "string") {
-        return sendResponse(res, StatusCode.BAD_REQUEST, "room_id_required");
+        return sendResponse(res, { statusCode: StatusCode.BAD_REQUEST, message: "room_id_required" });
     }
     
     const room = await Room.getRoomById(roomId);
 
     if(!room || room.hotelId !== hotelId) {
-        return sendResponse(res, StatusCode.NOT_FOUND, "room_not_found");
+        return sendResponse(res, { statusCode: StatusCode.NOT_FOUND, message: "room_not_found" });
     }
     
-    return sendResponse(res, StatusCode.OK, "", { room });
+    return sendResponse(res, { statusCode: StatusCode.OK, payload: { room } }) ;
 }
 
 const getHotelCatalogById = async (req: Request, res: Response) => {
@@ -82,7 +82,7 @@ const getHotelCatalogById = async (req: Request, res: Response) => {
     //     return sendResponse(res, StatusCode.NOT_FOUND, "hotel_catalog_not_found");
     // }
     //
-    // return sendResponse(res, StatusCode.OK, "", { catalog });
+    // return sendResponse(res, { statusCode: StatusCode.OK, payload: { catalog } }) ;
 }
 
 const checkAvailability = async (req: Request, res: Response) => {
@@ -92,24 +92,24 @@ const checkAvailability = async (req: Request, res: Response) => {
 
     const availability = await HotelService.checkAvailability(params, { checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
 
-    return sendResponse(res, StatusCode.OK, "", { availability });
+    return sendResponse(res, { statusCode: StatusCode.OK, payload: { ...availability } }) ;
 }
 
 const checkAvailabilityByRoomType = async (req: Request, res: Response) => {
-    const { typeId } = req.params as { hotelId: string, typeId: string };
     const { checkIn, checkOut } = req.body; 
 
-    const availability = await HotelService.checkAvailabilityByTypeId({ roomTypeId: typeId, checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
+    const availability = await HotelService.checkAvailabilityByTypeId(req.params, { checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
 
-    return sendResponse(res, StatusCode.OK, "", { availability });
+    return sendResponse(res, { statusCode: StatusCode.OK, payload: { ...availability } }) ;
 }
 
-export { addHotel, 
-         getHotels, 
-         getHotelById, 
-         getHotelRoomsById, 
-         getHotelRoomById, 
-         getHotelCatalogById, 
-         checkAvailability,
-         checkAvailabilityByRoomType
+export { 
+    addHotel, 
+    getHotels, 
+    getHotelById, 
+    getHotelRoomsById, 
+    getHotelRoomById, 
+    getHotelCatalogById, 
+    checkAvailability,
+    checkAvailabilityByRoomType
 };

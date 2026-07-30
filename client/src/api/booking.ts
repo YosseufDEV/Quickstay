@@ -53,10 +53,14 @@ interface AvailabilityResponse {
     }
 }
 
-
 const createBooking = async (bookingData: BookingData): Promise<BookingResponse> => {
    const { data } = await api.post("/bookings", bookingData);
    return data.payload;
+}
+
+const getUserBookings = async (userId: string): Promise<BookingResponse[]> => {
+    const { data } = await api.get(`/${userId}/bookings`);
+    return data.payload.bookings;
 }
 
 const checkAvailability = async (hotelId: string, checkIn: Date, checkOut: Date): Promise<AvailabilityResponse> => {

@@ -79,7 +79,6 @@ const HotelView = () => {
             const checkoutTime = range.to;
             checkAvailability(hotelId, checkinTime, checkoutTime).then((availabilityResponse) => {
                 setAvailability(availabilityResponse);
-                console.log("Availability response:", availabilityResponse);
             }).catch((error) => {
                 console.error("Error checking availability:", error);
             });
@@ -96,7 +95,7 @@ const HotelView = () => {
 
     console.log("HotelView: hotel data", hotel, "status", status);
     
-    return ( status=="success" ?
+    return ( status=="success" && !(searchParams.get("skeleton")) ?
         <HotelContext.Provider value={{ range, datePickerRef }}>
             <div className="min-h-screen w-full">
                 <div className="bg-[#fdfdfd] w-full mb-10 content-container flex flex-col gap-5">
@@ -129,8 +128,7 @@ const HotelView = () => {
                 <div className="bg-secondary flex flex-col items-center content-container">
                     <p className="font-Playfair text-3xl mb-10">Rooms</p>
                     <div className="flex items-center justify-start gap-5">
-                    { /* TODO: Implement availability logic */ }
-                    { hotel.catalog.map((room) => <RoomCard roomTypeId={room.id} available={ availability?.availability.catalogAvailability[room.roomType] } {...room} hotelId={hotel.id} />) }
+                    { hotel.catalog.map((room) => <RoomCard roomTypeId={room.id} available={ availability?.availability[room.id] } {...room} hotelId={hotel.id} />) }
                     </div>
                 </div>
             </div>

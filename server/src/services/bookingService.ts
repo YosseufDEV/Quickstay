@@ -1,5 +1,5 @@
 import drizzle, { type Transaction } from "@/db/drizzle";
-import { hotels, hotelsBookings, hotelsCatalogs, hotelsFees, payments, rooms } from "@/db/schema";
+import { hotels, hotelsBookings, hotelsCatalogs, hotelsFees, payments, hotelsBookingsPayments } from "@/db/schema";
 import { BookingError } from "@/errors/bookingErrors";
 import { AppError } from "@/errors/errors";
 import Booking, { type BookingResponse } from "@/models/Booking";
@@ -32,7 +32,6 @@ class BookingService {
                                                 userId: hotelsBookings.userId,
                                                 timeRange: hotelsBookings.timeRange,
                                                 bookingStatus: hotelsBookings.bookingStatus,
-                                                stripePaymentIntentId: payments.stripePaymentIntentId,
                                                 checkInStatus: hotelsBookings.checkInStatus,
                                                 hotel: {
                                                     id: hotels.id,
@@ -46,10 +45,11 @@ class BookingService {
                                             .from(hotelsBookings)
                                             .where(
                                                 and(
-                                                    eq(hotelsBookings.timeRange, sql`tstzrange(${from}, ${to}, '[]')`), 
+                                                    eq(hotelsBookings.timeRange, sql`tstzrange(${from}, ${to}, '[)')`), 
                                                     eq(hotelsBookings.userId, userId), eq(hotelsBookings.roomTypeId, roomTypeId), 
                                                     eq(hotelsBookings.bookingStatus, 'PENDING_PAYMENT')))
-                                            .leftJoin(payments, eq(payments.bookingId, hotelsBookings.id))
+                                            .leftJoin(hotelsBookingsPayments, eq(hotelsBookings.id, hotelsBookingsPayments.bookingId))
+                                            .leftJoin(payments, eq(hotelsBookingsPayments.paymentId, payments.id))
                                             .leftJoin(hotels, eq(hotelsBookings.hotelId, hotels.id))
                                             .then(([booking]) => booking as BookingResponse["details"])
                                             .catch((err) => {
@@ -59,18 +59,19 @@ class BookingService {
 
             const details: BookingResponse["details"] & { stripePaymentIntentId?: string | null } = existingBooking ?? ( await Booking.createBooking({ userId, roomTypeId, hotelId, from, to }, tx) ).details;
             const numberOfNights = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
-            const invoice = await BookingService.generateInvoice({ hotelId, roomTypeId, numberOfNights, bookingId: details.id }, tx);
+            const invoice = await BookingService.generateInvoice({ hotelId, roomTypeId, numberOfNights, bookingId: details.id }, tx)!;
 
             if(!details || !invoice) {
                 logger.error(`Failed to create booking for user ${userId} in type-id ${roomTypeId} from ${from} to ${to}`, { data: { from, to, userId, roomTypeId, hotelId } });
                 throw new Error("Failed to create booking");
             }
 
+            // INFO: This returns the existing payment intent if a booking-payment record exists, otherwise it creates a new payment intent and returns the client secret for the frontend to use.
             const paymentIntent = await Payment.getOrCreatePaymentIntent({
                 bookingId: details.id,
                 userId,
                 amount: invoice.totalPrice * 100, // INFO: Convert to cents
-                currency: "usd"
+                currency: invoice.currency
             }, tx);
 
             logger.info(`
@@ -81,7 +82,7 @@ class BookingService {
                         bookingId: details.id
                     } 
                 });
-            return { details, invoice, paymentIntentClientSecret: paymentIntent.clientSecret };
+            return { ...{ details }, invoice, paymentIntentClientSecret: paymentIntent.clientSecret };
         })
     }
 
@@ -94,9 +95,9 @@ class BookingService {
                 throw new AppError({ message: "Failed to confirm payment", statusCode: 402, name: "BookingPaymentError" });
             }
 
-            const bookingId = await tx.query.payments.findFirst({
+            const bookingId = await tx.query.hotelsBookingsPayments.findFirst({
                 where: {
-                        stripePaymentIntentId: paymentIntentId,
+                        paymentId: payment.id,
                 },
                 columns: {
                     bookingId: true,
@@ -119,11 +120,38 @@ class BookingService {
         })
     }
 
+    static async getUserBookings(userId: string) {
+        return await drizzle
+                        .select()
+                        .from(hotelsBookings)
+                        .where(eq(hotelsBookings.userId, userId))
+                        .then((bookings) => bookings as BookingResponse["details"][])
+                        .catch((err) => {
+                            logger.error(`Failed to retrieve bookings for user ${userId}`);
+                            throw new BookingError('Failed to retrieve bookings', 400, err);
+                        });
+    }
+
+    static async createBookingPaymentRecord({ bookingId, paymentId }: { bookingId: string, paymentId: string }, tx?: Transaction) {
+        return await (tx ?? drizzle)
+                        .insert(hotelsBookingsPayments)
+                        .values({
+                            bookingId,
+                            paymentId,
+                        })
+                        .then(() => true)
+                        .catch((err) => {
+                            logger.error(`Failed to create booking-payment record for booking ${bookingId} and payment ${paymentId}`);
+                            throw new BookingError('Failed to create booking-payment record', 400, err);
+                        });
+    }
+
     static async generateInvoice({ hotelId, roomTypeId, numberOfNights, bookingId }: { hotelId: string, roomTypeId: string, numberOfNights: number, bookingId: string }, tx?: Transaction) { 
             return await (tx ?? drizzle).
                             select({
                                 bookingId: sql<string>`${bookingId}`,
                                 hotelId: hotelsCatalogs.hotelId,
+                                currency: hotels.currency,
                                 roomType: hotelsCatalogs.roomType,
                                 pricePerNight: hotelsCatalogs.pricePerNight,
                                 numberOfNights: sql<number>`${numberOfNights}::INT`,
@@ -133,8 +161,8 @@ class BookingService {
                             })                
                             .from(hotelsCatalogs)
                             .where(and(eq(hotelsCatalogs.hotelId, hotelId), eq(hotelsCatalogs.id, roomTypeId)))
+                            .innerJoin(hotels, eq(hotelsCatalogs.hotelId, hotels.id))
                             .leftJoin(hotelsFees, eq(hotelsCatalogs.hotelId, hotelsFees.hotelId))
-                            .leftJoin(hotels, eq(hotelsCatalogs.hotelId, hotels.id))
                             .groupBy(hotelsCatalogs.id, hotelsFees.hotelId, hotels.id)
                             .then(([invoice]) => invoice!)
                             .catch((err) => {

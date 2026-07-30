@@ -101,6 +101,7 @@ export const hotels = pgTable(
         checkInTime: time("check_in_time").notNull(),
         checkOutTime: time("check_out_time").notNull(),
         timeZone: text("time_zone").notNull().default("UTC"),
+        currency: text("currency").notNull().default("USD"),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
         updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
     },
@@ -206,9 +207,23 @@ export const hotelsAmenities = pgTable(
     ]
 );
 
+export const hotelsBookingsPayments = pgTable(
+    "hotels_bookings_payments",
+    {
+        bookingId: uuid("booking_id")
+            .notNull()
+            .references(() => hotelsBookings.id, { onDelete: "cascade" }),
+        paymentId: uuid("payment_id")
+            .notNull()
+            .references(() => payments.id, { onDelete: "cascade" }),
+    },
+    (table) => [
+        primaryKey({ columns: [table.bookingId, table.paymentId] })
+    ]
+);
+
 export const payments = pgTable("payments", {
     id: uuid("id").primaryKey().defaultRandom(),
-    bookingId: uuid("booking_id").notNull().references(() => hotelsBookings.id, { onDelete: "cascade" }),
     stripePaymentIntentId: text("stripe_payment_intent_id").notNull().unique(),
     // stripeChargeId: text("stripe_charge_id").notNull().unique(),
     // stripeRefundId: text("stripe_refund_id").unique(),
@@ -221,7 +236,7 @@ export const payments = pgTable("payments", {
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
-export const relations = defineRelations({ payments, hotels, rooms, hotelsBookings, hotelsCatalogs, users, amenities, hotelsAmenities }, (r) => ({
+export const relations = defineRelations({ hotelsBookingsPayments, payments, hotels, rooms, hotelsBookings, hotelsCatalogs, users, amenities, hotelsAmenities }, (r) => ({
     hotelsBookings: {
         room: r.one.rooms({
             from: r.hotelsBookings.roomId,
@@ -272,6 +287,16 @@ export const relations = defineRelations({ payments, hotels, rooms, hotelsBookin
             from: r.rooms.id,
             to: r.hotelsBookings.roomId,
         })
-    }
+    },
+    hotelsBookingsPayments: {
+        booking: r.one.hotelsBookings({
+            from: r.hotelsBookingsPayments.bookingId,
+            to: r.hotelsBookings.id,
+        }),
+        payment: r.one.payments({
+            from: r.hotelsBookingsPayments.paymentId,
+            to: r.payments.id,
+        })
+    },
 }));
 

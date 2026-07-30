@@ -11,4 +11,12 @@ const canGetAllUsers = (user: { role: UserRole }) => {
     return user.role === 'ADMIN';
 }
 
-export { canGetUser, canGetAllUsers };
+const canGetUserBookings = (user: { id: string, role: UserRole }, requestingUserId: string) => {
+    const { id, role } = user;
+
+    console.log(`Checking if user ${requestingUserId} can get bookings for user ${id} with role ${role}`);
+
+    return role === 'ADMIN' || id === requestingUserId;
+}
+
+export { canGetUser, canGetAllUsers, canGetUserBookings };

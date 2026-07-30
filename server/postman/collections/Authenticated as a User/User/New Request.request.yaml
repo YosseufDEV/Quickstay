@@ -1,0 +1,5 @@
+$kind: http-request
+name: New Request
+url: "{{baseURL}}/users/eb2723b3-b7a8-4681-884b-7bd4e35587bc/bookings"
+method: GET
+order: 1899760343582406

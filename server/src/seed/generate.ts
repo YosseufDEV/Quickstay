@@ -64,6 +64,7 @@ export function generateRandomHotel() {
     const rating = parseFloat(((Math.random() + 3) * 5 / 4).toFixed(2));
     const imageUrl = `http://localhost:5001/hotels/${getRandomInt(1, 7)}.webp`;
     const amenities: { amenityId: number, hotelId: string }[] = [];
+    const currency = faker.finance.currencyCode();
 
     const typeMap = new Map<string, boolean>();
 
@@ -131,6 +132,7 @@ export function generateRandomHotel() {
         address,
         rooms,
         fees,
+        currency,
         exactAddress: address,
         checkInTime: "18:00:00",
         checkOutTime: "14:00:00",

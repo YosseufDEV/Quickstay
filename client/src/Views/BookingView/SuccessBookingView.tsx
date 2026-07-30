@@ -36,7 +36,7 @@ const SuccessBookingView = () => {
                             <IconText Icon={CalendarArrowDown} textClassName="font-medium" fontSize={14} text={`Check-in`} />
                             <p>{formattedCheckInDate} from {formattedCheckInTime}</p>
                             <IconText Icon={CalendarArrowUp} textClassName="font-medium" fontSize={14} text={`Check-out`} />
-                            <p>{formattedCheckOutDate} from {formattedCheckOutTime}</p>
+                            <p>{formattedCheckOutDate} until {formattedCheckOutTime}</p>
 
                             <hr className="col-span-2"/>
                             <p>Total Price</p>
