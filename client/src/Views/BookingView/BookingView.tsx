@@ -11,10 +11,12 @@ import LoadingOverlay from "@/Components/LoadingOverlay/LoadingOverlay";
 import BookingProvider from "@/providers/BookingProvider";
 import { ClockArrowDown, ClockArrowUp } from "lucide-react";
 import IconText from "@/Components/IconText/IconText";
+import SkeletonBookingView from "./SkeletonBookingView";
 
 const BookingView = () => {
     const { hotelId, roomTypeId, from, to } = useLocation()?.state || {};
     const [processing, setProcessing] = useState(false);
+    const [paymentLoaded, setPaymentLoaded] = useState(false);
 
     const formId = useId();
 
@@ -34,16 +36,13 @@ const BookingView = () => {
         }
     })
 
-    console.log("Booking data:", booking);
-
     useEffect(() => {
-        console.log("Booking created successfully:", booking);
         createBooking();
-    }, [createBooking]);
+    }, []);
 
     if(isSuccess && booking) {
         return (
-            <BookingProvider booking={booking} formId={formId} setProcessing={setProcessing}>
+            <BookingProvider onReady={() => setPaymentLoaded(true)} booking={booking} formId={formId} setProcessing={setProcessing}>
                 <LoadingOverlay isVisible={processing} />
                 <div className="grid grid-cols-[2fr_1fr] min-h-screen w-screen font-[Inter]">
                     <div className="p-10 flex flex-col gap-5">
@@ -78,6 +77,8 @@ const BookingView = () => {
             </BookingProvider>
         );
     }
+
+    return <SkeletonBookingView />
 }
 
 export default BookingView;

@@ -19,7 +19,7 @@ const PaymentForm = ({ formId, booking }) => {
     const stripe = useStripe();
     const elements = useElements();
     const navigate = useNavigate();
-    const { setProcessing } = useBooking();
+    const { setProcessing, onReady } = useBooking();
 
     const confirmPayment = async (e: any) => {
         e.preventDefault();
@@ -39,13 +39,16 @@ const PaymentForm = ({ formId, booking }) => {
 
     return (
         <form id={formId} onSubmit={confirmPayment}>
-            <PaymentElement options={{
-                layout: {
-                    defaultCollapsed: false,
-                    type: "tabs",
-                    spacedAccordionItems: true
-                },
-            }}/>
+            <PaymentElement 
+                onReady={onReady}
+                options={{
+                    layout: {
+                        defaultCollapsed: false,
+                        type: "tabs",
+                        spacedAccordionItems: true
+                    },
+                }}
+            />
         </form>
     )
 }
@@ -69,7 +72,7 @@ const PaymentContainer = ({ clientSecret }: { clientSecret: string }) => {
                 appearance: appearance,
             }
         }>
-            <PaymentForm booking={booking} formId={formId} />
+        <PaymentForm booking={booking} formId={formId} />
         </Elements>
     )
 };

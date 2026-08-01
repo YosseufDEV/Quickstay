@@ -70,7 +70,7 @@ class BookingService {
             const paymentIntent = await Payment.getOrCreatePaymentIntent({
                 bookingId: details.id,
                 userId,
-                amount: invoice.totalPrice * 100, // INFO: Convert to cents
+                amount: invoice.totalPrice * 100, // Convert to cents
                 currency: invoice.currency
             }, tx);
 
