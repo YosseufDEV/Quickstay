@@ -1,7 +1,11 @@
+import DatePicker from '@/Components/DatePicker/DatePicker';
 import styles from './Hero.module.css';
+import { useState } from 'react';
 
 const Hero = () => {
     const description = <p className="text-white">Unparalleled luxury and comfort await at the world's most exclusive <br /> hotels and resorts. Start your journey today.</p>
+    const [range, setRange] = useState({ from: null, to: null });
+    const [destination, setDestination] = useState<string>(null);
 
     return (
         // HACK: -mt-30 is a hack to make the hero section take up the full height of the screen, since the header is fixed and takes up some space.
@@ -9,10 +13,11 @@ const Hero = () => {
             <div className={styles.tag}>
                 <p>The Ultimate Hotel Experience</p>
             </div>
-            <div className={styles.infoContainer}>
+            <div className={`${styles.infoContainer} mb-10`}>
                 <p className={styles.title}>Discover Your Perfect Gateway Destination</p>
                 {description}
             </div>
+            <DatePicker searchCallback={() => console.log("Searched") } withDestination destination={destination} setDestination={setDestination} range={range} setRange={setRange} />
         </div>
     )
 }

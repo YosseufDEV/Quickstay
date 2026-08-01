@@ -1,7 +1,8 @@
 import { Calendar as C } from '@/Components/ui/calendar';
-import { CalendarArrowDown, CalendarArrowUp, Users } from 'lucide-react';
+import { CalendarArrowDown, CalendarArrowUp, MapPinned, Search, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import IconText from '../IconText/IconText';
+import SpringyButton from '../SpringyButton/SpringyButton';
 
 /**
  * Gets all days before or after a given date until the end of the month
@@ -66,7 +67,27 @@ const Calendar = ({ selected, onSelect, disabledDates, startMonth, endMonth, def
       /> 
 }
 
-const DatePicker = ({ ref, range, setRange }: { range: { from: Date, to: Date }, ref, setRange }) => {
+type DatePickerProps = { 
+    range: { from: Date, to: Date }, 
+    ref?: any, 
+    setRange: (_: any) => void
+
+    destination?: never 
+    setDestination?: never
+    withDestination?: never
+    searchCallback?: never
+} | {
+    range: { from: Date, to: Date }, 
+    ref?: any, 
+    setRange: (_: any) => void
+
+    destination: string
+    withDestination: true
+    setDestination: (newVal: string) => void
+    searchCallback: () => void
+}
+
+const DatePicker = ({ ref, range, setRange, withDestination, destination, setDestination, searchCallback }: DatePickerProps) => {
     const [visible, setVisible] = useState<{ from: boolean, to: boolean}>({ from: false, to: false });
 
     const pickersRefs = [
@@ -92,7 +113,21 @@ const DatePicker = ({ ref, range, setRange }: { range: { from: Date, to: Date },
     }, []);
 
     return (
-        <div ref={ref} className="w-full text-nowrap px-20 py-7 font-[Outfit] inset-shadow-sm shadow-md rounded-xl flex justify-around items-center">
+        <div ref={ref} 
+            style={
+                {
+                    width: !withDestination ? "100%" : "fit-content",
+                    gap: !withDestination ? "0px" : "100px"
+                }
+            }
+            className="w-full bg-white text-nowrap px-20 py-7 font-[Outfit] inset-shadow-sm shadow-md rounded-xl flex justify-around items-center">
+            { withDestination &&
+                <div className="cursor-pointer relative w-fit nowrap space-y-2 flex flex-col">
+                    <IconText Icon={MapPinned} fontSize={15} text="Destination" iconClassName="stroke-gray-700" />
+                    <p className="text-gray-700 m-0">{destination ? destination : "Pick Destination" }</p>
+                </div>
+            }
+
             <div ref={pickersRefs[0]} className="cursor-pointer relative flex w-fit space-y-2 flex-col" onClick={() => setVisible({ to: false, from: true })}>
                 <IconText Icon={CalendarArrowUp} fontSize={15} text="Check-in" iconClassName="stroke-gray-700" />
                 <p className="text-gray-700 m-0">{range?.from ? range?.from.toLocaleDateString('en-US', dateOpts) : "Pick Date"}</p>
@@ -123,6 +158,11 @@ const DatePicker = ({ ref, range, setRange }: { range: { from: Date, to: Date },
                 <IconText Icon={Users} fontSize={15} text="Guests" iconClassName="stroke-gray-700" />
                 <p className="text-gray-700 m-0">{1}</p>
             </div>
+            { withDestination &&
+                <SpringyButton onClick={searchCallback} className="w-60 h-15 flex items-center justify-center">
+                    <IconText Icon={Search} fontSize={18} text="Search" textClassName="text-white font-medium" iconClassName="stroke-white" />
+                </SpringyButton>
+            }
         </div>
     )
 }

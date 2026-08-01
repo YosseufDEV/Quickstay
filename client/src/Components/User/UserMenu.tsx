@@ -22,7 +22,7 @@ const UserMenu = ({ opened }) => {
         <div className={`${styles.userFloatingMenu} bg-white border-gray-300 w-65 gap-4 border rounded-md absolute py-5 px-2 right-0 top-10 flex flex-col items-start justify-start`}>
             <MenuItem text="My Bookings" Icon={CalendarClock} onClick={() => navigate("/my-bookings")} />
             <MenuItem text="Settings" Icon={Settings} />
-            <GenericButton text="Log out" className="w-full h-10" onClick={() => logout()} />
+            <GenericButton text="Logout" className="w-full h-10 text-red-600" onClick={() => logout()} />
         </div>
     )
 }
