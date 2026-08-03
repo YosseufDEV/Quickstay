@@ -35,7 +35,7 @@ export interface HotelRoom {
 }
 
 interface Hotel {
-    id?: string
+    id: string
     name: string
     address: string
     exactAddress: string

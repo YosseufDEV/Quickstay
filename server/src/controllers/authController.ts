@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 
 import type { AuthenticatedRequest } from "../types/auth";
 import { AuthenticationError, UserError, TokenRefreshError } from "@/errors/errors";
-import { insertSession, invalidateSession, isSessionValid } from "./sessionController";
+import SessionService from "@/services/SessionService";
 import { generateToken } from "../utils/token";
 import { turnIntoTimestamp } from "../utils/time";
 import { sendResponse, StatusCode } from "@/helpers/response";
@@ -31,7 +31,7 @@ const refreshToken = async (req: Request, res: Response) => {
         const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
         const newRefreshToken = generateToken({ ... payload, exp: usedToken.exp }, JWT_REFRESH_SECRET);
 
-        const sessionValid = await isSessionValid(refreshToken, payload);
+        const sessionValid = await SessionService.isSessionValid(refreshToken, payload);
 
         if(!sessionValid.valid) {
             return sendResponse(res, { statusCode: StatusCode.BAD_REQUEST, message: sessionValid.reason || "invalid_session" });
@@ -41,7 +41,7 @@ const refreshToken = async (req: Request, res: Response) => {
 
         res.cookie("refreshToken", newRefreshToken, { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV == "production", maxAge: JWT_REFRESH_EXPIRATION_TIME_MS });
 
-        await insertSession(newRefreshToken as string, payload, expirationTime);
+        await SessionService.insertSession(newRefreshToken as string, payload, expirationTime);
 
         return sendResponse(res, { statusCode: StatusCode.OK, payload: { accessToken } });
 
@@ -89,7 +89,7 @@ const login = async (req: Request, res: Response) => {
     const accessToken = generateToken(payload, JWT_ACCESS_SECRET, JWT_EXPIRATION_TIME);
     const refreshToken = generateToken(payload, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRATION_TIME);
 
-    await insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
+    await SessionService.insertSession(refreshToken as string, payload, JWT_REFRESH_EXPIRATION_TIME_MS/1000);
 
     res.cookie("refreshToken", refreshToken, { sameSite: "strict", httpOnly: true, maxAge: JWT_REFRESH_EXPIRATION_TIME_MS, secure: process.env.NODE_ENV == "production" });
 
@@ -97,7 +97,7 @@ const login = async (req: Request, res: Response) => {
 }
 
 const logout = async (req: AuthenticatedRequest, res: Response) => {
-    await invalidateSession({ userId: req.user!.id, sessionId: req.user!.sessionId });
+    await SessionService.invalidateSession({ userId: req.user!.id, sessionId: req.user!.sessionId });
 
     res.clearCookie("refreshToken", { sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV == "production" });
 

@@ -8,6 +8,7 @@ import { logger } from "@/utils/logger";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { and, eq, sql } from "drizzle-orm";
+import IdempotencyService from "./IdempotencyService";
 
 interface BookingData {
     userId: string;
@@ -20,44 +21,24 @@ interface BookingData {
 dayjs.extend(utc);
 
 class BookingService {
-    static async createBooking({ userId, roomTypeId, hotelId, from, to } : BookingData) {
+    static async createBooking({ userId, roomTypeId, hotelId, from, to } : BookingData, idempotencyKey: string | undefined) {
         from = dayjs(from).startOf("day").utc().toDate();
         to = dayjs(to).startOf("day").utc().toDate();
 
-        return await drizzle.transaction(async (tx) => {
-            const existingBooking =  await tx
-                                            .select({
-                                                id: hotelsBookings.id,                  
-                                                roomId: hotelsBookings.roomId,
-                                                userId: hotelsBookings.userId,
-                                                timeRange: hotelsBookings.timeRange,
-                                                bookingStatus: hotelsBookings.bookingStatus,
-                                                checkInStatus: hotelsBookings.checkInStatus,
-                                                hotel: {
-                                                    id: hotels.id,
-                                                    name: hotels.name,
-                                                    address: hotels.address,
-                                                    rating: hotels.rating,
-                                                    checkInTime: hotels.checkInTime,
-                                                    checkOutTime: hotels.checkOutTime
-                                                },
-                                            })
-                                            .from(hotelsBookings)
-                                            .where(
-                                                and(
-                                                    eq(hotelsBookings.timeRange, sql`tstzrange(${from}, ${to}, '[)')`), 
-                                                    eq(hotelsBookings.userId, userId), eq(hotelsBookings.roomTypeId, roomTypeId), 
-                                                    eq(hotelsBookings.bookingStatus, 'PENDING_PAYMENT')))
-                                            .leftJoin(hotelsBookingsPayments, eq(hotelsBookings.id, hotelsBookingsPayments.bookingId))
-                                            .leftJoin(payments, eq(hotelsBookingsPayments.paymentId, payments.id))
-                                            .leftJoin(hotels, eq(hotelsBookings.hotelId, hotels.id))
-                                            .then(([booking]) => booking as BookingResponse["details"])
-                                            .catch((err) => {
-                                                logger.error(`Failed to retrieve existing booking for user ${userId} and room type ${roomTypeId} from ${from} to ${to}`);
-                                                throw new BookingError('Failed to retrieve existing booking', 400, err);
-                                            });
+        if(!idempotencyKey) {
+            logger.error(`Idempotency key is required for booking creation`, { data: { userId, roomTypeId, hotelId, from, to } });
+            throw new BookingError('no_idempotency_key', 400);
+        }
 
-            const details: BookingResponse["details"] & { stripePaymentIntentId?: string | null } = existingBooking ?? ( await Booking.createBooking({ userId, roomTypeId, hotelId, from, to }, tx) ).details;
+        const existingResult = await IdempotencyService.getIdempotencyKey(idempotencyKey);
+
+        if(existingResult) {
+            logger.info(`Idempotency key ${idempotencyKey} already exists, returning existing booking`, { data: { userId, roomTypeId, hotelId, from, to } });
+            return existingResult;
+        }
+
+        return await drizzle.transaction(async (tx) => {
+            const { details }: { details: BookingResponse["details"] } = await Booking.createBooking({ userId, roomTypeId, hotelId, from, to }, tx);
             const numberOfNights = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
             const invoice = await BookingService.generateInvoice({ hotelId, roomTypeId, numberOfNights, bookingId: details.id }, tx)!;
 
@@ -82,7 +63,11 @@ class BookingService {
                         bookingId: details.id
                     } 
                 });
-            return { ...{ details }, invoice, paymentIntentClientSecret: paymentIntent.clientSecret };
+
+            const res =  { ...{ details }, invoice, paymentIntentClientSecret: paymentIntent.clientSecret };
+            await IdempotencyService.insertIdempotencyKey(idempotencyKey, res);
+
+            return res;
         })
     }
 

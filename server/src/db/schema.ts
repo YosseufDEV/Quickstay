@@ -192,6 +192,31 @@ export const hotelsBookings = pgTable(
     ]
 );
 
+export const roomsTimeRangesLocks = pgTable(
+    "rooms_time_ranges_locks",
+    {
+        roomId: uuid("room_id")
+            .notNull()
+            .references(() => rooms.id, { onDelete: "cascade" }),
+        bookingId: uuid("booking_id")
+            .notNull()
+            .references(() => hotelsBookings.id, { onDelete: "cascade" }),
+        timeRange: tstzrange("time_range").notNull(),
+        lockedUntil: timestamp("locked_until", { withTimezone: true }).notNull(),
+        lockedFor: uuid("locked_for")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+        deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    },
+    (table) => [
+        primaryKey({ columns: [table.roomId, table.timeRange] }),
+        index("rooms_time_ranges_locks_room_id_idx").on(table.roomId),
+        index("rooms_time_ranges_locks_time_range_idx").using("gist", table.timeRange),
+    ]
+);
+
 export const hotelsAmenities = pgTable(
     "hotels_amenities",
     {

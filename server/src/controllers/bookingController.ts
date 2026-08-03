@@ -7,6 +7,7 @@ import BookingService from "@/services/BookingService";
 const createBooking = async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user!.id;
     const { roomTypeId, hotelId, checkIn, checkOut } = req.body;
+    const idempotencyKey = req.headers["idempotency-key"] as string | undefined;
 
     const bookingData = {
         userId,
@@ -16,7 +17,7 @@ const createBooking = async (req: AuthenticatedRequest, res: Response) => {
         to: new Date(checkOut),
     };
 
-    const booking = await BookingService.createBooking(bookingData);
+    const booking = await BookingService.createBooking(bookingData, idempotencyKey);
 
     return sendResponse(res, { statusCode: StatusCode.ACCEPTED, payload: { booking } });
 

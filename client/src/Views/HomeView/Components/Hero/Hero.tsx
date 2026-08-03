@@ -8,12 +8,11 @@ const Hero = () => {
     const [destination, setDestination] = useState<string>(null);
 
     return (
-        // HACK: -mt-30 is a hack to make the hero section take up the full height of the screen, since the header is fixed and takes up some space.
         <div className={`${styles.hero} min-h-screen! ignore-safe-area-top content-container`}>
             <div className={styles.tag}>
                 <p>The Ultimate Hotel Experience</p>
             </div>
-            <div className={`${styles.infoContainer} mb-10`}>
+            <div className={`${styles.infoContainer} mb-20`}>
                 <p className={styles.title}>Discover Your Perfect Gateway Destination</p>
                 {description}
             </div>
