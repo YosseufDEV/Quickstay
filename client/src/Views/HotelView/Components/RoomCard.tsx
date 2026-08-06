@@ -25,7 +25,16 @@ const RoomCard = (props: RoomCardProps) => {
             datePickerRef?.current?.scrollIntoView({ behavior: "smooth", block: "center" });
             return;
         }
-        navigate("/booking", { state: { hotelId: props.hotelId, roomTypeId: props.roomTypeId, from: range?.from, to: range?.to } });
+        navigate("/booking", { 
+                    state: { 
+                           hotelId: props.hotelId, 
+                           roomTypeId: props.roomTypeId, 
+                           from: range?.from, 
+                           to: range?.to, 
+                           idempotencyKey: crypto.randomUUID()
+                    } 
+        });
+        console.log(crypto.randomUUID());
     }
 
     return (

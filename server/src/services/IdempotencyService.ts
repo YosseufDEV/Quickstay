@@ -3,7 +3,7 @@ import redis from '@/db/redis';
 
 type Response = Record<string, any>
 
-const EXPIRY = 60 * 60 * 24 * 1000; // 24 hours in seconds
+const EXPIRY = 60 * 60 * 24; // 24 hours in seconds
 
 class IdempotencyService {
     static async insertIdempotencyKey(key: string, response: Response) {

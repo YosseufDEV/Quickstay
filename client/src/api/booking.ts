@@ -53,8 +53,10 @@ interface AvailabilityResponse {
     }
 }
 
-const createBooking = async (bookingData: BookingData): Promise<BookingResponse> => {
-   const { data } = await api.post("/bookings", bookingData);
+const createBooking = async (bookingData: BookingData, idempotencyKey: string): Promise<BookingResponse> => {
+   console.log(idempotencyKey);
+   const { data, request } = await api.post("/bookings", bookingData, { headers: { "Idempotency-Key": idempotencyKey } });
+   console.log(request);
    return data.payload;
 }
 

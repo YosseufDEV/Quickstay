@@ -8,7 +8,7 @@ import IconText from "@/Components/IconText/IconText";
 import type { BookingResponse } from "@/api/booking";
 
 const SuccessBookingView = () => { 
-    const { booking } = useLocation()?.state as { booking: BookingResponse["booking"], fromRedirect?: true } ?? { booking: null, fromRedirect: false };
+    const { booking, idempotencyKey } = useLocation()?.state as { booking: BookingResponse["booking"], fromRedirect?: true } ?? { booking: null, fromRedirect: false };
     const navigate = useNavigate();
 
     const checkInDate = new Date(booking?.details.timeRange.from);

@@ -1,5 +1,5 @@
 import drizzle from "@/db/drizzle";
-import { hotelsBookings, hotelsCatalogs, hotelsFees, payments, rooms } from "@/db/schema";
+import { hotelsBookings, hotelsCatalogs, rooms } from "@/db/schema";
 import z from "zod";
 import { BookingError } from "@/errors/bookingErrors";
 import { HotelError } from "@/errors/hotelErrors";
@@ -8,11 +8,18 @@ import { logger } from "@/utils/logger";
 import dayjs from "dayjs";
 import { and, eq, sql } from "drizzle-orm";
 import { parseRequest } from "@/helpers/parseRequest";
-import type { RequestParamHandler } from "express";
 import { AppError } from "@/errors/errors";
+import CachingService from "./CachingService";
 
 class HotelService {
     static async getHotels(query: { limit?: string, offset?: string, sort?: string, order?: "asc" | "desc" }) {
+        const key = `hotels:${JSON.stringify(query)}`;
+        const cachedHotels = await CachingService.getCache(key);
+
+        if(cachedHotels) {
+            return cachedHotels;
+        }
+
         let limit = Math.min(Math.abs(Number(query.limit)), 30) || 30;
         let offset = Number(query.offset) || 0;
 
@@ -32,11 +39,20 @@ class HotelService {
         }
 
         const hotels = await Hotel.getHotels(limit, offset > 0 ? offset : 0, sort, order);
+
+        CachingService.setCache(key, hotels, 60 * 5); // Cache for 5 minutes
         
         return hotels;
     }
 
     static async getHotelById(params: { hotelId: string }) {
+        const key = `hotel:${params.hotelId}`;
+        const cachedHotel = await CachingService.getCache(key);
+
+        if(cachedHotel) {
+            return cachedHotel;
+        }
+
         const schema = z.object({
             hotelId: z.uuid()
         });

@@ -14,7 +14,9 @@ import IconText from "@/Components/IconText/IconText";
 import SkeletonBookingView from "./SkeletonBookingView";
 
 const BookingView = () => {
-    const { hotelId, roomTypeId, from, to } = useLocation()?.state || {};
+    const { hotelId, roomTypeId, from, to, idempotencyKey } = useLocation()?.state || {};
+
+    console.log("idempotencyKey", idempotencyKey);
     const [processing, setProcessing] = useState(false);
     const [paymentLoaded, setPaymentLoaded] = useState(false);
 
@@ -27,7 +29,7 @@ const BookingView = () => {
                 roomTypeId,
                 checkIn:from,
                 checkOut: to
-            });
+            }, idempotencyKey);
 
             return booking;
         },
@@ -42,7 +44,7 @@ const BookingView = () => {
 
     if(isSuccess && booking) {
         return (
-            <BookingProvider onReady={() => setPaymentLoaded(true)} booking={booking} formId={formId} setProcessing={setProcessing}>
+            <BookingProvider booking={booking} formId={formId} setProcessing={setProcessing}>
                 <LoadingOverlay isVisible={processing} />
                 <div className="grid grid-cols-[2fr_1fr] min-h-screen w-screen font-[Inter]">
                     <div className="p-10 flex flex-col gap-5">
