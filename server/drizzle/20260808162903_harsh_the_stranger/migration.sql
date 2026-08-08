@@ -1,0 +1,1 @@
+CREATE INDEX "hotel_city_idx" ON "hotels" ("city");

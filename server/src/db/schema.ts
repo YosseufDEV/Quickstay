@@ -95,8 +95,9 @@ export const hotels = pgTable(
         id: uuid("id").primaryKey().defaultRandom(),
         rating: real("rating").notNull(),
         name: text("name").notNull(),
-        exactAddress: text("exact_address").notNull(),
         address: text("address").notNull(),
+        country: text("country").notNull(),
+        city: text("city").notNull(),
         imageUrl: text("image_url").notNull(),
         checkInTime: time("check_in_time").notNull(),
         checkOutTime: time("check_out_time").notNull(),
@@ -107,6 +108,7 @@ export const hotels = pgTable(
     },
     (table) => [
         index("hotel_created_at_idx").on(table.createdAt),
+        index("hotel_city_idx").on(table.city),
         check("hotel_check_in_out_date_check", sql`${table.checkInTime} > ${table.checkOutTime}`),
     ]
 );

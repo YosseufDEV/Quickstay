@@ -1,10 +1,9 @@
 import drizzle from "@/db/drizzle";
 import { hotels as h, rooms as r, hotelsAmenities, amenities as a, users as u, hotelsCatalogs, hotelsFees } from "../db/schema.ts";
 import { sql } from "drizzle-orm";
-import Booking from "@/models/Booking.ts";
-import { generateRandomHotel, getRandomInt, generateUser, getRandomDate } from "./generate.ts";
+import { generateRandomHotel, generateUser } from "./generate.ts";
 
-const SEED_SIZE = 1_000;
+const SEED_SIZE = 10_000;
 const BATCH_SIZE = 1_000;
 
 const batch = (arr: any[], size=BATCH_SIZE) => {

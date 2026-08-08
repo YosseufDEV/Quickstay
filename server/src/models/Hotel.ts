@@ -38,7 +38,8 @@ interface Hotel {
     id: string
     name: string
     address: string
-    exactAddress: string
+    country: string
+    city: string
     checkInTime: string,
     checkOutTime: string,
     timeZone: string,

@@ -1,5 +1,5 @@
 import drizzle from "@/db/drizzle";
-import { hotelsBookings, hotelsCatalogs, rooms } from "@/db/schema";
+import { hotels, hotelsBookings, hotelsCatalogs, rooms } from "@/db/schema";
 import z from "zod";
 import { BookingError } from "@/errors/bookingErrors";
 import { HotelError } from "@/errors/hotelErrors";
@@ -150,6 +150,24 @@ class HotelService {
         }
 
         return result;
+    }
+
+    static async getHotelsCities() {
+        const cachedCities = await CachingService.getCache("hotels:cities");
+
+        if(cachedCities) {
+            return cachedCities;
+        }
+
+        const cities = await drizzle.selectDistinct({
+                                    city: hotels.city
+                                })
+                                .from(hotels)
+                                .then((cities) => cities.map(c => c.city))
+
+        CachingService.setCache("hotels:cities", cities, 60 * 60 * 24);
+
+        return cities;
     }
 
 }

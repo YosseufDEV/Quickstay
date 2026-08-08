@@ -103,6 +103,12 @@ const checkAvailabilityByRoomType = async (req: Request, res: Response) => {
     return sendResponse(res, { statusCode: StatusCode.OK, payload: { ...availability } }) ;
 }
 
+const getHotelsCities = async (req: Request, res: Response) => {
+    const cities = await HotelService.getHotelsCities();
+
+    return sendResponse(res, { statusCode: StatusCode.OK, payload: { cities } }) ;
+}
+
 export { 
     addHotel, 
     getHotels, 
@@ -111,5 +117,6 @@ export {
     getHotelRoomById, 
     getHotelCatalogById, 
     checkAvailability,
-    checkAvailabilityByRoomType
+    checkAvailabilityByRoomType,
+    getHotelsCities
 };

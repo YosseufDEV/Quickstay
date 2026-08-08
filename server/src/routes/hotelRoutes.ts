@@ -5,12 +5,14 @@ import { getHotelById,
          getHotels, 
          getHotelCatalogById, 
          checkAvailability,
-         checkAvailabilityByRoomType
+         checkAvailabilityByRoomType,
+         getHotelsCities
 } from '../controllers/hotelController';
 
 const router: Router = Router();
 
 router.get("/", getHotels);
+router.get("/cities", getHotelsCities);
 router.get("/:hotelId", getHotelById);
 router.get("/:id/rooms", getHotelRoomsById);
 router.post("/:hotelId/rooms/:typeId/availability", checkAvailabilityByRoomType);

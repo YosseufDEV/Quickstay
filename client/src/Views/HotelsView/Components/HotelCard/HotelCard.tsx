@@ -8,7 +8,8 @@ interface HotelCardProps {
     id: string;
     name: string;
     address: string;
-    exactAddress: string;
+    city: string;
+    country: string;
     rating: number;
     imageUrl: string;
     amenities: ITag[];
@@ -30,7 +31,7 @@ const HotelCard = (props: HotelCardProps) => {
                 <img className="w-90 aspect-3/2 h-fit rounded-xl shadow-md" src={props.imageUrl} />
 
                 <div className= "flex flex-col gap-3 justify-between items-start">
-                    <p className="text-sm text-gray-500">{props.exactAddress}</p>
+                    <p className="text-sm text-gray-500">{`${props.city}, ${props.country}`}</p>
 
                     <NavLink 
                              to={`/hotels/${props.id}`} 

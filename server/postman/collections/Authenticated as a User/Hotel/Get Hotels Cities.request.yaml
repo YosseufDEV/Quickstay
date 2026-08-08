@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Hotels Cities
+url: "{{baseURL}}/hotels/cities"
+method: GET
+order: 299739268518574

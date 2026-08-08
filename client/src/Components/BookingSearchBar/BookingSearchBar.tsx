@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import IconText from '../IconText/IconText';
 import SpringyButton from '../SpringyButton/SpringyButton';
 import { useOutsideClick } from '@/hooks/useOutsideClick';
+import { SelectBoxMenu } from '../SelectBox/SelectBox';
 
 /**
  * Gets all days before or after a given date until the end of the month
@@ -49,7 +50,36 @@ interface CalendarProps {
     defaultMonth?: Date;
 }
 
-const CalendarItem = ({ text, Icon, selected, onSelect, disabledDates, startMonth, endMonth, defaultMonth }: CalendarProps & { text: string, Icon: React.ElementType }) => {
+const SelectBoxItem = ({ Icon, text, items, defaultValue, value, setValue }) => {
+    const [menuVisible, setMenuVisible] = useState(false);
+
+    return (
+        <div className="relative cursor-pointer">
+            <SelectBoxMenu 
+                onSelect={(item) => { setValue(item); setMenuVisible(false); }}
+                searchable={false} 
+                items={items
+                } 
+                visible={menuVisible} 
+                setVisible={setMenuVisible} />
+            <div onClick={() => setMenuVisible(true)} className="cursor-pointer relative w-fit nowrap space-y-2 flex flex-col">
+                <IconText Icon={Icon} fontSize={15} text={text} iconClassName="stroke-gray-700" />
+                <p className="text-gray-700 m-0">{value ?? defaultValue}</p>
+            </div>
+        </div>
+    )
+}
+
+
+const CalendarItem = ({ 
+                        text, 
+                        Icon, 
+                        selected, 
+                        onSelect, 
+                        disabledDates, 
+                        startMonth, 
+                        endMonth, 
+                        defaultMonth }: CalendarProps & { text: string, Icon: React.ElementType }) => {
     const dateOpts = { year: 'numeric', month: 'short', day: 'numeric' } as const;
 
     const ref = useRef<HTMLDivElement | null>(null);
@@ -107,6 +137,8 @@ type DatePickerProps = {
 }
 
 const BookingSearchBar = ({ className="", ref, range, setRange, withDestination, destination, setDestination, searchCallback }: DatePickerProps) => {
+    const [guests, setGuests] = useState<number>(1);
+
     const disabledDates = {
         beforeFrom: range?.from ? getDaysUntilMonthEnd('before', range.from) : [],
         afterTo: range?.to ? getDaysUntilMonthEnd('after', range.to) : []
@@ -142,10 +174,21 @@ const BookingSearchBar = ({ className="", ref, range, setRange, withDestination,
                         onSelect={(data) => setRange((prev: any) => ({ ...prev, to: data }))}
             />
 
-            <div className="relative w-fit nowrap space-y-2 flex flex-col">
-                <IconText Icon={Users} fontSize={15} text="Guests" iconClassName="stroke-gray-700" />
-                <p className="text-gray-700 m-0">{1}</p>
-            </div>
+            <SelectBoxItem items={[{
+                        label: "1 Guest", value: "1"
+                    }, {
+                        label: "2 Guests", value: "2"
+                    }, {
+                        label: "3 Guests", value: "3"
+                    }, {
+                        label: "4 Guests", value: "4"
+                    }]
+            }
+                Icon={Users} 
+                text="Guests" 
+                value={guests}
+                defaultValue={guests} 
+                setValue={setGuests} />
 
             { withDestination &&
                 <SpringyButton onClick={searchCallback} className="w-60 h-15 flex items-center justify-center">

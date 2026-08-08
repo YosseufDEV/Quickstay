@@ -1,4 +1,4 @@
-import { faker } from "@faker-js/faker";
+import { Faker, faker } from "@faker-js/faker";
 import rwt from "random-weighted-choice";
 import { type UserRole } from "../db/schema.ts";
 
@@ -57,10 +57,13 @@ export function generateRooms(count: number, hotelId: string, catalog): {}[] {
 
 export function generateRandomHotel() {
     roomsNumbers.clear();
-
+    
     const id = crypto.randomUUID();
     const name = "Hotel " + faker.company.name();
-    const address = faker.location.city() + ", " + faker.location.country();
+    const address = faker.location.streetAddress();
+    const country = faker.location.country();
+    const city = faker.location.city();
+
     const rating = parseFloat(((Math.random() + 3) * 5 / 4).toFixed(2));
     const imageUrl = `http://localhost:5001/hotels/${getRandomInt(1, 7)}.webp`;
     const amenities: { amenityId: number, hotelId: string }[] = [];
@@ -130,10 +133,11 @@ export function generateRandomHotel() {
         id,
         name,
         address,
+        country,
+        city,
         rooms,
         fees,
         currency,
-        exactAddress: address,
         checkInTime: "18:00:00",
         checkOutTime: "14:00:00",
         timeZone: faker.location.timeZone(),
