@@ -126,7 +126,7 @@ class Hotel {
         return await drizzle.insert(hotelsCatalogs).values(catalog).returning().then((catalog) => catalog)!;
     }
 
-    static async createHotel({ fees, rooms, amenities, catalog, ...hotelData }: Hotel) {
+    static async createHotel({ fees, rooms, amenities, catalog, ...hotelData }: Omit<Hotel, "id"> & { id?: string }) {
         const [hotel] = await drizzle.insert(hotels).values({
             ...hotelData,
         }).

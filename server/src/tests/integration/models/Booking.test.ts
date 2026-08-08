@@ -60,6 +60,7 @@ const hotelData = {
 describe('Booking Model Test', () => {
     beforeAll(async () => {
         user = await User.createUser({
+            id: "test",
             firstName: 'Test User',
             lastName: 'Test User',
             email: 'testEmail',

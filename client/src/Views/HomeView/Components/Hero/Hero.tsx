@@ -1,4 +1,4 @@
-import DatePicker from '@/Components/DatePicker/DatePicker';
+import BookingSearchBar from '@/Components/BookingSearchBar/BookingSearchBar';
 import styles from './Hero.module.css';
 import { useState } from 'react';
 
@@ -16,7 +16,7 @@ const Hero = () => {
                 <p className={styles.title}>Discover Your Perfect Gateway Destination</p>
                 {description}
             </div>
-            <DatePicker searchCallback={() => console.log("Searched") } withDestination destination={destination} setDestination={setDestination} range={range} setRange={setRange} />
+            <BookingSearchBar className="w-fit! gap-25" searchCallback={() => console.log("Searched") } withDestination destination={destination} setDestination={setDestination} range={range} setRange={setRange} />
         </div>
     )
 }

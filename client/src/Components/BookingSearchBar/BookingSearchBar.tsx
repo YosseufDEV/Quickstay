@@ -3,6 +3,7 @@ import { CalendarArrowDown, CalendarArrowUp, MapPinned, Search, Users } from 'lu
 import { useEffect, useRef, useState } from 'react';
 import IconText from '../IconText/IconText';
 import SpringyButton from '../SpringyButton/SpringyButton';
+import { useOutsideClick } from '@/hooks/useOutsideClick';
 
 /**
  * Gets all days before or after a given date until the end of the month
@@ -48,26 +49,43 @@ interface CalendarProps {
     defaultMonth?: Date;
 }
 
-const Calendar = ({ selected, onSelect, disabledDates, startMonth, endMonth, defaultMonth }: CalendarProps) => {
-    return <C
-            mode="single"
-            selected={selected}
-            startMonth={startMonth}
-            defaultMonth={defaultMonth}
-            endMonth={endMonth}
-            modifiers={{
-                booked: disabledDates,
-            }}
-            modifiersClassNames={{
-                booked: "[&>button]:line-through opacity-100",
-            }}
-            disabled={disabledDates}
-            onSelect={onSelect}
-            className="z-80 absolute m-0 rounded-lg border bottom-7"
-      /> 
+const CalendarItem = ({ text, Icon, selected, onSelect, disabledDates, startMonth, endMonth, defaultMonth }: CalendarProps & { text: string, Icon: React.ElementType }) => {
+    const dateOpts = { year: 'numeric', month: 'short', day: 'numeric' } as const;
+
+    const ref = useRef<HTMLDivElement | null>(null);
+    const [visible, setVisible] = useState<boolean>(false);
+
+    useOutsideClick(ref, () => setVisible(false));
+
+    return <div ref={ref} className="cursor-pointer relative flex w-fit space-y-2 flex-col" onClick={() => setVisible(true)}>
+            <IconText Icon={Icon} fontSize={15} text={text} iconClassName="stroke-gray-700" />
+
+            <p className="text-gray-700 m-0">{selected ? selected.toLocaleDateString('en-US', dateOpts) : "Pick Date"}</p>
+
+            { visible && 
+                <C
+                        mode="single"
+                        selected={selected}
+                        startMonth={startMonth}
+                        defaultMonth={defaultMonth}
+                        endMonth={endMonth}
+                        modifiers={{
+                            booked: disabledDates,
+                        }}
+                        modifiersClassNames={{
+                            booked: "[&>button]:line-through opacity-100",
+                        }}
+                        disabled={disabledDates}
+                        onSelect={onSelect}
+                        className="z-80 absolute m-0 rounded-lg border bottom-7"
+                  /> 
+                }
+        </div>
 }
 
+
 type DatePickerProps = { 
+    className?: string,
     range: { from: Date, to: Date }, 
     ref?: any, 
     setRange: (_: any) => void
@@ -77,6 +95,7 @@ type DatePickerProps = {
     withDestination?: never
     searchCallback?: never
 } | {
+    className?: string,
     range: { from: Date, to: Date }, 
     ref?: any, 
     setRange: (_: any) => void
@@ -87,40 +106,14 @@ type DatePickerProps = {
     searchCallback: () => void
 }
 
-const DatePicker = ({ ref, range, setRange, withDestination, destination, setDestination, searchCallback }: DatePickerProps) => {
-    const [visible, setVisible] = useState<{ from: boolean, to: boolean}>({ from: false, to: false });
-
-    const pickersRefs = [
-        useRef(null as HTMLDivElement | null),
-        useRef(null as HTMLDivElement | null)
-    ]
-
+const BookingSearchBar = ({ className="", ref, range, setRange, withDestination, destination, setDestination, searchCallback }: DatePickerProps) => {
     const disabledDates = {
         beforeFrom: range?.from ? getDaysUntilMonthEnd('before', range.from) : [],
         afterTo: range?.to ? getDaysUntilMonthEnd('after', range.to) : []
     }
 
-    const dateOpts = { year: 'numeric', month: 'short', day: 'numeric' } as const;
-
-    const handleClickOutside = (e: MouseEvent) => {
-        if (pickersRefs.every(r => r.current && !r.current.contains(e.target as Node))) {
-            setVisible({ from: false, to: false });
-        }
-    }
-
-    useEffect(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-    }, []);
-
     return (
-        <div ref={ref} 
-            style={
-                {
-                    width: !withDestination ? "100%" : "fit-content",
-                    gap: !withDestination ? "0px" : "100px"
-                }
-            }
-            className="w-full bg-white text-nowrap px-20 py-7 font-[Outfit] inset-shadow-sm shadow-md rounded-xl flex justify-around items-center">
+        <div ref={ref} className={ `${className} w-full bg-white text-nowrap px-20 py-7 font-[Outfit] inset-shadow-sm shadow-md rounded-xl flex justify-around items-center` }>
             { withDestination &&
                 <div className="cursor-pointer relative w-fit nowrap space-y-2 flex flex-col">
                     <IconText Icon={MapPinned} fontSize={15} text="Destination" iconClassName="stroke-gray-700" />
@@ -128,43 +121,40 @@ const DatePicker = ({ ref, range, setRange, withDestination, destination, setDes
                 </div>
             }
 
-            <div ref={pickersRefs[0]} className="cursor-pointer relative flex w-fit space-y-2 flex-col" onClick={() => setVisible({ to: false, from: true })}>
-                <IconText Icon={CalendarArrowUp} fontSize={15} text="Check-in" iconClassName="stroke-gray-700" />
-                <p className="text-gray-700 m-0">{range?.from ? range?.from.toLocaleDateString('en-US', dateOpts) : "Pick Date"}</p>
-
-                {visible.from && 
-                    <Calendar
+            <CalendarItem   
+                        text="Check-in"
+                        Icon={CalendarArrowDown}
                         endMonth={range?.to}
                         defaultMonth={range?.from ? range.from : new Date()}
                         // FIXME: It doesn't disable the last 3 days of the past month show in calendar, need to fix that
                         disabledDates={disabledDates.afterTo.concat(getDaysUntilMonthEnd('before', new Date()))}
                         selected={range?.from}
-                        onSelect={(data) => setRange(prev => ({ ...prev, from: data }))}
-                  /> }
-            </div>
-            <div ref={pickersRefs[1]} className="cursor-pointer relative w-fit nowrap space-y-2 flex flex-col" onClick={() => setVisible({ from: false, to: true })}>
-                <IconText Icon={CalendarArrowDown} fontSize={15} text="Check-out" iconClassName="stroke-gray-700" />
-                <p className="text-gray-700 m-0">{range?.to ? range?.to.toLocaleDateString('en-US', dateOpts) : "Pick Date"}</p>
-                { visible.to && 
-                    <Calendar
+                        onSelect={(data) => setRange((prev: any) => ({ ...prev, from: data }))}
+            />
+
+            <CalendarItem   
+                        text="Check-out"
+                        Icon={CalendarArrowUp}
                         startMonth={range?.from}
                         defaultMonth={range?.to ? range.to : new Date()}
                         disabledDates={disabledDates.beforeFrom}
                         selected={range?.to}
-                        onSelect={(data) => setRange(prev => ({ ...prev, to: data }))}
-                  /> }
-            </div>
+                        onSelect={(data) => setRange((prev: any) => ({ ...prev, to: data }))}
+            />
+
             <div className="relative w-fit nowrap space-y-2 flex flex-col">
                 <IconText Icon={Users} fontSize={15} text="Guests" iconClassName="stroke-gray-700" />
                 <p className="text-gray-700 m-0">{1}</p>
             </div>
+
             { withDestination &&
                 <SpringyButton onClick={searchCallback} className="w-60 h-15 flex items-center justify-center">
                     <IconText Icon={Search} fontSize={18} text="Search" textClassName="text-white font-medium" iconClassName="stroke-white" />
                 </SpringyButton>
             }
+
         </div>
     )
 }
 
-export default DatePicker;
+export default BookingSearchBar;

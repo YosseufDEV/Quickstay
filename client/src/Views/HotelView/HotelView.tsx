@@ -8,7 +8,7 @@ import Location from "@/Components/Location/Location";
 import SkeletonHotelView from "./Components/SkeletonHotelsView";
 import RoomCard from "./Components/RoomCard.tsx";
 import BackwardArrow from "@/Components/BackwardArrow/BackwardArrow.tsx";
-import DatePicker from "@/Components/DatePicker/DatePicker.tsx";
+import BookingSearchBar from "@/Components/BookingSearchBar/BookingSearchBar.tsx";
 import { createContext, useEffect, useRef, useState, type RefObject } from "react";
 import { formatDate } from "date-fns";
 import { checkAvailability } from "@/api/hotel.ts";
@@ -118,7 +118,7 @@ const HotelView = () => {
 
                     </div>
 
-                    <DatePicker ref={datePickerRef} range={range} setRange={setRange}/>
+                    <BookingSearchBar ref={datePickerRef} range={range} setRange={setRange}/>
 
                     <div className="flex flex-row items-center gap-2">
                         { hotel.amenities.map((amenity) => <HotelAmenity key={amenity.id} slug={amenity.slug} />) }

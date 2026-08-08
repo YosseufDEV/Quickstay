@@ -40,7 +40,7 @@ class HotelService {
 
         const hotels = await Hotel.getHotels(limit, offset > 0 ? offset : 0, sort, order);
 
-        CachingService.setCache(key, hotels, 60 * 5); // Cache for 5 minutes
+        CachingService.setCache(key, hotels, 60 * 5); 
         
         return hotels;
     }
@@ -64,6 +64,8 @@ class HotelService {
         if(!hotel) {
             throw new HotelError("hotel_not_found", 404);
         }
+
+        CachingService.setCache(key, hotel, 60 * 5);
 
         return hotel;
     }
