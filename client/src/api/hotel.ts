@@ -1,7 +1,7 @@
 import api from "./client";
 
-const getHotels = async (limit?: number, offset?: number, sortBy?: string, order?: string) => {
-    return await api.get("/hotels", { params: { limit, offset } }).then((res) => res.data.payload.hotels).catch((err) => {
+const getHotels = async (size?: number, page?: number, sortBy?: string, order?: string) => {
+    return await api.get("/hotels", { params: { size, page } }).then((res) => res.data.payload.hotels).catch((err) => {
         console.error("Error fetching hotels:", err);
         return [];
   });
@@ -13,6 +13,13 @@ const getHotelById = async (id: string) => {
         return null;
     });
 
+}
+
+const getHotelsCities = async () => {
+    return await api.get("/hotels/cities").then((res) => res.data.payload.cities).catch((err) => {
+        console.error("Error fetching hotel cities:", err);
+        return [];
+    });
 }
 
 export interface AvailabilityResponse {
@@ -28,4 +35,5 @@ const checkAvailability = async (hotelId: string, checkIn: Date, checkOut: Date)
     return data.payload as AvailabilityResponse;
 }
 
-export { getHotels, getHotelById, checkAvailability };
+
+export { getHotels, getHotelById, checkAvailability, getHotelsCities };

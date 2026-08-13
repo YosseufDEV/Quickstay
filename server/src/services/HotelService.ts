@@ -12,7 +12,7 @@ import { AppError } from "@/errors/errors";
 import CachingService from "./CachingService";
 
 class HotelService {
-    static async getHotels(query: { limit?: string, offset?: string, sort?: string, order?: "asc" | "desc" }) {
+    static async getHotels(query: { size?: string, page?: string, sort?: string, order?: "asc" | "desc" }) {
         const key = `hotels:${JSON.stringify(query)}`;
         const cachedHotels = await CachingService.getCache(key);
 
@@ -20,14 +20,21 @@ class HotelService {
             return cachedHotels;
         }
 
-        let limit = Math.min(Math.abs(Number(query.limit)), 30) || 30;
-        let offset = Number(query.offset) || 0;
+        const MAXIMUM_PAGE_SIZE = 30;
+
+        let size = Math.min(Math.abs(Number(query.size)), 30) || 30;
+
+        let page = Number(query.page) || 1;
 
         const sort = query.sort as string | undefined;
         const order = (query.order as "asc" | "desc") || "asc";
 
-        if(limit <= 0 || isNaN(limit) || isNaN(offset)) {
+        if(size <= 0 || isNaN(size) || isNaN(page) || page < 0) {
             throw new HotelError("invalid_pagination_parameters", 400);
+        }
+
+        if(size > MAXIMUM_PAGE_SIZE) {
+            throw new HotelError("page_size_exceeded", 400);
         }
 
         if(sort && !["price", "createdAt", "rating"].includes(sort)) {
@@ -38,7 +45,7 @@ class HotelService {
             throw new HotelError("invalid_order_parameter", 400);
         }
 
-        const hotels = await Hotel.getHotels(limit, offset > 0 ? offset : 0, sort, order);
+        const hotels = await Hotel.getHotels(size, page, sort, order);
 
         CachingService.setCache(key, hotels, 60 * 5); 
         

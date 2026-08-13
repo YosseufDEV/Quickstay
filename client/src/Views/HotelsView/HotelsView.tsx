@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router";
 
 import { getHotels } from "@/api/hotel";
-import type { IHotel } from "@quickstay/types/Hotel.ts";
 
 import HotelCard from "./Components/HotelCard/HotelCard";
 import FilterHotels from "../FilterHotels/FilterHotels";
@@ -16,12 +15,12 @@ const HotelsView = () => {
 
     const { data: hotels, isLoading } = useQuery({
         queryKey: ["hotels", page],
-        queryFn: (): Promise<IHotel[]> => getHotels(hotelsPerPage, (page-1)*hotelsPerPage)
+        queryFn: (): Promise<any> => getHotels(hotelsPerPage, page)
     });
 
 
     console.log(hotels);
-    const mappedHotels = hotels?.map((hotel: IHotel) => <HotelCard key={hotel.id} { ...hotel } />);
+    const mappedHotels = hotels?.map((hotel: any) => <HotelCard key={hotel.id} { ...hotel } />);
 
     return (
         <>

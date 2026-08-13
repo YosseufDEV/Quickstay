@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router"
 import LogoSrc from "../../assets/logo.svg?react"
 
 const Logo = () => {
+    const navigate = useNavigate();
     return (
-        <LogoSrc className="h-9 logo" />
+        <LogoSrc onClick={ () => navigate("/") } className="h-9 logo cursor-pointer" />
     )
 }
 

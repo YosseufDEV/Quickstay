@@ -1,9 +1,10 @@
 $kind: http-request
 name: Get All Hotels
-url: "{{baseURL}}/hotels?limit=10"
+url: "{{baseURL}}/hotels?size=10&page=30"
 method: GET
 queryParams:
-  limit: "10"
+  size: "10"
+  page: "30"
 scripts:
   - type: afterResponse
     code: "pm.collectionVariables.set(\"hotelId\", pm.response.json().payload.hotels[0].id)\r

@@ -11,6 +11,7 @@ import { inputStatusInAnimation, inputStatusOutAnimation, inputValidityChangeAni
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
+    ref?: ReactRef;
     className?: string;
     required?: boolean;
     type: React.InputHTMLAttributes<HTMLInputElement>["type"];
@@ -89,9 +90,8 @@ const ShowPasswordButton = ({ inputRef }: { inputRef: ReactRef }) => {
         <EyeIcon onClick={togglePasswordVisibility} className={iconClass}/>;
 }
 
-const Input = ({ label, required, validity, children, type, ...props }: InputProps) => {
+const Input = ({ label, required, validity, children, type, ref, ...props }: InputProps) => {
     const selfContainerRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
     const [tl, setTl] = useState<gsap.core.Timeline | null>(null);
 
     const id = useId();
@@ -111,7 +111,12 @@ const Input = ({ label, required, validity, children, type, ...props }: InputPro
     }, { scope: selfContainerRef, dependencies: [validity.isValid], revertOnUpdate: true })
 
     return (
-        <div ref={selfContainerRef} className="w-full h-fit font-[Inter]! text-black hlg:text-sm hmd:text-[12px]">
+        <div ref={(el) => {
+            if(el) {
+                selfContainerRef.current = el;
+                ref.current = el;
+            }
+        }} className="w-full h-fit font-[Inter]! text-black hlg:text-sm hmd:text-[12px]">
             <div className="h-fit relative my-1 mt-7 hlg:mt-9 flex flex-col justify-center">
                 { label &&
                     <label htmlFor={id} className="absolute hmd:-top-6 hlg:-top-8 mb-3 hlg:text-[14px] hmd:text-[12px] font-medium flex items-center gap-1 text-gray-700">{label}{required && <span className="text-red-500">*</span>}</label>

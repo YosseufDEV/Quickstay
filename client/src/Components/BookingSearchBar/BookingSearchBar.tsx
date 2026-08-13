@@ -5,6 +5,8 @@ import IconText from '../IconText/IconText';
 import SpringyButton from '../SpringyButton/SpringyButton';
 import { useOutsideClick } from '@/hooks/useOutsideClick';
 import { SelectBoxMenu } from '../SelectBox/SelectBox';
+import { useQuery } from '@tanstack/react-query';
+import { getHotelsCities } from '@/api/hotel';
 
 /**
  * Gets all days before or after a given date until the end of the month
@@ -50,21 +52,20 @@ interface CalendarProps {
     defaultMonth?: Date;
 }
 
-const SelectBoxItem = ({ Icon, text, items, defaultValue, value, setValue }) => {
-    const [menuVisible, setMenuVisible] = useState(false);
+const SelectBoxItem = ({ searchable=false, Icon, text, items, placeholder, value, setValue }) => {
+    const masterRef = useRef<HTMLDivElement | null>(null);
 
     return (
-        <div className="relative cursor-pointer">
+        <div ref={masterRef} className="relative cursor-pointer">
             <SelectBoxMenu 
-                onSelect={(item) => { setValue(item); setMenuVisible(false); }}
-                searchable={false} 
-                items={items
-                } 
-                visible={menuVisible} 
-                setVisible={setMenuVisible} />
-            <div onClick={() => setMenuVisible(true)} className="cursor-pointer relative w-fit nowrap space-y-2 flex flex-col">
+                onSelect={(item) => { setValue(item); }}
+                masterRef={masterRef}
+                searchable={searchable} 
+                items={items} 
+            />
+            <div className="cursor-pointer relative w-fit nowrap space-y-2 flex flex-col">
                 <IconText Icon={Icon} fontSize={15} text={text} iconClassName="stroke-gray-700" />
-                <p className="text-gray-700 m-0">{value ?? defaultValue}</p>
+                <p className="text-gray-700 m-0">{value ?? placeholder}</p>
             </div>
         </div>
     )
@@ -136,8 +137,18 @@ type DatePickerProps = {
     searchCallback: () => void
 }
 
+// FIX: Size is not static and changes when the value of the select box changes, need to fix that
 const BookingSearchBar = ({ className="", ref, range, setRange, withDestination, destination, setDestination, searchCallback }: DatePickerProps) => {
     const [guests, setGuests] = useState<number>(1);
+
+    const { data: cities = [] } = useQuery({
+        queryKey: ['cities'],
+        queryFn: async () => {
+            const response = await getHotelsCities();
+
+            return response;
+        }
+    });
 
     const disabledDates = {
         beforeFrom: range?.from ? getDaysUntilMonthEnd('before', range.from) : [],
@@ -147,10 +158,15 @@ const BookingSearchBar = ({ className="", ref, range, setRange, withDestination,
     return (
         <div ref={ref} className={ `${className} w-full bg-white text-nowrap px-20 py-7 font-[Outfit] inset-shadow-sm shadow-md rounded-xl flex justify-around items-center` }>
             { withDestination &&
-                <div className="cursor-pointer relative w-fit nowrap space-y-2 flex flex-col">
-                    <IconText Icon={MapPinned} fontSize={15} text="Destination" iconClassName="stroke-gray-700" />
-                    <p className="text-gray-700 m-0">{destination ? destination : "Pick Destination" }</p>
-                </div>
+                <SelectBoxItem 
+                    searchable={true}
+                    items={cities.map((city: string) => ({ label: city, value: city }))}
+                    Icon={MapPinned} 
+                    text="Destination"
+                    value={destination}
+                    placeholder="Select Destination"
+                    setValue={setDestination} 
+                />
             }
 
             <CalendarItem   
@@ -187,7 +203,7 @@ const BookingSearchBar = ({ className="", ref, range, setRange, withDestination,
                 Icon={Users} 
                 text="Guests" 
                 value={guests}
-                defaultValue={guests} 
+                placeholder={guests} 
                 setValue={setGuests} />
 
             { withDestination &&

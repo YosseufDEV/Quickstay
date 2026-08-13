@@ -176,12 +176,14 @@ class Hotel {
     }
 
     // TEST: Test the sorting and pagination of the hotels list
-    static async getHotels(limit?: number, offset?: number, sortBy?: string, order?: "asc" | "desc", withRooms: boolean = false) {
+    static async getHotels(size: number, page: number, sortBy?: string, order?: "asc" | "desc", withRooms: boolean = false) {
+        // TODO: Verify the logic of pagination.
         const paginatedHotels = drizzle.select()
                                 .from(hotels)
-                                .offset(offset || 0)
-                                .limit(limit || 20)
+                                .offset((page-1)*size)
+                                .limit(size)
                                 .as("hotel")
+
         const hotelsIdsQ = drizzle.select({ id: paginatedHotels.id }).from(paginatedHotels);
 
         const amenitiesQuery = drizzle.select({
