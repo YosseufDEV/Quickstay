@@ -14,7 +14,8 @@ const hotelData = {
     name: "Test Hotel",
     rating: 4.5,
     address: "Test City",
-    exactAddress: "123 Test Street",
+    city: "Test City",
+    country: "Test Country",
     checkInTime: "18:00:00",
     checkOutTime: "14:00:00",
     imageUrl: "http://example.com/image.jpg",
@@ -90,9 +91,11 @@ describe("HotelService Integration Tests", () => {
         const hotelId = randomUUIDS[0]!;
         const availability = await HotelService.checkAvailability({ hotelId }, { checkIn: new Date("2024-06-01"), checkOut: new Date("2024-06-05") });
 
+        console.log(availability);
+
         expect(availability).toMatchObject({
             hotelId: hotelId,
-            catalogAvailability: expect.arrayContaining([
+            availability: expect.arrayContaining([
                 expect.objectContaining({
                     typeId: randomUUIDS[0]!,
                     isAvailable: true
@@ -127,7 +130,7 @@ describe("HotelService Integration Tests", () => {
 
         expect(availability).toMatchObject({
             hotelId: hotelId,
-            catalogAvailability: expect.arrayContaining([
+            availability: expect.arrayContaining([
                 expect.objectContaining({
                     typeId: randomUUIDS[0]!,
                     isAvailable: true
@@ -166,7 +169,7 @@ describe("HotelService Integration Tests", () => {
 
         expect(availability).toMatchObject({
             hotelId: hotelId,
-            catalogAvailability: expect.arrayContaining([
+            availability: expect.arrayContaining([
                 expect.objectContaining({
                     typeId: randomUUIDS[0]!,
                     isAvailable: false
@@ -213,7 +216,7 @@ describe("HotelService Integration Tests", () => {
 
         expect(availability).toMatchObject({
             hotelId: hotelId,
-            catalogAvailability: expect.arrayContaining([
+            availability: expect.arrayContaining([
                 expect.objectContaining({
                     typeId: randomUUIDS[0]!,
                     isAvailable: true
@@ -263,7 +266,7 @@ describe("HotelService Integration Tests", () => {
 
         expect(availability).toMatchObject({
             hotelId: hotelId,
-            catalogAvailability: expect.arrayContaining([
+            availability: expect.arrayContaining([
                 expect.objectContaining({
                     typeId: randomUUIDS[0]!,
                     isAvailable: false
@@ -275,4 +278,17 @@ describe("HotelService Integration Tests", () => {
             ])
         })
     });
+
+    it("Should return all hotels", async () => {
+        const hotels = await HotelService.getHotels({ size: "10", page: "1" });
+
+        const hotelDataC = structuredClone(hotelData);
+
+        delete (hotelDataC as Partial<typeof hotelDataC> ).rooms;
+
+        expect(hotels).toMatchObject({
+            ...hotelDataC,
+        })
+    });
+
 })

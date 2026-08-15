@@ -1,8 +1,8 @@
 import { Optional } from "@/utils/optional";
 import drizzle, { type Transaction } from "@/db/drizzle";
-import { hotels, rooms, amenities as s_amenities, hotelsAmenities, hotelsCatalogs, hotelsFees } from "../db/schema";
+import { hotels, rooms, amenities as s_amenities, hotelsAmenities, hotelsCatalogs, hotelsFees, hotelsBookings } from "../db/schema";
 import Room from "./Room";
-import { eq, inArray, sql, and } from "drizzle-orm";
+import { eq, inArray, sql, and, gte, lte, exists, notExists } from "drizzle-orm";
 import { HotelError, isCheckInDateSmallerThanCheckOutDateError } from "@/errors/hotelErrors";
 import type { drizzle as d } from "drizzle-orm/node-postgres";
 
@@ -62,7 +62,73 @@ interface RowHotelData {
     // amenities: { id: number, slug: string }[]
 }
 
+type HotelFilters = {
+    sort?: string;
+    order?: "asc" | "desc";
+    city?: string;
+    guests?: number;
+    bookingDateRange?: { checkIn: Date, checkOut: Date };
+    minPrice?: number;
+    maxPrice?: number;
+    minRating?: number;
+    maxRating?: number;
+};
+
 class Hotel {
+    private static generateFiltersQuery = (filters: HotelFilters) => {
+        const whereClause = and(
+            filters.city ? eq(hotels.city, filters.city) : sql`TRUE`,
+
+            filters.guests ? exists(
+                drizzle.select({ pricePerNight: hotelsCatalogs.pricePerNight })
+                    .from(hotelsCatalogs)
+                    .where(and(eq(hotelsCatalogs.hotelId, hotels.id), gte(hotelsCatalogs.numberOfGuests, filters.guests)))
+            ) : sql`TRUE`,
+
+            filters.bookingDateRange ? exists(
+                drizzle
+                    .select()
+                    .from(hotelsCatalogs)
+                    .where(
+                        and(
+                            eq(hotelsCatalogs.hotelId, hotels.id),
+                            eq(hotelsCatalogs.id, rooms.typeId),
+                        )
+                    )
+            ) : sql`TRUE`,
+
+            exists(
+                drizzle.select({ pricePerNight: hotelsCatalogs.pricePerNight, numberOfGuests: hotelsCatalogs.numberOfGuests })
+                    .from(rooms)
+                    .innerJoin(hotelsCatalogs, eq(rooms.typeId, hotelsCatalogs.id))
+                    .where(
+                        and(
+                            eq(hotelsCatalogs.hotelId, hotels.id),
+                            filters.guests ? gte(hotelsCatalogs.numberOfGuests, filters.guests) : sql`TRUE`,
+                            filters.minPrice ? gte(hotelsCatalogs.pricePerNight, filters.minPrice) : sql`TRUE`,
+                            filters.maxPrice ? lte(hotelsCatalogs.pricePerNight, filters.maxPrice) : sql`TRUE`,
+                            filters.bookingDateRange ? notExists(
+                                drizzle.select()
+                                    .from(hotelsBookings)
+                                    .where(
+                                        and(
+                                            eq(hotelsBookings.hotelId, hotels.id),
+                                            eq(hotelsBookings.roomId, rooms.id),
+                                            sql`${hotelsBookings.timeRange} && tstzrange(${filters.bookingDateRange.checkIn}, ${filters.bookingDateRange.checkOut}, '[)'`
+                                        )
+                                )
+                            ) : sql`TRUE`
+                        )
+                    )
+            )
+
+        )
+
+        return {
+            whereClause,
+        }
+    }
+
     private static generateCatalogQuery = (drizzle: ReturnType<typeof d> | Transaction) => {
         const catalogQuery = drizzle.select({
             hotelId: hotelsCatalogs.hotelId,
@@ -176,13 +242,18 @@ class Hotel {
     }
 
     // TEST: Test the sorting and pagination of the hotels list
-    static async getHotels(size: number, page: number, sortBy?: string, order?: "asc" | "desc", withRooms: boolean = false) {
-        // TODO: Verify the logic of pagination.
+    static async getHotels(size: number, page: number, filters?: HotelFilters) {
+        // TODO: Verify the logic of pagination and filtration;
+        const filtersQuery = this.generateFiltersQuery(filters ?? {});
+
+        console.log(filters);
+
         const paginatedHotels = drizzle.select()
-                                .from(hotels)
-                                .offset((page-1)*size)
-                                .limit(size)
-                                .as("hotel")
+                                    .from(hotels)
+                                    .where(filtersQuery.whereClause)
+                                    .offset((page-1)*size)
+                                    .limit(size)
+                                    .as("hotel")
 
         const hotelsIdsQ = drizzle.select({ id: paginatedHotels.id }).from(paginatedHotels);
 
@@ -197,16 +268,18 @@ class Hotel {
         let hotelsQ = drizzle.select()
                                     .from(paginatedHotels)
                                     .leftJoin(amenitiesQuery, eq(paginatedHotels.id, amenitiesQuery.hotelId))
-                                    .leftJoin(catalogQuery, eq(paginatedHotels.id, catalogQuery.hotelId));
-        if(withRooms) {
-            const roomsQuery = this.generateRoomsQuery(drizzle, inArray(rooms.hotelId, hotelsIdsQ));
-            hotelsQ = hotelsQ
-                        .leftJoin(
-                            roomsQuery,
-                            eq(roomsQuery.hotelId, hotels.id)
-                        )
-        }
-
+                                    .leftJoin(catalogQuery, eq(paginatedHotels.id, catalogQuery.hotelId))
+        // if(withRooms) {
+        //     const roomsQuery = this.generateRoomsQuery(drizzle, inArray(rooms.hotelId, hotelsIdsQ));
+        //     hotelsQ = hotelsQ
+        //                 .leftJoin(
+        //                     roomsQuery,
+        //                     eq(roomsQuery.hotelId, hotels.id)
+        //                 )
+        // }
+        //
+                                    //
+        console.log("hotelsQ", hotelsQ.toSQL().sql, hotelsQ.toSQL().params);
         return this.processRawHotelData(await hotelsQ);
 
     }

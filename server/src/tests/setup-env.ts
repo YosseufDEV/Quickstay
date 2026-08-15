@@ -60,7 +60,7 @@ beforeAll(async () => {
 }, 100_000);
 
 afterAll(async () => {
-    if(mocks.redis && mocks.redis.isOpen) await mocks.redis.disconnect();
+    if(mocks.redis && mocks.redis.isOpen) await mocks.redis.quit();
     mocks.drizzle.$client.end();
     await postgresContainer.stop();
     await redisContainer.stop();

@@ -4,6 +4,6 @@ const client = createClient({
     url: process.env.REDIS_URL || `redis://default@localhost:6379`
 });
 
-client.on('error', err => console.log('Redis Client Error: ', err));
+client.on('error', (err) => console.log('Redis Client Error: ', err));
 
 export default client;

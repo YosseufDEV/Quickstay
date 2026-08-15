@@ -7,74 +7,102 @@ import Hotel from "@/models/Hotel";
 import { logger } from "@/utils/logger";
 import dayjs from "dayjs";
 import { and, eq, sql } from "drizzle-orm";
-import { parseRequest } from "@/helpers/parseRequest";
 import { AppError } from "@/errors/errors";
 import CachingService from "./CachingService";
+import { parseRequest } from "@/helpers/parseRequest";
+import { Optional } from "@/utils/optional";
+
+type Query = {
+    size?: string, 
+    page?: string 
+    sort?: string;
+    order?: "asc" | "desc";
+    city?: string;
+    guests?: number;
+    bookingDateRange?: { checkIn: Date, checkOut: Date };
+    minPrice?: number;
+    maxPrice?: number;
+    minRating?: number;
+    maxRating?: number;
+};
 
 class HotelService {
-    static async getHotels(query: { size?: string, page?: string, sort?: string, order?: "asc" | "desc" }) {
-        const key = `hotels:${JSON.stringify(query)}`;
-        const cachedHotels = await CachingService.getCache(key);
+    static async getHotels(query: Query) {
+        return CachingService.useCache(async () => {
+            const MAXIMUM_PAGE_SIZE = 30;
 
-        if(cachedHotels) {
-            return cachedHotels;
-        }
+            const schema = z.object({
+                size: z.coerce.number().optional().default(10).superRefine((val, ctx) => {
+                    if(val && val > MAXIMUM_PAGE_SIZE) {
+                        ctx.addIssue({
+                            code: "custom",
+                            message: `Page size must not exceed ${MAXIMUM_PAGE_SIZE}`,
+                        });
+                    }
+                }),
+                page: z.coerce.number().optional().superRefine((val, ctx) => {
+                    if(val && val < 1) {
+                        ctx.addIssue({
+                            code: "custom",
+                            message: "Page number must be greater than 0",
+                        });
+                    }
+                }).default(1),
+                sort: z.enum(["price", "createdAt", "rating"]).optional(),
+                order: z.enum(["asc", "desc"]).optional(),
+                city: z.string().optional(),
+                guests: z.coerce.number().optional(),
+                minPrice: z.coerce.number().optional(),
+                maxPrice: z.coerce.number().optional(),
+                checkIn: z.coerce.date().optional(),
+                checkOut: z.coerce.date().optional(),
+            })
+                .superRefine((data, ctx) => {
+                    if(data.checkIn && data.checkOut && dayjs(data.checkIn).isAfter(dayjs(data.checkOut))) {
+                        ctx.addIssue({
+                            code: "custom",
+                            message: "Check-in date must be before check-out date",
+                        });
+                    }
 
-        const MAXIMUM_PAGE_SIZE = 30;
+                    if(data.checkIn && !data.checkOut || !data.checkIn && data.checkOut) {
+                        ctx.addIssue({
+                            code: "custom",
+                            message: "Both check-in and check-out dates must be provided",
+                        });
+                    }
+                })
 
-        let size = Math.min(Math.abs(Number(query.size)), 30) || 30;
+            const { size, page, sort, order, city, guests, checkIn, checkOut, minPrice, maxPrice } = parseRequest(schema, query, "query");
 
-        let page = Number(query.page) || 1;
+            const hotels = await Hotel.getHotels(size, page, 
+                { sort, order, city, minPrice, maxPrice, guests, 
+                    ...Optional("bookingDateRange", checkIn && checkOut, { checkIn, checkOut }) 
+                });
 
-        const sort = query.sort as string | undefined;
-        const order = (query.order as "asc" | "desc") || "asc";
+            return hotels;
 
-        if(size <= 0 || isNaN(size) || isNaN(page) || page < 0) {
-            throw new HotelError("invalid_pagination_parameters", 400);
-        }
-
-        if(size > MAXIMUM_PAGE_SIZE) {
-            throw new HotelError("page_size_exceeded", 400);
-        }
-
-        if(sort && !["price", "createdAt", "rating"].includes(sort)) {
-            throw new HotelError("invalid_sort_parameter", 400);
-        }
-
-        if(order && !["asc", "desc"].includes(order)) {
-            throw new HotelError("invalid_order_parameter", 400);
-        }
-
-        const hotels = await Hotel.getHotels(size, page, sort, order);
-
-        CachingService.setCache(key, hotels, 60 * 5); 
+        }, `hotels:${JSON.stringify(query)}`, 60 * 5);
         
-        return hotels;
     }
 
     static async getHotelById(params: { hotelId: string }) {
-        const key = `hotel:${params.hotelId}`;
-        const cachedHotel = await CachingService.getCache(key);
+        return CachingService.useCache(async () => {
+            const schema = z.object({
+                hotelId: z.uuid()
+            });
 
-        if(cachedHotel) {
-            return cachedHotel;
-        }
+            const { hotelId } = parseRequest(schema, params);
 
-        const schema = z.object({
-            hotelId: z.uuid()
-        });
+            const hotel = await Hotel.getHotelById(hotelId as string);
 
-        const { hotelId } = parseRequest(schema, params);
+            if(!hotel) {
+                throw new HotelError("hotel_not_found", 404);
+            }
 
-        const hotel = await Hotel.getHotelById(hotelId as string);
+            return hotel;
 
-        if(!hotel) {
-            throw new HotelError("hotel_not_found", 404);
-        }
-
-        CachingService.setCache(key, hotel, 60 * 5);
-
-        return hotel;
+        }, `hotel:${params.hotelId}`, 60 * 5);
     }
 
     static async checkAvailability(params: Record<any, any>, { checkIn, checkOut }: { checkIn: Date, checkOut: Date }) {
@@ -160,21 +188,15 @@ class HotelService {
     }
 
     static async getHotelsCities() {
-        const cachedCities = await CachingService.getCache("hotels:cities");
+        return CachingService.useCache(async () => {
+            const cities = await drizzle.selectDistinct({
+                                        city: hotels.city
+                                    })
+                                    .from(hotels)
+                                    .then((cities) => cities.map(c => c.city))
 
-        if(cachedCities) {
-            return cachedCities;
-        }
-
-        const cities = await drizzle.selectDistinct({
-                                    city: hotels.city
-                                })
-                                .from(hotels)
-                                .then((cities) => cities.map(c => c.city))
-
-        CachingService.setCache("hotels:cities", cities, 60 * 60 * 24);
-
-        return cities;
+            return cities;
+        }, `hotels:cities`, 60 * 60 * 24);
     }
 
 }

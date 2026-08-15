@@ -1,7 +1,11 @@
 import { AppError } from "@/errors/errors";
-import type { ZodObject } from "zod";
+import z, { ZodType } from "zod";
 
-export const parseRequest = (schema: ZodObject, params: Record<any, any>, type: "query" | "params" = "params") => {
+export const parseRequest = <T extends ZodType>(
+    schema: T, 
+    params: Record<any, any>, 
+    type: "query" | "params" = "params"
+): z.output<T> => {
     if(!params) {
         throw new AppError({ message: `request_${type}_required`, statusCode: 400 });
     }
