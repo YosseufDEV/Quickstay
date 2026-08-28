@@ -23,10 +23,10 @@ class CachingService {
     static async useCache<T>(callback: () => Promise<T>, key: string, expirationInSeconds: number): Promise<T> {
         const cachedValue = await CachingService.getCache(key);
 
-        if (cachedValue) {
-            return cachedValue;
-        }
-
+        // if (cachedValue) {
+        //     return cachedValue;
+        // }
+        //
         const result = await callback();
 
         await CachingService.setCache(key, result, expirationInSeconds);

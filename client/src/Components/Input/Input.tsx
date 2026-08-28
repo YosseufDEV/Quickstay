@@ -90,7 +90,7 @@ const ShowPasswordButton = ({ inputRef }: { inputRef: ReactRef }) => {
         <EyeIcon onClick={togglePasswordVisibility} className={iconClass}/>;
 }
 
-const Input = ({ label, required, validity, children, type, ref, ...props }: InputProps) => {
+const Input = ({ label, required, validity, children, type, containerRef, ...props }: InputProps) => {
     const selfContainerRef = useRef<HTMLDivElement>(null);
     const [tl, setTl] = useState<gsap.core.Timeline | null>(null);
 
@@ -114,7 +114,9 @@ const Input = ({ label, required, validity, children, type, ref, ...props }: Inp
         <div ref={(el) => {
             if(el) {
                 selfContainerRef.current = el;
-                ref.current = el;
+                if(containerRef) {
+                    containerRef.current = el;
+                }
             }
         }} className="w-full h-fit font-[Inter]! text-black hlg:text-sm hmd:text-[12px]">
             <div className="h-fit relative my-1 mt-7 hlg:mt-9 flex flex-col justify-center">

@@ -89,7 +89,7 @@ describe("HotelService Integration Tests", () => {
 
     it("Should return all rooms as available if no booking exists", async () => {
         const hotelId = randomUUIDS[0]!;
-        const availability = await HotelService.checkAvailability({ hotelId }, { checkIn: new Date("2024-06-01"), checkOut: new Date("2024-06-05") });
+        const availability = await HotelService.checkAvailability({ hotelId }, { checkin: new Date("2024-06-01"), checkout: new Date("2024-06-05") });
 
         console.log(availability);
 
@@ -126,7 +126,7 @@ describe("HotelService Integration Tests", () => {
             from: new Date("2024-06-01"),
             to: new Date("2024-06-05"),
         });
-        const availability = await HotelService.checkAvailability({ hotelId }, { checkIn: new Date("2024-06-01"), checkOut: new Date("2024-06-05") });
+        const availability = await HotelService.checkAvailability({ hotelId }, { checkin: new Date("2024-06-01"), checkout: new Date("2024-06-05") });
 
         expect(availability).toMatchObject({
             hotelId: hotelId,
@@ -163,7 +163,7 @@ describe("HotelService Integration Tests", () => {
             to: new Date("2024-06-05"),
         });
 
-        const availability = await HotelService.checkAvailability({ hotelId }, { checkIn: new Date("2024-06-01"), checkOut: new Date("2024-06-05") });
+        const availability = await HotelService.checkAvailability({ hotelId }, { checkin: new Date("2024-06-01"), checkOut: new Date("2024-06-05") });
 
         expect(booking_1.details.roomId).not.toEqual(booking_2.details.roomId);
 
@@ -212,7 +212,7 @@ describe("HotelService Integration Tests", () => {
 
         console.log(await drizzle.select().from(hotelsBookings));
 
-        const availability = await HotelService.checkAvailability({ hotelId }, { checkIn: new Date("2024-06-01"), checkOut: new Date("2024-06-05") });
+        const availability = await HotelService.checkAvailability({ hotelId }, { checkin: new Date("2024-06-01"), checkout: new Date("2024-06-05") });
 
         expect(availability).toMatchObject({
             hotelId: hotelId,
@@ -262,7 +262,7 @@ describe("HotelService Integration Tests", () => {
             to: new Date("2024-06-05"),
         });
 
-        const availability = await HotelService.checkAvailability({ hotelId }, { checkIn: new Date("2024-06-01"), checkOut: new Date("2024-06-05") });
+        const availability = await HotelService.checkAvailability({ hotelId }, { checkin: new Date("2024-06-01"), checkout: new Date("2024-06-05") });
 
         expect(availability).toMatchObject({
             hotelId: hotelId,
@@ -280,6 +280,8 @@ describe("HotelService Integration Tests", () => {
     });
 
     it("Should return all hotels", async () => {
+        await drizzle.delete(hotelsBookings)
+
         const hotels = await HotelService.getHotels({ size: "10", page: "1" });
 
         const hotelDataC = structuredClone(hotelData);
@@ -291,4 +293,72 @@ describe("HotelService Integration Tests", () => {
         })
     });
 
+    it("Should filter hotels correctly by booking date", async () => {
+        const hotelId = randomUUIDS[0]!;
+
+        await Booking.createBooking({
+            roomTypeId: randomUUIDS[1]!,
+            hotelId: hotelId,
+            userId: randomUUIDS[1]!,
+            from: new Date("2026-08-25"),
+            to: new Date("2026-09-29"),
+        });
+
+        const hotels = await HotelService.getHotels(
+            { 
+                size: "10", 
+                page: "1", 
+                checkin: new Date("2026-09-01"),
+                checkout: new Date("2026-09-05"),
+                guests: 4
+            }
+        );
+
+        const hotelDataC = structuredClone(hotelData);
+
+        delete (hotelDataC as Partial<typeof hotelDataC> ).rooms;
+
+        expect(hotels).toMatchObject({
+            ...hotelDataC,
+        })
+
+    })
+
+    it("Should not return hotel if it does not have available rooms for the given date range", async () => {
+        const hotelId = randomUUIDS[0]!;
+
+        await drizzle.delete(hotelsBookings)
+
+        await Booking.createBooking({
+            roomTypeId: randomUUIDS[1]!,
+            hotelId: hotelId,
+            userId: randomUUIDS[1]!,
+            from: new Date("2024-08-25"),
+            to: new Date("2027-09-29"),
+        });
+
+        await Booking.createBooking({
+            roomTypeId: randomUUIDS[1]!,
+            hotelId: hotelId,
+            userId: randomUUIDS[1]!,
+            from: new Date("2025-08-31"),
+            to: new Date("2027-09-06"),
+        });
+
+        const hotels = await HotelService.getHotels(
+            { 
+                size: "10", 
+                page: "1", 
+                checkin: new Date("2026-09-01"),
+                checkout: new Date("2026-09-05"),
+                guests: 4
+            }
+        );
+
+        const hotelDataC = structuredClone(hotelData);
+
+        delete (hotelDataC as Partial<typeof hotelDataC> ).rooms;
+
+        expect(hotels).toEqual([])
+    })
 })

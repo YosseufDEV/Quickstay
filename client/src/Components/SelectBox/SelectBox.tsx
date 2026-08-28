@@ -69,7 +69,7 @@ export const SelectBoxMenu = (props: SelectBoxMenuProps ) => {
 
     useLayoutEffect(() => {
         if(ref.current) {
-            setHeight(ref.current.offsetHeight);
+            setHeight(ref.current?.offsetHeight);
         }
     });
 
@@ -83,16 +83,16 @@ export const SelectBoxMenu = (props: SelectBoxMenuProps ) => {
         const handleClick = (e: MouseEvent) => { 
             setVisible(true);
 
-            if(props.masterRef.current.contains(e.target as Node) && visible) {
+            if(props.masterRef.current?.contains(e.target as Node) && visible) {
                 console.log(true, visible);
                 setVisible(false);
             }
         }
 
-        props.masterRef.current.addEventListener("click", handleClick);
+        props.masterRef.current?.addEventListener("click", handleClick);
 
         return () => {
-            props.masterRef.current.removeEventListener("click", handleClick);
+            props.masterRef.current?.removeEventListener("click", handleClick);
         }
     }, [props.masterRef, visible]);
 

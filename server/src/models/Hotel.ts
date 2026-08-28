@@ -5,6 +5,7 @@ import Room from "./Room";
 import { eq, inArray, sql, and, gte, lte, exists, notExists } from "drizzle-orm";
 import { HotelError, isCheckInDateSmallerThanCheckOutDateError } from "@/errors/hotelErrors";
 import type { drizzle as d } from "drizzle-orm/node-postgres";
+import { logger } from "@/utils/logger";
 
 export interface HotelFee {
     feeType: string
@@ -67,7 +68,7 @@ type HotelFilters = {
     order?: "asc" | "desc";
     city?: string;
     guests?: number;
-    bookingDateRange?: { checkIn: Date, checkOut: Date };
+    bookingDateRange?: { checkin: Date, checkout: Date };
     minPrice?: number;
     maxPrice?: number;
     minRating?: number;
@@ -76,29 +77,12 @@ type HotelFilters = {
 
 class Hotel {
     private static generateFiltersQuery = (filters: HotelFilters) => {
+        console.log("range:", filters.bookingDateRange);
         const whereClause = and(
             filters.city ? eq(hotels.city, filters.city) : sql`TRUE`,
 
-            filters.guests ? exists(
-                drizzle.select({ pricePerNight: hotelsCatalogs.pricePerNight })
-                    .from(hotelsCatalogs)
-                    .where(and(eq(hotelsCatalogs.hotelId, hotels.id), gte(hotelsCatalogs.numberOfGuests, filters.guests)))
-            ) : sql`TRUE`,
-
-            filters.bookingDateRange ? exists(
-                drizzle
-                    .select()
-                    .from(hotelsCatalogs)
-                    .where(
-                        and(
-                            eq(hotelsCatalogs.hotelId, hotels.id),
-                            eq(hotelsCatalogs.id, rooms.typeId),
-                        )
-                    )
-            ) : sql`TRUE`,
-
             exists(
-                drizzle.select({ pricePerNight: hotelsCatalogs.pricePerNight, numberOfGuests: hotelsCatalogs.numberOfGuests })
+                drizzle.select({ id: rooms.id, pricePerNight: hotelsCatalogs.pricePerNight, numberOfGuests: hotelsCatalogs.numberOfGuests })
                     .from(rooms)
                     .innerJoin(hotelsCatalogs, eq(rooms.typeId, hotelsCatalogs.id))
                     .where(
@@ -107,17 +91,17 @@ class Hotel {
                             filters.guests ? gte(hotelsCatalogs.numberOfGuests, filters.guests) : sql`TRUE`,
                             filters.minPrice ? gte(hotelsCatalogs.pricePerNight, filters.minPrice) : sql`TRUE`,
                             filters.maxPrice ? lte(hotelsCatalogs.pricePerNight, filters.maxPrice) : sql`TRUE`,
-                            filters.bookingDateRange ? notExists(
-                                drizzle.select()
-                                    .from(hotelsBookings)
-                                    .where(
-                                        and(
-                                            eq(hotelsBookings.hotelId, hotels.id),
-                                            eq(hotelsBookings.roomId, rooms.id),
-                                            sql`${hotelsBookings.timeRange} && tstzrange(${filters.bookingDateRange.checkIn}, ${filters.bookingDateRange.checkOut}, '[)'`
-                                        )
-                                )
-                            ) : sql`TRUE`
+                            filters.bookingDateRange ? 
+                                notExists(
+                                    drizzle.select()
+                                        .from(hotelsBookings)
+                                        .where(
+                                            and(
+                                                eq(hotelsBookings.roomId, rooms.id),
+                                                sql`${hotelsBookings.timeRange} && tstzrange(${filters.bookingDateRange.checkin}, ${filters.bookingDateRange.checkout})`)
+                                    )
+                                ) 
+                                : sql`TRUE`
                         )
                     )
             )
@@ -246,8 +230,6 @@ class Hotel {
         // TODO: Verify the logic of pagination and filtration;
         const filtersQuery = this.generateFiltersQuery(filters ?? {});
 
-        console.log(filters);
-
         const paginatedHotels = drizzle.select()
                                     .from(hotels)
                                     .where(filtersQuery.whereClause)
@@ -278,8 +260,7 @@ class Hotel {
         //                 )
         // }
         //
-                                    //
-        console.log("hotelsQ", hotelsQ.toSQL().sql, hotelsQ.toSQL().params);
+
         return this.processRawHotelData(await hotelsQ);
 
     }

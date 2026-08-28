@@ -1,15 +1,14 @@
 $kind: http-request
 name: Get All Hotels
-url: "{{baseURL}}/hotels?size=30&page=10&minPrice=100&maxPrice=450&guests=1&checkin=2026-09-12&checkout=2026-09-15"
+url: "{{baseURL}}/hotels?size=30&page=100&price=300-500&guests=1&checkin=2026-09-29&checkout=2198-09-15"
 method: GET
 queryParams:
   size: "30"
-  page: "10"
-  minPrice: "100"
-  maxPrice: "450"
+  page: "100"
+  price: 300-500
   guests: "1"
-  checkin: 2026-09-12
-  checkout: 2026-09-15
+  checkin: 2026-09-29
+  checkout: 2198-09-15
 scripts:
   - type: afterResponse
     code: "pm.collectionVariables.set(\"hotelId\", pm.response.json().payload.hotels[0].id)\r

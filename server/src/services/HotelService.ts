@@ -19,7 +19,8 @@ type Query = {
     order?: "asc" | "desc";
     city?: string;
     guests?: number;
-    bookingDateRange?: { checkIn: Date, checkOut: Date };
+    checkin?: Date, 
+    checkout?: Date;
     minPrice?: number;
     maxPrice?: number;
     minRating?: number;
@@ -52,32 +53,67 @@ class HotelService {
                 order: z.enum(["asc", "desc"]).optional(),
                 city: z.string().optional(),
                 guests: z.coerce.number().optional(),
-                minPrice: z.coerce.number().optional(),
-                maxPrice: z.coerce.number().optional(),
-                checkIn: z.coerce.date().optional(),
-                checkOut: z.coerce.date().optional(),
+                // I want price in format of 'minPrice-maxPrice' and be parsed by regex
+                price: z.string().regex(/^\d+(-\d+)?$/, { message: "Minimum and maximum price must be a number" }).optional().transform((val) => {
+                    if(!val) return undefined;
+                    if(!val.includes("-")) return { minPrice: Number(val) };
+                    const [minPrice, maxPrice] = val.split("-").map(Number);
+
+                    return { minPrice, maxPrice };
+
+                }).refine((val) => {
+                    if(!val) return true;
+                    const { minPrice, maxPrice } = val;
+                    if(minPrice && maxPrice && minPrice > maxPrice) {
+                        return false;
+                    }
+                    return true;
+                }, { message: "Minimum price must be less than maximum price" }),
+
+                checkin: z.coerce.date().optional().superRefine((val, ctx) => {
+                    if(val && dayjs(val).utc().isBefore(dayjs().startOf("day").utc()) ) {
+                        ctx.addIssue({
+                            code: "custom",
+                            message: "Check-in date must be in the future",
+                        });
+                    }
+                }),
+                checkout: z.coerce.date().optional().superRefine((val, ctx) => {
+                    if(val && dayjs(val).utc().isBefore(dayjs().utc()) ) {
+                        ctx.addIssue({
+                            code: "custom",
+                            message: "Check-out date must be in the future",
+                        });
+                    }
+                })
             })
                 .superRefine((data, ctx) => {
-                    if(data.checkIn && data.checkOut && dayjs(data.checkIn).isAfter(dayjs(data.checkOut))) {
+                    console.log(data.checkin, data.checkout)
+                    if(data.checkin && data.checkout && 
+                       data.checkin.getTime() >= data.checkout.getTime()
+                      ) {
                         ctx.addIssue({
                             code: "custom",
                             message: "Check-in date must be before check-out date",
                         });
                     }
 
-                    if(data.checkIn && !data.checkOut || !data.checkIn && data.checkOut) {
+                    if(data.checkin && !data.checkout || !data.checkin && data.checkout) {
                         ctx.addIssue({
                             code: "custom",
                             message: "Both check-in and check-out dates must be provided",
                         });
                     }
                 })
+                .strict()
 
-            const { size, page, sort, order, city, guests, checkIn, checkOut, minPrice, maxPrice } = parseRequest(schema, query, "query");
+            const { size, page, sort, order, city, guests, checkin, checkout, price: { minPrice, maxPrice } = {} } = parseRequest(schema, query, "query");
+
+            console.log("minPrice", minPrice, "maxPrice", maxPrice)
 
             const hotels = await Hotel.getHotels(size, page, 
                 { sort, order, city, minPrice, maxPrice, guests, 
-                    ...Optional("bookingDateRange", checkIn && checkOut, { checkIn, checkOut }) 
+                    ...Optional("bookingDateRange", checkin && checkout, { checkin, checkout }) 
                 });
 
             return hotels;
@@ -105,11 +141,11 @@ class HotelService {
         }, `hotel:${params.hotelId}`, 60 * 5);
     }
 
-    static async checkAvailability(params: Record<any, any>, { checkIn, checkOut }: { checkIn: Date, checkOut: Date }) {
+    static async checkAvailability(params: Record<any, any>, { checkin, checkout }: { checkin: Date, checkout: Date }) {
         const { hotelId } = parseRequest(z.object({ hotelId: z.uuid() }), params) as { hotelId: string };
 
-        checkIn = dayjs(checkIn).startOf("day").utc().toDate();
-        checkOut = dayjs(checkOut).startOf("day").utc().toDate();
+        checkin = dayjs(checkin).startOf("day").utc().toDate();
+        checkout = dayjs(checkout).startOf("day").utc().toDate();
 
         const bookingSubQuery = drizzle
                                     .select({
@@ -117,7 +153,7 @@ class HotelService {
                                         overlappingBookingsCount: sql<number>`COUNT(DISTINCT ${hotelsBookings.roomId})`.as("overlappingBookingsCount")
                                     })
                                     .from(hotelsBookings)
-                                    .where(sql`${hotelsBookings.timeRange} && tstzrange(${checkIn}, ${checkOut}, '[)')`)
+                                    .where(sql`${hotelsBookings.timeRange} && tstzrange(${checkin}, ${checkout}, '[)')`)
                                     .groupBy(hotelsBookings.roomTypeId)
                                     .as("booking");
 
@@ -151,7 +187,7 @@ class HotelService {
                             .where(eq(hotelsCatalogs.hotelId, hotelId))
                             .then(([availability]) => availability!)
                             .catch((err) => {
-                                logger.error(`Failed to check availability for hotel ${hotelId} from ${checkIn} to ${checkOut}`);
+                                logger.error(`Failed to check availability for hotel ${hotelId} from ${checkin} to ${checkout}`);
                                 throw new BookingError('Failed to check availability', 400, err);
                             });
 
@@ -162,11 +198,11 @@ class HotelService {
         return result;
     }
 
-    static async checkAvailabilityByTypeId(params: Record<any, any>, { checkIn, checkOut }: { checkIn: Date, checkOut: Date }) {
+    static async checkAvailabilityByTypeId(params: Record<any, any>, { checkin, checkout }: { checkin: Date, checkout: Date }) {
         const { typeId, hotelId } = parseRequest(z.object({ typeId: z.uuid(), hotelId: z.uuid() }), params) as { typeId: string, hotelId: string };
 
-        checkIn = dayjs(checkIn).startOf("day").utc().toDate();
-        checkOut = dayjs(checkOut).startOf("day").utc().toDate();
+        checkin = dayjs(checkin).startOf("day").utc().toDate();
+        checkout = dayjs(checkout).startOf("day").utc().toDate();
 
         const result = await drizzle
                                 .select({           
@@ -176,7 +212,7 @@ class HotelService {
                                     `
                                 })
                                 .from(rooms)
-                                .leftJoin(hotelsBookings, and(eq(hotelsBookings.roomId, rooms.id), sql`${hotelsBookings.timeRange} && tstzrange(${checkIn}, ${checkOut}, '[]')`))
+                                .leftJoin(hotelsBookings, and(eq(hotelsBookings.roomId, rooms.id), sql`${hotelsBookings.timeRange} && tstzrange(${checkin}, ${checkout}, '[]')`))
                                 .where(and(eq(rooms.typeId, typeId), eq(rooms.hotelId, hotelId)))
                                 .groupBy(rooms.typeId, rooms.hotelId)
 
@@ -189,7 +225,8 @@ class HotelService {
 
     static async getHotelsCities() {
         return CachingService.useCache(async () => {
-            const cities = await drizzle.selectDistinct({
+            const cities = await drizzle
+                                    .selectDistinct({
                                         city: hotels.city
                                     })
                                     .from(hotels)

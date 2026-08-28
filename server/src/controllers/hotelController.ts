@@ -90,7 +90,7 @@ const checkAvailability = async (req: Request, res: Response) => {
 
     const params = req.params;
 
-    const availability = await HotelService.checkAvailability(params, { checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
+    const availability = await HotelService.checkAvailability(params, { checkin: new Date(checkIn), checkout: new Date(checkOut) });
 
     return sendResponse(res, { statusCode: StatusCode.OK, payload: { ...availability } }) ;
 }
@@ -98,7 +98,7 @@ const checkAvailability = async (req: Request, res: Response) => {
 const checkAvailabilityByRoomType = async (req: Request, res: Response) => {
     const { checkIn, checkOut } = req.body; 
 
-    const availability = await HotelService.checkAvailabilityByTypeId(req.params, { checkIn: new Date(checkIn), checkOut: new Date(checkOut) });
+    const availability = await HotelService.checkAvailabilityByTypeId(req.params, { checkin: new Date(checkIn), checkout: new Date(checkOut) });
 
     return sendResponse(res, { statusCode: StatusCode.OK, payload: { ...availability } }) ;
 }
